@@ -1,0 +1,285 @@
+/* ============================================================
+   login.css
+   BCT / POS Login Theme (V-Point Aligned with Password Field)
+   ============================================================ */
+
+*:not(.fas):not(.far):not(.fab):not(.fa) { 
+    font-family: 'Noto Sans Lao Looped', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; 
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Blue Accent Ribbon Stripe Behind Banner */
+.login-banner-stripe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60vh;
+    background: #3b82f6; /* Electric Blue Accent */
+    clip-path: polygon(0 0, 100% 0, 100% 52%, 50% 90%, 0 52%);
+    z-index: 1;
+}
+
+/* Blue Banner Background with V-Dip Point aligned at Password Field level */
+.login-banner-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 58vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 86%, 0 50%);
+    z-index: 2;
+}
+
+.login-banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 58vh;
+    background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.18) 0%, transparent 65%);
+    clip-path: polygon(0 0, 100% 0, 100% 50%, 50% 86%, 0 50%);
+    z-index: 3;
+    pointer-events: none;
+}
+
+/* Compact Container & Card */
+.login-card-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+    margin: 110px 16px 24px 16px;
+}
+
+.login-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.1);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    padding: 28px 28px 28px 28px;
+    position: relative;
+}
+
+.logo-badge {
+    width: 104px;
+    height: 104px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: -52px auto 12px auto;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border: 4px solid #ffffff;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    z-index: 15;
+}
+
+.logo-badge img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 50%;
+}
+
+.login-header-text {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.login-header-text h4 {
+    font-weight: 800;
+    color: #0f172a;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.login-header-text p {
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.login-hint {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.custom-input-group {
+    margin-bottom: 16px;
+}
+
+.custom-input-group label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    color: #64748b;
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.form-control-custom {
+    width: 100%;
+    height: 44px;
+    padding: 8px 14px 8px 42px;
+    font-size: 0.92rem;
+    color: #0f172a;
+    background-color: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.form-control-custom:focus {
+    background-color: #ffffff;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3.5px rgba(0, 123, 255, 0.15);
+}
+
+.btn-toggle-pass {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px;
+    z-index: 5;
+}
+
+.btn-login-custom {
+    width: 100%;
+    height: 46px;
+    background: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 22px;
+    box-shadow: 0 4px 14px rgba(0, 123, 255, 0.35);
+    transition: all 0.2s ease;
+}
+
+.btn-login-custom:hover {
+    background: #0056b3;
+    box-shadow: 0 6px 18px rgba(0, 123, 255, 0.45);
+    transform: translateY(-1px);
+}
+
+/* Footer Metadata */
+.bct-footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #64748b;
+    font-size: 0.82rem;
+    line-height: 1.6;
+}
+
+.bct-footer-title {
+    font-weight: 700;
+    color: #475569;
+    font-size: 0.86rem;
+    margin-bottom: 2px;
+}
+
+.bct-footer-copy {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.bct-footer-copy a {
+    color: #007bff !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+}
+
+.bct-footer-copy a:hover {
+    color: #0056b3 !important;
+    text-decoration: underline !important;
+}
+
+.bct-social-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 4px;
+}
+
+.bct-social-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #475569;
+    text-decoration: none !important;
+    font-size: 0.84rem;
+    font-weight: 600;
+}
+
+.bct-social-link i.fa-facebook {
+    color: #1877f2;
+    font-size: 1rem;
+}
+
+.bct-social-link i.fa-whatsapp {
+    color: #25d366;
+    font-size: 1.05rem;
+}
+
+@media (max-width: 576px) {
+    .login-card-container {
+        padding: 12px;
+        margin-top: 90px;
+    }
+    .login-card {
+        padding: 22px 20px;
+    }
+    .logo-badge {
+        width: 88px;
+        height: 88px;
+        margin-top: -44px;
+    }
+}

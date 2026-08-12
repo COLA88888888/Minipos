@@ -1,0 +1,171 @@
+.backup-page {
+    padding: 24px;
+    font-family: 'Inter', 'Outfit', sans-serif;
+}
+
+/* Stat Cards Styling - Matches User Screenshot Exactly */
+.stat-card-screenshot {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    padding: 16px 20px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+}
+.stat-card-screenshot .stat-card-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #4a5568;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+.stat-card-screenshot .stat-card-title i {
+    font-size: 1rem;
+}
+.stat-card-screenshot .stat-card-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+.stat-card-screenshot .stat-card-desc {
+    font-size: 0.72rem;
+    color: #718096;
+}
+
+/* Highlighted Red Stat Card - Matches rightmost card in user screenshot */
+.stat-card-screenshot.highlight-red {
+    background: #fff5f5;
+    border-color: #fed7d7;
+}
+.stat-card-screenshot.highlight-red .stat-card-title {
+    color: #c53030;
+}
+.stat-card-screenshot.highlight-red .stat-card-value {
+    color: #c53030;
+}
+.stat-card-screenshot.highlight-red .stat-card-desc {
+    color: #c53030;
+    opacity: 0.85;
+}
+
+.card-custom {
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 25px rgba(0,0,0,0.02);
+    background: #ffffff;
+}
+
+.btn-custom {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+}
+.btn-primary-custom {
+    background: #2563eb;
+    border: 1px solid #2563eb;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+.btn-primary-custom:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+.btn-secondary-custom {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
+}
+.btn-secondary-custom:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+/* Backup File Card Styling */
+.backup-file-card {
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    background: #ffffff;
+    transition: box-shadow 0.3s ease;
+    overflow: hidden;
+}
+.backup-file-card:hover {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+/* Backup Action Buttons (Prevent wrapping on mobile) */
+.btn-backup-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    text-decoration: none !important;
+}
+
+.btn-backup-action.download {
+    color: #16a34a;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+.btn-backup-action.download:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+.btn-backup-action.restore {
+    color: #2563eb;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+}
+.btn-backup-action.restore:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.btn-backup-action.delete {
+    color: #dc2626;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    width: 36px;
+    flex-shrink: 0;
+    padding: 6px 0;
+}
+.btn-backup-action.delete:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+/* Mobile responsive refinements */
+@media (max-width: 575.98px) {
+    .backup-page {
+        padding: 12px;
+    }
+    .stat-card-screenshot .stat-card-value {
+        font-size: 1.3rem !important;
+    }
+    .btn-custom {
+        font-size: 0.85rem;
+        padding: 8px 14px;
+    }
+    .btn-backup-action {
+        font-size: 0.7rem;
+        padding: 5px 6px;
+    }
+    .btn-backup-action.delete {
+        width: 30px;
+    }
+}

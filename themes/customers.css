@@ -1,0 +1,189 @@
+/* ============================================================
+   customers.css
+   CSS ສະເພາະໂມດູນ ຈັດການລູກຄ້າ (Customer Management)
+   ============================================================ */
+
+body {
+    background-color: #f8fafc;
+    font-family: 'Noto Sans Lao Looped', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.customer-card {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+.customer-card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 16px 20px;
+}
+
+/* Page Size Selector (ຊ້າຍມື, ບັອກສັ້ນລົງ) */
+.page-size-wrap {
+    position: relative;
+    width: 105px;
+}
+
+.page-size-wrap select {
+    height: 38px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    padding-left: 8px;
+    padding-right: 20px;
+    color: #475569;
+}
+
+.page-size-wrap select:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+/* Search Box (ຊິດຂວາມື) */
+.search-box-wrap {
+    position: relative;
+    width: 250px;
+}
+
+.search-box-wrap i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.search-box-wrap input {
+    padding-left: 36px;
+    height: 38px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.search-box-wrap input:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+.cust-code-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    border-radius: 6px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.cust-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* === Circular Blue Pagination === */
+.pagination-circle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.pagination-circle .page-item {
+    margin: 0;
+}
+
+.pagination-circle .page-link {
+    width: 38px;
+    height: 38px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border: 1px solid #edf2f7;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.pagination-circle .page-link:hover {
+    color: #2563eb;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+}
+
+.pagination-circle .page-item.active .page-link {
+    color: #ffffff !important;
+    background: #2563eb !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.45) !important;
+    transform: scale(1.04);
+}
+
+.pagination-circle .page-item.disabled .page-link {
+    color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    border-color: #f1f5f9 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+    opacity: 0.9;
+}
+
+.pagination-circle .page-link i {
+    font-size: 0.85rem;
+    font-weight: 900;
+}
+
+@media (max-width: 768px) {
+    .customer-card-header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center !important;
+    }
+    .page-size-wrap {
+        width: 105px !important;
+        flex-shrink: 0;
+    }
+    .search-box-wrap {
+        width: 100% !important;
+        flex: 1;
+    }
+}

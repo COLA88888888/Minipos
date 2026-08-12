@@ -1,0 +1,334 @@
+<?php
+// ============================================================
+// dashboard.php - UNIFIED MASTER LAYOUT (ລະບົບດາດສ໌ບອດຫຼັກ)
+// ============================================================
+session_start();
+
+// 1. ກວດສອບຄວາມປອດໄພ ແລະ ການເຂົ້າສູ່ລະບົບ
+if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSION['user_id'])) {
+    header('Location: ../auth/login.php?expired=1');
+    exit();
+}
+
+require_once __DIR__ . '/../config/db.php';
+
+$base_path = '../';
+$site_name = 'POS System - Corner Retail';
+$site_logo = '../assets/img/logo/logo.png';
+
+$display_name = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
+if ($display_name === '') {
+    $display_name = $_SESSION['username'] ?? 'admin';
+}
+
+$profile_img = $_SESSION['profile_img'] ?? 'default.png';
+if (empty($profile_img) || !file_exists(__DIR__ . '/../assets/img/users/' . $profile_img)) {
+    $profile_img = 'default.png';
+}
+$profile_img_path = '../assets/img/users/' . $profile_img;
+?>
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><?php echo htmlspecialchars($site_name); ?></title>
+  <link rel="shortcut icon" href="<?php echo $site_logo; ?>" type="image/x-icon">
+  
+  <script>
+    (function() {
+      try {
+        var savedSrc = sessionStorage.getItem('currentIframeSrc') || '';
+        var isPos = savedSrc.indexOf('pos.php') !== -1 || savedSrc.indexOf('pos/') !== -1;
+        if (isPos) {
+          document.documentElement.classList.add('sidebar-collapse');
+        }
+      } catch(e) {}
+    })();
+  </script>
+
+  <!-- Local Fonts & Styles -->
+  <link rel="stylesheet" href="../assets/css/local-font.css">
+  <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="../dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="../plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <link rel="stylesheet" href="../sweetalert/dist/sweetalert2.min.css">
+  <link rel="stylesheet" href="../assets/css/pages/menu-sidebar.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="../assets/css/global-custom.css?v=<?php echo time(); ?>">
+
+  <style>
+    /* Critical anti-flash scrollbar rules (Prevent native large scrollbar on refresh) */
+    html, body, .wrapper, .main-sidebar, .sidebar, .os-viewport, .os-content {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    html::-webkit-scrollbar, body::-webkit-scrollbar, .main-sidebar::-webkit-scrollbar, .sidebar::-webkit-scrollbar, .os-viewport::-webkit-scrollbar, .os-content::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+  </style>
+
+
+  <!-- Scripts -->
+  <script src="../sweetalert/dist/sweetalert2.all.min.js"></script>
+  <script src="../plugins/jquery/jquery.min.js"></script>
+  <script src="../plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+</head>
+<body class="hold-transition sidebar-mini sidebar-no-expand layout-fixed">
+<script>
+  if (document.documentElement.classList.contains('sidebar-collapse')) {
+    document.body.classList.add('sidebar-collapse');
+  }
+</script>
+
+<div class="wrapper">
+
+  <!-- ແຖບເມນູດ້ານເທິງ (Top Navigation Bar) -->
+  <nav class="main-header navbar navbar-expand navbar-white navbar-light justify-content-between">
+    <!-- Left side: Menu toggle -->
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" data-widget="pushmenu" href="#" role="button" style="color: #ffffff; font-size: 1.2rem;" title="ເມນູ">
+          <i class="fas fa-bars"></i>
+        </a>
+      </li>
+    </ul>
+
+    <!-- Right side: Logout button (Icon visible on Mobile, Icon + Text on Larger screens) -->
+    <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link text-white font-weight-bold" href="javascript:void(0);" onclick="confirmLogout()" title="ອອກຈາກລະບົບ" style="font-size: 1.15rem; color: #ffffff !important; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; transition: background 0.2s;">
+          <i class="fas fa-sign-out-alt" style="font-size: 1.25rem;"></i>
+          <span class="d-none d-sm-inline" style="font-size: 0.88rem;">ອອກຈາກລະບົບ</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <!-- /.navbar -->
+
+  <!-- ແຖບເມນູທາງຊ້າຍ (Unified Dynamic Sidebar) -->
+  <?php include __DIR__ . '/../layouts/sidebar.php'; ?>
+  
+  <script>
+    (function() {
+      // 1. Expand the saved active menu item synchronously during initial parse
+      var savedSrc = sessionStorage.getItem('currentIframeSrc') || 'home.php';
+      if (savedSrc) {
+        var links = document.querySelectorAll('.nav-sidebar a.nav-link');
+        for (var i = 0; i < links.length; i++) {
+          links[i].classList.remove('active');
+        }
+        for (var i = 0; i < links.length; i++) {
+          var href = links[i].getAttribute('href');
+          if (href && href !== '#' && (href === savedSrc || savedSrc.endsWith(href))) {
+            links[i].classList.add('active');
+            var treeview = links[i].closest('.nav-treeview');
+            if (treeview) {
+              var parentLiGroup = treeview.closest('.nav-item');
+              if (parentLiGroup) {
+                parentLiGroup.classList.add('menu-open');
+              }
+            }
+            break;
+          }
+        }
+      }
+    })();
+  </script>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="height: calc(100vh - 64px - 42px) !important;">
+    <iframe width="100%" height="100%" frameborder="0" name="frame" src="home.php"></iframe>
+    <script>
+      (function() {
+        var savedSrc = sessionStorage.getItem('currentIframeSrc');
+        if (savedSrc && savedSrc !== 'home.php') {
+          document.getElementsByName('frame')[0].src = savedSrc;
+        }
+      })();
+    </script>
+  </div>
+
+  <!-- Main Footer -->
+  <footer class="main-footer" style="background: #ffffff; border-top: 1px solid #e2e8f0; color: #475569; padding: 10px 20px; font-size: 0.88rem; height: 42px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+    <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+      <span>ລະບົບຂາຍ POS</span>
+    </div>
+    <div style="font-weight: 700; color: #64748b;">
+      <span>Version 3.8.26</span>
+    </div>
+  </footer>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- Bootstrap 4 -->
+<script src="../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../dist/js/adminlte.js"></script>
+
+<script>
+  $(function() {
+    // Disable hover expansion on sidebar
+    $('.main-sidebar').off('mouseenter mouseleave');
+
+    // Restore sidebar scroll position if available
+    var sidebarEl = document.querySelector('.sidebar');
+    if (sidebarEl && window.jQuery && jQuery.fn.overlayScrollbars) {
+      var os = $(sidebarEl).overlayScrollbars();
+      var savedScroll = sessionStorage.getItem('sidebarScrollTop');
+      if (os && savedScroll) {
+        os.scroll({ y: parseInt(savedScroll, 10) }, 0);
+      }
+    }
+
+    // ===== Exclusive Active Menu Highlight =====
+    var $sidebar = $('.nav-sidebar');
+    
+    $sidebar.on('click', '.nav-link', function() {
+      var href = $(this).attr('href');
+      
+      if (!href || href === '#' || $(this).closest('.nav-item').hasClass('has-treeview')) {
+        return;
+      }
+
+      $('.nav-sidebar .nav-link').removeClass('active');
+      $(this).addClass('active');
+
+      sessionStorage.setItem('currentIframeSrc', href);
+
+      if (sidebarEl && window.jQuery && jQuery.fn.overlayScrollbars) {
+        var osInstance = $(sidebarEl).overlayScrollbars();
+        if (osInstance && typeof osInstance.scroll === 'function') {
+          var scrollObj = osInstance.scroll();
+          var scrollTop = 0;
+          if (scrollObj) {
+            if (scrollObj.position && typeof scrollObj.position.y !== 'undefined') {
+              scrollTop = scrollObj.position.y;
+            } else if (typeof scrollObj.y !== 'undefined') {
+              scrollTop = scrollObj.y;
+            }
+          }
+          sessionStorage.setItem('sidebarScrollTop', scrollTop);
+        }
+      }
+    });
+
+    $('iframe[name="frame"]').on('load', function() {
+      try {
+        var path = this.contentWindow.location.pathname;
+        var search = this.contentWindow.location.search || '';
+        var fullTarget = path.substring(path.lastIndexOf('/') + 1) + search;
+        var page = path.substring(path.lastIndexOf('/') + 1);
+
+        var isMobile = window.innerWidth <= 992;
+
+        // Auto collapse sidebar strictly on POS sales page, expand on all other pages using PushMenu (Desktop only)
+        if (page && (page.indexOf('pos.php') !== -1 || page.indexOf('pos') !== -1)) {
+          if (!isMobile && window.jQuery && $.fn.PushMenu) {
+            $('[data-widget="pushmenu"]').PushMenu('collapse');
+          }
+          $('html, body').addClass('sidebar-collapse').removeClass('sidebar-closed sidebar-open');
+        } else if (page && page !== 'blank') {
+          if (!isMobile && window.jQuery && $.fn.PushMenu) {
+            $('[data-widget="pushmenu"]').PushMenu('expand');
+          }
+          $('html, body').removeClass('sidebar-collapse sidebar-closed sidebar-open');
+        }
+
+        if (page && page !== 'blank') {
+          var matched = false;
+          $('.nav-sidebar .nav-link[target="frame"]').each(function() {
+            var href = $(this).attr('href');
+            if (href && (href === fullTarget || href.endsWith(fullTarget))) {
+              $('.nav-sidebar .nav-link').removeClass('active');
+              $(this).addClass('active');
+              sessionStorage.setItem('currentIframeSrc', href);
+              matched = true;
+              return false;
+            }
+          });
+
+          if (!matched) {
+            $('.nav-sidebar .nav-link[target="frame"]').each(function() {
+              var href = $(this).attr('href');
+              if (href && (href === page || href.endsWith(page) || href.indexOf(page) !== -1)) {
+                $('.nav-sidebar .nav-link').removeClass('active');
+                $(this).addClass('active');
+                sessionStorage.setItem('currentIframeSrc', href);
+                return false;
+              }
+            });
+          }
+        }
+      } catch(e) {}
+    });
+
+    // ===== Collapsed Sidebar Treeview Dropdown Toggle =====
+    // ຕອນເຊື່ອງ sidebar ຖ້າກົດໄອຄອນທີ່ມີ ດັອບດາວ ໃຫ້ toggle ສະແດງໄອຄອນຍ່ອຍລົງມາເລີຍ
+    $sidebar.on('click', '.has-treeview > .nav-link', function(e) {
+      if ($('body').hasClass('sidebar-collapse')) {
+        e.preventDefault();
+        e.stopPropagation();
+        var $parent = $(this).closest('.has-treeview');
+        var $tree = $parent.children('.nav-treeview');
+        var isOpen = $parent.hasClass('menu-open');
+
+        if (isOpen) {
+          $parent.removeClass('menu-open menu-is-opening');
+          $tree.stop(true, true).slideUp(200);
+        } else {
+          $parent.addClass('menu-open menu-is-opening');
+          $tree.stop(true, true).slideDown(200);
+        }
+      }
+    });
+
+    // PushMenu event sync
+    $(document).on('collapsed.lte.pushmenu', function() {
+      $('html, body').addClass('sidebar-collapse');
+    });
+    $(document).on('shown.lte.pushmenu', function() {
+      $('html, body').removeClass('sidebar-collapse');
+    });
+
+    // ===== Auto-close sidebar on mobile when menu item clicked =====
+    // ເຊື່ອງ sidebar ອັດຕະໂນມັດ ເມື່ອກົດ menu ໃນໜ້າຈໍ mobile (≤992px)
+    $(document).on('click', '.nav-sidebar .nav-link', function() {
+      var isMobile = window.innerWidth <= 992;
+      var href = $(this).attr('href');
+      var isLeafItem = href && href !== '#' && !$(this).closest('.nav-item').hasClass('has-treeview');
+
+      if (isMobile && isLeafItem) {
+        $('body').removeClass('sidebar-open sidebar-is-opening');
+        if (window.jQuery && $.fn.PushMenu) {
+          try { $('[data-widget="pushmenu"]').PushMenu('collapse'); } catch(err) {}
+          try { $('[data-widget="pushmenu"]').PushMenu('close'); } catch(err) {}
+        }
+      }
+    });
+
+  });
+
+  function confirmLogout() {
+    Swal.fire({
+      title: 'ຢືນຢັນການອອກຈາກລະບົບ',
+      text: 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '<i class="fas fa-sign-out-alt mr-1"></i> ອອກຈາກລະບົບ',
+      cancelButtonText: 'ຍົກເລີກ',
+      heightAuto: false
+    }).then(function(result) {
+      if (result.isConfirmed) {
+        sessionStorage.clear();
+        window.location.href = '../auth/logout.php';
+      }
+    });
+  }
+</script>
+</body>
+</html>

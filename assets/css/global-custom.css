@@ -1,0 +1,436 @@
+body { font-family: 'Noto Sans Lao Looped', sans-serif; }
+* { font-family: 'Noto Sans Lao Looped', sans-serif; }
+
+/* ===== GLOBAL BUTTON & SAVE BUTTON CURSOR POINTER ===== */
+button,
+.btn,
+button[type="submit"],
+input[type="submit"],
+input[type="button"],
+.btn-primary,
+.btn-success,
+.btn-warning,
+.btn-danger,
+.btn-info,
+.btn-secondary,
+.btn-light,
+.btn-dark,
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-warning,
+.btn-outline-danger,
+.btn-outline-info,
+.btn-outline-secondary,
+.modal-footer .btn,
+.modal-footer button {
+    cursor: pointer !important;
+}
+
+button:hover,
+.btn:hover,
+button[type="submit"]:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+.modal-footer .btn:hover,
+.modal-footer button:hover {
+    cursor: pointer !important;
+}
+
+/* ===== VIBRANT SELECT CUSTOMER BUTTON ===== */
+.btn-select-customer,
+button.btn-select-customer,
+.table .btn-select-customer {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 6px 16px !important;
+    font-size: 0.86rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease-in-out !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+.btn-select-customer:hover,
+button.btn-select-customer:hover,
+.table .btn-select-customer:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+    background-color: #1d4ed8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.50) !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-select-customer i,
+button.btn-select-customer i {
+    font-size: 0.90rem !important;
+    color: #ffffff !important;
+}
+
+/* Quick Cash Shortcut Pill Buttons */
+.btn-quick-cash,
+button.btn-quick-cash {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #334155 !important;
+    border-radius: 8px !important;
+    padding: 7px 12px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03) !important;
+    transition: all 0.15s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+.btn-quick-cash:hover,
+button.btn-quick-cash:hover {
+    background: #eff6ff !important;
+    border-color: #2563eb !important;
+    color: #2563eb !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* ===== SIDEBAR SCROLLABLE - ເຊື່ອງ scrollbar ເມື່ອ content ຟິດ, ສະແດງເມື່ອ content ຍາວ ===== */
+.main-sidebar .sidebar {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: calc(100vh - 70px) !important; /* ລົບຄວາມສູງ header/logo */
+    scrollbar-width: thin;                  /* Firefox: ສະແດງ scrollbar ຜອມ */
+    scrollbar-color: rgba(255,255,255,0.25) transparent;  /* Firefox: ສີ scrollbar */
+}
+
+/* Chrome/Edge/Safari - Sidebar Scrollbar ສວຍງາມ ສີຂາວໂປ່ງ */
+.main-sidebar .sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.main-sidebar .sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.main-sidebar .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+.main-sidebar .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+/* ເຊື່ອງ scrollbar ໃນລັກສະນະ overlay ເມື່ອ content ຍັງຟິດ */
+.main-sidebar .sidebar:not(:hover)::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+/* ===== SIDEBAR USER PANEL & BRAND LOGO CENTERING ===== */
+.main-sidebar .user-panel {
+    display: flex;
+    align-items: center;
+    padding: 0 16px 12px 16px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Collapsed State (sidebar-collapse / mini sidebar) - Desktop Only Stable Centering */
+@media (min-width: 768px) {
+    .sidebar-collapse .main-sidebar .user-panel,
+    .sidebar-collapse .main-sidebar:hover .user-panel {
+        justify-content: center !important;
+        padding: 12px 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    .sidebar-collapse .main-sidebar .user-panel .image,
+    .sidebar-collapse .main-sidebar:hover .user-panel .image {
+        margin: 0 auto !important;
+        padding: 0 !important;
+        float: none !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        width: 100% !important;
+        flex-shrink: 0 !important;
+    }
+
+    .sidebar-collapse .main-sidebar .user-panel .image img,
+    .sidebar-collapse .main-sidebar:hover .user-panel .image img {
+        margin: 0 auto !important;
+        display: block !important;
+    }
+
+    .sidebar-collapse .main-sidebar .user-panel .info,
+    .sidebar-collapse .main-sidebar:hover .user-panel .info {
+        display: none !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .sidebar-collapse .main-sidebar .brand-link,
+    .sidebar-collapse .main-sidebar:hover .brand-link {
+        justify-content: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .sidebar-collapse .main-sidebar .brand-link .brand-text,
+    .sidebar-collapse .main-sidebar:hover .brand-link .brand-text {
+        display: none !important;
+    }
+}
+
+
+
+
+/* Mobile Screen Full Width Fix (0 Margin Offset) */
+@media (min-width: 768px) {
+    .main-sidebar,
+    .main-sidebar:hover,
+    body.sidebar-closed .main-sidebar,
+    body.sidebar-closed .main-sidebar:hover,
+    body.sidebar-collapse .main-sidebar,
+    body.sidebar-collapse .main-sidebar:hover,
+    html.sidebar-collapse .main-sidebar,
+    html.sidebar-collapse .main-sidebar:hover {
+        display: block !important;
+        left: 0 !important;
+        margin-left: 0 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .main-header,
+    .main-header.navbar,
+    .content-wrapper,
+    body.sidebar-collapse .main-header,
+    body.sidebar-collapse .content-wrapper,
+    html.sidebar-collapse .main-header,
+    html.sidebar-collapse .content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .report-page .card .p-3.border-bottom > div:first-child,
+    .report-page .card .p-3.border-bottom > div:last-child {
+        width: 100% !important;
+        display: block !important;
+        text-align: left !important;
+        justify-content: flex-start !important;
+    }
+}
+
+/* Custom Beautiful Blue Rounded Pagination (Inline Cache-Buster Override) */
+.pagination {
+    gap: 6px !important;
+    border-radius: 0 !important;
+    border: none !important;
+}
+.pagination .page-item {
+    margin: 0 !important;
+}
+.pagination .page-link {
+    border: 1px solid #dee2e6 !important;
+    color: #007bff !important;
+    background-color: #fff !important;
+    border-radius: 50% !important; /* Make buttons circular */
+    width: 32px !important; /* Smaller circular button */
+    height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+    font-size: 0.8rem !important; /* Smaller font size */
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    padding: 0 !important; /* Reset padding to keep perfectly circular */
+}
+.pagination .page-item.active .page-link {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: #fff !important;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.25) !important;
+}
+.pagination .page-item:not(.active):not(.disabled) .page-link:hover {
+    background-color: #e6f0ff !important;
+    border-color: #b3d7ff !important;
+    color: #0056b3 !important;
+    transform: translateY(-1px) !important;
+}
+.pagination .page-item.disabled .page-link {
+    color: #6c757d !important;
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+    opacity: 0.6 !important;
+}
+
+@media (max-width: 767.98px) {
+    .pagination .page-link {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Premium Global Preloader Styles */
+#global-preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.98);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+#global-preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.preloader-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.preloader-logo {
+    font-size: 3.5rem;
+    color: #007bff;
+    margin-bottom: 20px;
+    animation: logoPulse 2s infinite ease-in-out;
+}
+/* 8-Dots Circular Rotating Gradient Spinner Matching User Screenshot */
+.lao-dots-spinner {
+    display: inline-block;
+    position: relative;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 18px;
+}
+.lao-dots-spinner div {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #2563eb;
+    animation: laoDotsPulse 1.2s linear infinite;
+}
+.lao-dots-spinner div:nth-child(1) { top: 2px; left: 22px; animation-delay: 0s; background: #60a5fa; }
+.lao-dots-spinner div:nth-child(2) { top: 8px; left: 36px; animation-delay: -0.15s; background: #93c5fd; }
+.lao-dots-spinner div:nth-child(3) { top: 22px; left: 42px; animation-delay: -0.3s; background: #bfdbfe; }
+.lao-dots-spinner div:nth-child(4) { top: 36px; left: 36px; animation-delay: -0.45s; background: #dbeafe; }
+.lao-dots-spinner div:nth-child(5) { top: 42px; left: 22px; animation-delay: -0.6s; background: #3b82f6; }
+.lao-dots-spinner div:nth-child(6) { top: 36px; left: 8px; animation-delay: -0.75s; background: #2563eb; }
+.lao-dots-spinner div:nth-child(7) { top: 22px; left: 2px; animation-delay: -0.9s; background: #1d4ed8; }
+.lao-dots-spinner div:nth-child(8) { top: 8px; left: 8px; animation-delay: -1.05s; background: #1e40af; }
+
+@keyframes laoDotsPulse {
+    0%, 20%, 80%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.35); opacity: 0.2; }
+}
+
+.preloader-text {
+    font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif;
+    font-size: 1.15rem;
+    color: #334155;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Table Action Buttons - Icon Only (No Borders or Background Boxes) */
+.table td .btn,
+.table-custom td .btn,
+.table td button,
+.table-custom td button {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.2s ease, opacity 0.2s ease !important;
+    margin: 0 2px !important;
+}
+
+.table td .btn:hover,
+.table-custom td .btn:hover,
+.table td button:hover,
+.table-custom td button:hover {
+    transform: scale(1.2) !important;
+    opacity: 0.85 !important;
+    background: transparent !important;
+}
+
+/* Icon Colors & Sizing */
+.table td .btn-view-details i,
+.table td .btn-outline-primary i,
+.table-custom td .btn-outline-primary i,
+.table td .btn-info i,
+.table-custom td .btn-primary i {
+    color: #007bff !important; /* Blue for View/Eye/Shield */
+    font-size: 1.2rem !important;
+}
+
+.table td .btn-edit i,
+.table td .btn-outline-info i,
+.table td .btn-warning i {
+    color: #17a2b8 !important; /* Teal/Cyan for Edit */
+    font-size: 1.2rem !important;
+}
+
+.table td .btn-delete i,
+.table td .btn-outline-danger i,
+.table td .btn-danger i {
+    color: #dc3545 !important; /* Red for Delete/Trash */
+    font-size: 1.2rem !important;
+}
+
+/* Responsive Mobile Typography & Button Scaling */
+@media (max-width: 576px) {
+    html, body {
+        font-size: 13.5px !important;
+    }
+    .btn {
+        font-size: 0.8rem !important;
+        padding: 0.35rem 0.75rem !important;
+        border-radius: 6px !important;
+    }
+    .btn i {
+        font-size: 0.75rem !important;
+    }
+    .card-header h5, .card-title, h5 {
+        font-size: 0.95rem !important;
+    }
+    .table {
+        font-size: 0.8rem !important;
+    }
+    .table th, .table td {
+        padding: 0.5rem 0.4rem !important;
+    }
+    .badge {
+        font-size: 0.72rem !important;
+        padding: 0.3em 0.55em !important;
+    }
+    .container-fluid.p-4, .container.p-4, .p-4 {
+        padding: 0.85rem !important;
+    }
+}

@@ -1,0 +1,190 @@
+<?php
+session_start();
+
+// Dynamic base_path calculation based on URL request path
+$scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+$base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
+
+require_once __DIR__ . '/../../config/db.php';
+
+// Check if logged in and has access to users management
+if (empty($_SESSION['user_id']) || (!hasPermission('users') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+    echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+    exit();
+}
+
+// Pagination setup
+$limit = 10;
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$total_records = (int) $pdo->query("SELECT COUNT(*) FROM tbuser")->fetchColumn();
+$total_pages = max(1, ceil($total_records / $limit));
+if ($page > $total_pages) {
+    $page = $total_pages;
+}
+$offset = ($page - 1) * $limit;
+
+// Fetch paginated users
+$stmtUsers = $pdo->prepare("SELECT * FROM tbuser ORDER BY Id ASC LIMIT ? OFFSET ?");
+$stmtUsers->bindValue(1, $limit, PDO::PARAM_INT);
+$stmtUsers->bindValue(2, $offset, PDO::PARAM_INT);
+$stmtUsers->execute();
+$allUsers = $stmtUsers->fetchAll();
+
+require_once __DIR__ . '/../../layouts/header.php';
+?>
+
+<link rel="stylesheet" href="../../themes/users.css?v=<?php echo filemtime(__DIR__ . '/../../themes/users.css'); ?>">
+
+<div class="content-wrapper bg-light">
+  <!-- Content Header (Page header) -->
+  <section class="content-header py-3">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <div class="col-sm-6">
+          <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped'; font-size:  18px;">
+            <i class="fas fa-users-cog text-primary mr-2"></i> ຈັດການຜູ້ນຳໃຊ້ລະບົບ
+          </h5>
+        </div>
+        <div class="col-sm-6 text-right">
+          <button type="button" class="btn btn-primary px-2 py-1" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px;">
+            <i class="fas fa-user-plus mr-1"></i> ເພີ່ມຜູ້ໃຊ້
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main content -->
+  <section class="content pb-5">
+    <div class="container-fluid">
+      <!-- MAIN USERS TABLE CARD -->
+      <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
+        <div class="card-header bg-white py-3 border-0">
+          <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; color: #0f172a;">
+            ລາຍງານຜູ້ໃຊ້ງານທັງໝົດ
+          </h6>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 text-nowrap">
+              <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-uppercase: true;">
+                <tr>
+                  <th class="text-center py-3" style="width: 50px;">ລຳດັບ</th>
+                  <th class="py-3">ລະຫັດຜູ້ໃຊ้</th>
+                  <th class="text-center py-3" style="width: 80px;">ຮູບພາບ</th>
+                  <th class="py-3">ຊື່ຜູ້ໃຊ້ງານ</th>
+                  <th class="py-3">ເບີໂທລະສັບ</th>
+                  <th class="text-center py-3">ສະຖານະ / ຕຳແໜ່ງ</th>
+                  <th class="text-center py-3" style="width: 140px;">ຈັດການ</th>
+                </tr>
+              </thead>
+              <tbody style="font-size: 0.95rem;">
+                <?php if (!empty($allUsers)): ?>
+                  <?php 
+                  $idx = $offset + 1;
+                  foreach ($allUsers as $u): 
+                    $imgName = !empty($u['profile_img']) ? $u['profile_img'] : 'default.png';
+                    $imgPath = $base_path . 'assets/img/users/' . $imgName;
+                    $userJson = htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8');
+                    $userStatus = trim($u['status'] ?? $u['userstatus'] ?? 'ພະນັກງານ');
+                  ?>
+                    <tr>
+                      <td class="text-center align-middle font-weight-bold text-muted"><?php echo $idx++; ?></td>
+                      <td class="align-middle text-secondary font-weight-bold"><?php echo htmlspecialchars($u['user_code'] ?: '-'); ?></td>
+                      <td class="text-center align-middle">
+                        <img src="<?php echo $base_path . 'assets/img/users/' . htmlspecialchars($imgName); ?>" class="shadow-sm" style="width: 44px; height: 44px; object-fit: cover; border-radius: 8px; border: 2px solid #e2e8f0;">
+                      </td>
+                      <td class="align-middle font-weight-bold text-dark">
+                        <?php echo htmlspecialchars($u['fname'] ?: ($u['username'] ?? '')); ?>
+                      </td>
+                      <td class="align-middle text-muted"><?php echo htmlspecialchars($u['tel'] ?: '-'); ?></td>
+                      <td class="text-center align-middle">
+                        <?php if ($userStatus === 'ຜູ້ບໍລິຫານ' || $userStatus === 'Admin'): ?>
+                          <span class="badge badge-primary px-3 py-1" style="border-radius: 6px;"><i class="fas fa-user-shield mr-1"></i> ຜູ້ບໍລິຫານ</span>
+                        <?php elseif ($userStatus === 'ຄົນຈັດການບັນຊີ' || $userStatus === 'ຜູ້ກວດສອບ'): ?>
+                          <span class="badge px-3 py-1" style="background-color: #8b5cf6; color: white; border-radius: 6px;"><i class="fas fa-calculator mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
+                        <?php elseif ($userStatus === 'ພະນັກງານຂາຍ' || $userStatus === 'ຄົນຂາຍ'): ?>
+                          <span class="badge px-3 py-1" style="background-color: #10b981; color: white; border-radius: 6px;"><i class="fas fa-cash-register mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
+                        <?php elseif ($userStatus === 'ພະນັກງານຄັງ'): ?>
+                          <span class="badge px-3 py-1" style="background-color: #0284c7; color: white; border-radius: 6px;"><i class="fas fa-boxes mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
+                        <?php else: ?>
+                          <span class="badge badge-secondary px-3 py-1" style="border-radius: 6px;"><?php echo htmlspecialchars($userStatus); ?></span>
+                        <?php endif; ?>
+                      </td>
+                      <td class="text-center align-middle">
+                        <div class="btn-group btn-group-sm">
+                          <!-- View Details Button -->
+                          <button type="button" class="btn btn-outline-info" title="ເບິ່ງລາຍລະອຽດ" onclick='openViewModal(<?php echo $userJson; ?>)'>
+                            <i class="fas fa-eye"></i>
+                          </button>
+                          <!-- Edit Button -->
+                          <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $userJson; ?>)'>
+                            <i class="fas fa-edit"></i>
+                          </button>
+                          <!-- Delete Button -->
+                          <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteUser(<?php echo $u['Id']; ?>, '<?php echo htmlspecialchars(addslashes($u['username'])); ?>')">
+                            <i class="fas fa-trash-alt"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php else: ?>
+                  <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                      <i class="fas fa-users-slash fa-3x mb-3 text-secondary d-block"></i>
+                      ບໍ່ພົບຂໍ້ມູນຜູ້ໃຊ້ງານໃນລະບົບ
+                    </td>
+                  </tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGINATION FOOTER (FAR RIGHT) -->
+        <div class="card-footer bg-white py-3 px-4 border-top d-flex justify-content-between align-items-center w-100 flex-wrap" style="gap: 12px;">
+          <!-- <small class="text-muted font-weight-bold" style="font-size: 0.85rem;">
+            <i class="fas fa-file-alt text-primary mr-1"></i> ສະແດງໜ້າ <?php echo $page; ?> ຈາກທັງໝົດ <?php echo max(1, $total_pages); ?> ໜ້າ (ທັງໝົດ <?php echo $total_records; ?> ບັນຊີ)
+          </small> -->
+          <div class="ml-auto d-flex justify-content-end align-items-center">
+            <ul class="pagination pagination-sm m-0">
+              <li class="page-item <?php echo ($page <= 1) ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>" title="ໜ້າກ່ອນໜ້າ">
+                  <i class="fas fa-chevron-left"></i>
+                </a>
+              </li>
+              <?php for ($p = 1; $p <= max(1, $total_pages); $p++): ?>
+                <li class="page-item <?php echo ($p === $page) ? 'active' : ''; ?>">
+                  <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+                </li>
+              <?php endfor; ?>
+              <li class="page-item <?php echo ($page >= $total_pages) ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?php echo min(max(1, $total_pages), $page + 1); ?>" title="ໜ້າຖັດໄປ">
+                  <i class="fas fa-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- INCLUDE MODAL COMPONENTS -->
+<?php
+require_once __DIR__ . '/components/view_modal.php';
+require_once __DIR__ . '/components/form_add_user.php';
+require_once __DIR__ . '/components/form_edit_user.php';
+?>
+
+<!-- JAVASCRIPT LOGIC -->
+<script>
+  var BASE_PATH = '<?php echo $base_path; ?>';
+  var API_URL   = '<?php echo $base_path; ?>pages/users_manage/api_user.php';
+</script>
+<script src="js/users.js?v=<?php echo filemtime(__DIR__ . '/js/users.js'); ?>"></script>
+
+<?php require_once __DIR__ . '/../../layouts/footer.php'; ?>

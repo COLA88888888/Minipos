@@ -1,0 +1,124 @@
+/* ============================================================
+   categories.css
+   CSS ສະເພາະໂມດູນ ປະເພດສິນຄ້າ & ບ່ອນວາງສິນຄ້າ (Categories & Shelves)
+   ============================================================ */
+
+body {
+    background-color: #f8fafc;
+    font-family: 'Noto Sans Lao Looped', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.category-stat-card {
+    border-radius: 14px;
+    border: none;
+    background: #ffffff;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+    transition: all 0.2s ease;
+}
+
+.category-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(15, 23, 42, 0.08);
+}
+
+.category-card {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+.category-card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 16px 20px;
+}
+
+.search-box-wrap {
+    position: relative;
+}
+
+.search-box-wrap i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.search-box-wrap input {
+    padding-left: 36px;
+    height: 38px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.search-box-wrap input:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.table-custom {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table-custom th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.table-custom td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    font-size: 0.92rem;
+    color: #1e293b;
+}
+
+.table-custom tr:last-child td {
+    border-bottom: none;
+}
+
+.table-custom tr:hover td {
+    background-color: #f8fafc;
+}
+
+.cat-id-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    transform: scale(1.08);
+}

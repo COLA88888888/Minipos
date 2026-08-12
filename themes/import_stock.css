@@ -1,0 +1,217 @@
+/* ============================================================
+   import_stock.css
+   CSS ສະເພາະໂມດູນ ຈັດການຮັບສິນຄ້າເຂົ້າ (Stock Import Management)
+   ============================================================ */
+
+body {
+    background-color: #f8fafc;
+    font-family: 'Noto Sans Lao Looped', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.import-card {
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+.import-card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 16px 20px;
+}
+
+.calc-summary-box {
+    background: linear-gradient(135deg, #f8fafc, #eff6ff);
+    border: 1px dashed #bfdbfe;
+    border-radius: 10px;
+    padding: 14px 18px;
+}
+
+/* Page Size Selector */
+.page-size-wrap {
+    position: relative;
+    width: 105px;
+}
+
+.page-size-wrap select {
+    height: 38px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+    padding-left: 8px;
+    padding-right: 20px;
+    color: #475569;
+}
+
+.page-size-wrap select:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+/* Search Box */
+.search-box-wrap {
+    position: relative;
+    width: 250px;
+}
+
+.search-box-wrap i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.search-box-wrap input {
+    padding-left: 36px;
+    height: 38px;
+    font-size: 0.88rem;
+    border-radius: 6px;
+    border: 1.5px solid #e2e8f0;
+    background-color: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.search-box-wrap input:focus {
+    background-color: #ffffff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    outline: none;
+}
+
+.invoice-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 10px;
+    border-radius: 6px;
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+/* === Circular Blue Pagination (ສີຟ້າວົງມົນ) === */
+.pagination-circle,
+.modal .pagination-circle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.pagination-circle .page-item,
+.modal .pagination-circle .page-item {
+    margin: 0 !important;
+}
+
+.pagination-circle .page-link,
+.modal .pagination-circle .page-link {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 0.9rem !important;
+    font-weight: 700 !important;
+    color: #475569 !important;
+    background-color: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.pagination-circle .page-link:hover,
+.modal .pagination-circle .page-link:hover {
+    color: #2563eb !important;
+    background-color: #eff6ff !important;
+    border-color: #93c5fd !important;
+}
+
+.pagination-circle .page-item.active .page-link,
+.modal .pagination-circle .page-item.active .page-link {
+    color: #ffffff !important;
+    background-color: #2563eb !important;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+}
+
+.pagination-circle .page-item.disabled .page-link,
+.modal .pagination-circle .page-item.disabled .page-link {
+    color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    box-shadow: none !important;
+}
+
+.pagination-circle .page-link i,
+.modal .pagination-circle .page-link i {
+    font-size: 0.85rem !important;
+    font-weight: 900 !important;
+}
+
+@media (max-width: 768px) {
+    .import-card-header {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        align-items: center !important;
+    }
+    .page-size-wrap {
+        width: 105px !important;
+        flex-shrink: 0;
+    }
+    .search-box-wrap {
+        width: 100% !important;
+        flex: 1;
+    }
+}
+
+/* === Clean & Modern Green Modal Select Button === */
+.btn-modal-select-green {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+    border: none !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.15s ease !important;
+    cursor: pointer !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-modal-select-green:hover {
+    background-color: #059669 !important;
+    color: #ffffff !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-modal-select-green i {
+    color: #ffffff !important;
+    font-size: 1rem !important;
+}
+
