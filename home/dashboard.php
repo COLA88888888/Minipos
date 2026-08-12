@@ -95,12 +95,11 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
       </li>
     </ul>
 
-    <!-- Right side: Logout button (Icon visible on Mobile, Icon + Text on Larger screens) -->
-    <ul class="navbar-nav ml-auto">
+    <!-- Right side: Logout button (Visible on Mobile/Tablet ONLY, hidden on Desktop PC) -->
+    <ul class="navbar-nav ml-auto d-lg-none">
       <li class="nav-item">
         <a class="nav-link text-white font-weight-bold" href="javascript:void(0);" onclick="confirmLogout()" title="ອອກຈາກລະບົບ" style="font-size: 1.15rem; color: #ffffff !important; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; transition: background 0.2s;">
-          <i class="fas fa-sign-out-alt" style="font-size: 1.25rem;"></i>
-          <span class="d-none d-sm-inline" style="font-size: 0.88rem;">ອອກຈາກລະບົບ</span>
+          <i class="fas fa-power-off" style="font-size: 1.25rem; color: #ffffff;"></i>
         </a>
       </li>
     </ul>
@@ -313,13 +312,13 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
 
   function confirmLogout() {
     Swal.fire({
-      title: 'ຢືນຢັນການອອກຈາກລະບົບ',
-      text: 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?',
+      title: '<span style="font-size:1.15rem; font-weight:700; color:#1e293b;">ຢືນຢັນການອອກຈາກລະບົບ</span>',
+      html: '<div style="font-size:0.90rem; color:#475569; font-weight:600; margin-top:4px;">ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?</div>',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#2563eb',
+      confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: '<i class="fas fa-sign-out-alt mr-1"></i> ອອກຈາກລະບົບ',
+      confirmButtonText: '<i class="fas fa-power-off mr-1"></i> ອອກຈາກລະບົບ',
       cancelButtonText: 'ຍົກເລີກ',
       heightAuto: false
     }).then(function(result) {
