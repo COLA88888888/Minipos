@@ -55,8 +55,8 @@ function filterCustomersList() {
         <td>${c.phone || '-'}</td>
         <td class="small text-muted">${c.address || '-'}</td>
         <td class="text-center">
-          <button class="btn btn-select-customer font-weight-bold" onclick='selectCustomer(${jsonStr})'>
-            <i class="fas fa-check-circle"></i> ເລືອກ
+          <button type="button" class="btn" onclick='selectCustomer(${jsonStr})' style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; background-color: #2563eb !important; color: #ffffff !important; border: none !important; border-radius: 20px !important; padding: 5px 14px !important; font-size: 0.82rem !important; font-weight: 700 !important; box-shadow: 0 3px 8px rgba(37, 99, 235, 0.30) !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px !important; line-height: 1.2 !important; white-space: nowrap !important;">
+            <i class="fas fa-check-circle mr-1" style="color: #ffffff !important; font-size: 0.85rem !important;"></i> <span style="color: #ffffff !important;">ເລືອກ</span>
           </button>
         </td>
       </tr>
@@ -64,16 +64,84 @@ function filterCustomersList() {
   });
 }
 
+var matchedExistingCustomer = null;
+
+function checkExistingCustomerByPhone() {
+  var rawPhone = ($('#newCusPhone').val() || '').trim();
+  var cleanedPhone = rawPhone.replace(/\D/g, '');
+  
+  matchedExistingCustomer = null;
+  $('#existingCustomerAlert').addClass('d-none');
+  
+  if (cleanedPhone.length >= 6) {
+    var found = allCustomers.find(function(c) {
+      if (!c.phone) return false;
+      var p = c.phone.replace(/\D/g, '');
+      return p.length >= 6 && (p === cleanedPhone || p.endsWith(cleanedPhone) || cleanedPhone.endsWith(p));
+    });
+
+    if (found) {
+      matchedExistingCustomer = found;
+      $('#existingCusInfoText').text(found.customer_name + ' (' + (found.phone || '-') + ')');
+      $('#existingCustomerAlert').removeClass('d-none');
+      $('#newCusName').val(found.customer_name);
+      $('#newCusCode').val(found.customer_code || '');
+      $('#newCusAddress').val(found.address || '');
+    }
+  }
+}
+
+$(document).on('click', '#btnSelectExistingCus', function() {
+  if (matchedExistingCustomer) {
+    selectCustomer(matchedExistingCustomer);
+    $('#addCustomerModal').modal('hide');
+    Swal.fire({
+      icon: 'success',
+      title: 'ເລືອກລູກຄ້າເກົ່າສຳເລັດ!',
+      text: 'ເລືອກ: ' + matchedExistingCustomer.customer_name + ' ແລ້ວ',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }
+});
+
 function openAddCustomerModal() {
+  matchedExistingCustomer = null;
+  $('#existingCustomerAlert').addClass('d-none');
   $('#newCusCode').val('');
   $('#newCusName').val('');
   $('#newCusPhone').val('');
   $('#newCusAddress').val('');
   $('#addCustomerModal').modal('show');
+  setTimeout(function() { $('#newCusPhone').focus(); }, 400);
 }
 
 function submitQuickAddCustomer() {
-  var name = $('#newCusName').val().trim();
+  var phone = $('#newCusPhone').val().trim();
+  var name  = $('#newCusName').val().trim();
+
+  // Check if phone matches an existing customer
+  if (phone) {
+    var cleanedPhone = phone.replace(/\D/g, '');
+    var existing = allCustomers.find(function(c) {
+      if (!c.phone) return false;
+      var p = c.phone.replace(/\D/g, '');
+      return p.length >= 6 && p === cleanedPhone;
+    });
+
+    if (existing) {
+      selectCustomer(existing);
+      $('#addCustomerModal').modal('hide');
+      Swal.fire({
+        icon: 'info',
+        title: 'ພົບຂໍ້ມູນລູກຄ້າເກົ່າ!',
+        text: 'ລະບົບໄດ້ເລືອກລູກຄ້າເກົ່າ: "' + existing.customer_name + '" ໃຫ້ອັດຕະໂນມັດແລ້ວ',
+        confirmButtonColor: '#2563eb'
+      });
+      return;
+    }
+  }
+
   if (!name) {
     Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: 'ກະລຸນາປ້ອນຊື່ລູກຄ້າ!' });
     return;
@@ -86,7 +154,7 @@ function submitQuickAddCustomer() {
       action: 'add_customer_ajax',
       customer_code: $('#newCusCode').val().trim(),
       customer_name: name,
-      phone: $('#newCusPhone').val().trim(),
+      phone: phone,
       address: $('#newCusAddress').val().trim()
     },
     dataType: 'json',

@@ -63,16 +63,26 @@
       <div class="modal-body p-4">
         <form id="quickAddCustomerForm">
           <div class="form-group mb-3">
+            <label class="font-weight-bold small text-dark">ເບີໂທລະສັບ: <span class="text-primary">(ພິມເບີໂທເພື່ອຄົ້ນຫາລູກຄ້າເກົ່າ)</span></label>
+            <input type="text" id="newCusPhone" class="form-control font-weight-bold" placeholder="020 XXXXXXXX" oninput="checkExistingCustomerByPhone()">
+          </div>
+          <div id="existingCustomerAlert" class="alert alert-info py-2 px-3 mb-3 d-none" style="border-radius: 8px; font-size: 0.85rem;">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <i class="fas fa-info-circle mr-1"></i> ພົບຂໍ້ມູນລູກຄ້າເກົ່າ: <strong id="existingCusInfoText"></strong>
+              </div>
+              <button type="button" class="btn btn-sm btn-primary font-weight-bold ml-2 py-0 px-2" id="btnSelectExistingCus" style="font-size: 0.78rem;">
+                <i class="fas fa-check-circle mr-1"></i> ເລືອກລູກຄ້າເກົ່ານີ້
+              </button>
+            </div>
+          </div>
+          <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">ລະຫັດລູກຄ້າ:</label>
             <input type="text" id="newCusCode" class="form-control" placeholder="CUS-XXXX">
           </div>
           <div class="form-group mb-3">
             <label class="font-weight-bold small text-dark">ຊື່ ແລະ ນາມສະກຸນ: <span class="text-danger">*</span></label>
             <input type="text" id="newCusName" class="form-control" placeholder="ປ້ອນຊື່ລູກຄ້າ" required>
-          </div>
-          <div class="form-group mb-3">
-            <label class="font-weight-bold small text-dark">ເບີໂທລະສັບ:</label>
-            <input type="text" id="newCusPhone" class="form-control" placeholder="020 XXXXXXXX">
           </div>
           <div class="form-group mb-0">
             <label class="font-weight-bold small text-dark">ທີ່ຢູ່:</label>
@@ -82,7 +92,7 @@
       </div>
       <div class="modal-footer border-0 bg-light p-3">
         <button type="button" class="btn btn-light font-weight-bold" data-dismiss="modal">ຍົກເລີກ</button>
-        <button type="button" class="btn btn-success font-weight-bold px-4" onclick="submitQuickCustomer()">
+        <button type="button" class="btn btn-success font-weight-bold px-4" onclick="submitQuickAddCustomer()">
           <i class="fas fa-save mr-1"></i> ບັນທຶກ
         </button>
       </div>

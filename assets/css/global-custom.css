@@ -39,37 +39,41 @@ input[type="button"]:hover,
 /* ===== VIBRANT SELECT CUSTOMER BUTTON ===== */
 .btn-select-customer,
 button.btn-select-customer,
-.table .btn-select-customer {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+.table .btn-select-customer,
+.modal-body .btn-select-customer {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
     background-color: #2563eb !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 8px !important;
-    padding: 6px 16px !important;
-    font-size: 0.86rem !important;
+    border-radius: 20px !important;
+    padding: 5px 14px !important;
+    font-size: 0.82rem !important;
     font-weight: 700 !important;
-    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35) !important;
+    box-shadow: 0 3px 8px rgba(37, 99, 235, 0.30) !important;
     cursor: pointer !important;
-    transition: all 0.2s ease-in-out !important;
+    transition: all 0.2s ease !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
+    gap: 4px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
 }
 
 .btn-select-customer:hover,
 button.btn-select-customer:hover,
 .table .btn-select-customer:hover {
-    background: linear-gradient(135deg, #1d4ed8, #1e40af) !important;
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
     background-color: #1d4ed8 !important;
     color: #ffffff !important;
-    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.50) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.45) !important;
     transform: translateY(-1px) !important;
 }
 
 .btn-select-customer i,
 button.btn-select-customer i {
-    font-size: 0.90rem !important;
+    font-size: 0.85rem !important;
     color: #ffffff !important;
 }
 

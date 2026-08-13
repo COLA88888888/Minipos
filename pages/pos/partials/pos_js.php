@@ -36,17 +36,7 @@ try {
 
 $(document).ready(function() {
   // ເຊື່ອງ sidebar ໃນ parent window (dashboard.php) ຕອນໂຫຼດໜ້າ POS
-  try {
-    window.parent.document.body.classList.add('sidebar-collapse');
-  } catch(e) {}
-
   // ຄືນ sidebar ຕອນອອກຈາກໜ້າ POS
-  window.addEventListener('beforeunload', function() {
-    try {
-      window.parent.document.body.classList.remove('sidebar-collapse');
-    } catch(e) {}
-  });
-
   updateHeldOrdersBadge();
   initActiveBills();
 

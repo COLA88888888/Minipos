@@ -119,6 +119,7 @@ if (!isset($base_path)) {
     </style>
   </head>
   <body class="hold-transition sidebar-mini layout-fixed">
+    <?php if (empty($pos_page)): ?>
     <!-- Fast 8-Dots Circular Global Preloader -->
     <div id="global-preloader">
         <div class="preloader-content">
@@ -129,3 +130,4 @@ if (!isset($base_path)) {
             <span class="preloader-text">ກຳລັງໂຫຼດຂໍ້ມູນ...</span>
         </div>
     </div>
+    <?php endif; ?>
