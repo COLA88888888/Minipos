@@ -205,14 +205,20 @@ function processCheckout() {
     paymentType  = 'ເງິນສົດ + ໂອນ';
     change       = Math.max(0, totalPaid - total);
   } else {
-    cashReceived = parseFloat($('#cashReceived').val().replace(/[^\d]/g, '')) || 0;
-    qrReceived   = 0;
-    if (cashReceived < total) {
-      alert('ເງິນສົດທີ່ຮັບມາບໍ່ພໍ!');
+    var rawInput = parseFloat($('#cashReceived').val().replace(/[^\d]/g, '')) || 0;
+    if (rawInput < total) {
+      Swal.fire({ icon: 'error', title: 'ເງິນທີ່ຮັບມາບໍ່ພໍ!', text: 'ກະລຸນາກວດສອບຈຳນວນເງິນທີ່ຮັບມາ', confirmButtonColor: '#ef4444' });
       return;
     }
+    if (selectedPayType === 'ໂອນ' || selectedPayType === 'QR') {
+      cashReceived = 0;
+      qrReceived   = rawInput;
+    } else {
+      cashReceived = rawInput;
+      qrReceived   = 0;
+    }
     paymentType = selectedPayType;
-    change      = Math.max(0, cashReceived - total);
+    change      = Math.max(0, (cashReceived + qrReceived) - total);
   }
 
   $.ajax({
@@ -265,14 +271,12 @@ function processCheckout() {
         $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
         $('#rc_change').text(res.change.toLocaleString() + ' ₭');
 
-        // Payment rows
+        // Payment rows (Always display Cash & Transfer amounts)
+        var cashAmt = parseFloat(res.cash_received) || 0;
+        var qrAmt   = parseFloat(res.qr_received) || 0;
         var payRows = '';
-        if (res.pay_mode === 'split') {
-          payRows += '<div class="d-flex justify-content-between"><span>ເງິນສົດ:</span><span>' + res.cash_received.toLocaleString() + ' ₭</span></div>';
-          payRows += '<div class="d-flex justify-content-between"><span>ໂອນ / QR:</span><span>' + res.qr_received.toLocaleString() + ' ₭</span></div>';
-        } else {
-          payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (' + res.payment_type + '):</span><span>' + res.cash_received.toLocaleString() + ' ₭</span></div>';
-        }
+        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນສົດ):</span><span>' + cashAmt.toLocaleString() + ' ₭</span></div>';
+        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນໂອນ):</span><span>' + qrAmt.toLocaleString() + ' ₭</span></div>';
         $('#rc_payment_rows').html(payRows);
 
         // Items
@@ -322,17 +326,25 @@ function printReceipt() {
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
     <style>
       @page { size: 80mm auto; margin: 0mm; }
-      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', monospace, sans-serif !important; }
-      html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000; font-size: 12px; line-height: 1.35; }
+      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', Arial, sans-serif !important; color: #000 !important; }
+      html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 12px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
-      .font-weight-bold { font-weight: 700 !important; } .small { font-size: 11px !important; }
+      .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
+      .small { font-size: 11.5px !important; color: #000 !important; font-weight: 600 !important; }
       .d-flex { display: flex !important; } .justify-content-between { justify-content: space-between !important; }
       .mb-0{margin-bottom:0!important}.mb-1{margin-bottom:4px!important}.mb-2{margin-bottom:8px!important}
-      .mt-2{margin-top:8px!important} .text-muted{color:#333!important}
+      .mt-2{margin-top:8px!important} 
+      .text-muted { color: #000 !important; font-weight: 600 !important; }
+      .receipt-header-address, .receipt-header-tel { font-size: 12px !important; font-weight: 600 !important; color: #000 !important; line-height: 1.4 !important; }
+      .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 20px !important; padding-top: 10px !important; text-align: center !important; }
       img.receipt-logo { max-width:80px!important; max-height:80px!important; height:auto!important; display:block!important; margin:10px auto 2px auto!important; object-fit:contain!important; }
-      table { width:100%; border-collapse:collapse; margin:4px 0; font-size:11px; }
-      td,th { padding:2px 0; vertical-align:top; }
-      @media print { html,body{width:100%;margin:0;padding:2mm;} }
+      table { width:100%; border-collapse:collapse; margin:4px 0; font-size:11.5px; color: #000 !important; }
+      td,th { padding:3px 0; vertical-align:top; color: #000 !important; font-weight: 600 !important; }
+      th { font-weight: 700 !important; }
+      @media print { 
+        html,body { width:100%; margin:0; padding:2mm; color: #000 !important; } 
+        * { color: #000 !important; }
+      }
     </style>
   </head><body>${printContent}</body></html>`);
   iframeDoc.close();

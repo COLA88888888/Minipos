@@ -8,3 +8,302 @@
     border: none;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
+
+.report-stat-card {
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+}
+
+.report-filter-box {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+.report-filter-box::-webkit-scrollbar,
+.report-filter-box form::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.table-responsive {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+.report-table-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.04);
+    overflow: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.table-responsive {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+.report-table {
+    width: 100% !important;
+    table-layout: auto !important;
+    margin-bottom: 0 !important;
+}
+
+.report-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.81rem !important;
+    border-bottom: 2px solid #cbd5e1;
+    white-space: nowrap !important;
+    padding: 9px 6px !important;
+}
+
+.report-table tbody td {
+    font-size: 0.82rem !important;
+    vertical-align: middle;
+    padding: 8px 6px !important;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap !important;
+}
+
+.report-table tfoot td {
+    white-space: nowrap !important;
+    padding: 10px 6px !important;
+    font-size: 0.82rem !important;
+}
+
+.report-table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.badge-status-success {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+}
+
+.badge-status-cancel {
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+}
+
+/* Circular Blue Pagination (ຊິດຂວາມືທາງລຸ່ມ) */
+.report-pagination .page-item {
+    margin: 0 2.5px !important;
+}
+
+.report-pagination .page-link {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #334155 !important;
+    background: #ffffff !important;
+    transition: all 0.2s ease !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.report-pagination .page-item.active .page-link {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    color: #ffffff !important;
+    border-color: #2563eb !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+}
+
+.report-pagination .page-link:hover:not(.active) {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border-color: #93c5fd !important;
+}
+
+.report-pagination .page-item.disabled .page-link {
+    opacity: 0.45 !important;
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed !important;
+}
+
+/* Responsive Page Header Title */
+.report-header-title {
+    font-size: 1.45rem !important;
+}
+.report-header-subtitle {
+    font-size: 0.84rem !important;
+}
+
+/* Desktop PC Filter Box (Full width, single line row, no line breaks) */
+@media (min-width: 768px) {
+    .report-filter-box {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 12px 18px !important;
+    }
+    .report-filter-box form {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    .report-filter-date-col {
+        flex: 1 1 0 !important;
+        min-width: 120px !important;
+        width: auto !important;
+    }
+}
+
+/* Responsive Mobile Viewport & Table Horizontal Scroll */
+@media (max-width: 767.98px) {
+    html, body, .wrapper, .content-wrapper, .container-fluid {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+    
+    .container-fluid {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+
+    .report-table-card, .card {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        border-radius: 12px !important;
+    }
+
+    .table-responsive {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        display: block !important;
+        height: 6px !important;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #94a3b8 !important;
+        border-radius: 3px !important;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f5f9 !important;
+    }
+
+    .report-table {
+        min-width: 720px !important;
+    }
+
+    .report-header-title {
+        font-size: 1.1rem !important;
+    }
+    .report-header-subtitle {
+        font-size: 0.72rem !important;
+    }
+    .report-filter-box {
+        padding: 10px 12px !important;
+        width: 100% !important;
+    }
+    .report-filter-box form {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    .report-filter-date-col {
+        flex: 1 1 calc(50% - 4px) !important;
+        min-width: 120px !important;
+    }
+    .report-filter-box label {
+        font-size: 0.76rem !important;
+        margin-bottom: 2px !important;
+    }
+    .report-filter-box input[type="date"],
+    .report-filter-box input[type="text"],
+    .report-filter-box select {
+        height: 36px !important;
+        font-size: 0.8rem !important;
+        padding: 4px 6px !important;
+    }
+    .report-filter-box button,
+    .report-filter-box a.btn {
+        height: 36px !important;
+    }
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
+    }
+    .no-print, .report-filter-box, .btn, .main-footer, .sidebar, .navbar, .card-footer, #global-preloader, .modal-backdrop, .preloader-content {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    .report-table-card {
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    table.report-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+    table.report-table th, 
+    table.report-table td {
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 8px !important;
+        font-size: 10pt !important;
+    }
+    body, table, th, td, div, span, p, h1, h2, h3, h4, h5, h6 {
+        font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+}

@@ -9,12 +9,15 @@ if (empty($_SESSION['user_id'])) {
     exit();
 }
 
-// Auto-ensure customer columns exist in tbsale_save
+// Auto-ensure customer and IP columns exist in tbsale_save
 try {
     $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN customer_id INT NULL AFTER user_receive");
 } catch (Exception $e) {}
 try {
     $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN customer_name VARCHAR(255) NULL AFTER customer_id");
+} catch (Exception $e) {}
+try {
+    $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN ip_address VARCHAR(45) NULL AFTER customer_name");
 } catch (Exception $e) {}
 
 $vat_rate = floatval(getSetting($pdo, 'vat_rate', '0'));
@@ -31,6 +34,17 @@ if (!$company) {
     ];
 }
 
+// Helper function to get client IP
+function getClientIP() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        return explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0];
+    } else {
+        return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    }
+}
+
 // 1. AJAX handler for Checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'checkout') {
     header('Content-Type: application/json');
@@ -42,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $discount_bill = floatval($_POST['discount_amount'] ?? 0.00);
     $customer_id   = !empty($_POST['customer_id']) ? strval($_POST['customer_id']) : '';
     $customer_name = !empty($_POST['customer_name']) ? trim($_POST['customer_name']) : 'ລູກຄ້າທົ່ວໄປ';
+    $client_ip     = getClientIP();
     
     if (empty($cart)) {
         echo json_encode(['success' => false, 'message' => 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າ!']);
@@ -68,28 +83,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
         
         $net_total = max(0, $subtotal - $discount_bill);
-        if ($pay_mode === 'split') {
-            $total_paid = $cash_received + $qr_received;
-            $change = max(0, $total_paid - $net_total);
-        } else {
-            $change = max(0, $cash_received - $net_total);
-        }
+        $total_paid = $cash_received + $qr_received;
+        $change = max(0, $total_paid - $net_total);
 
-        // Generate invoice number
-        $stmtSeq = $pdo->query("SELECT MAX(Id) as max_id FROM tbsale_save");
-        $maxId = $stmtSeq->fetch()['max_id'] ?? 0;
-        $invoice_no = 'INV-' . date('Ymd') . '-' . str_pad($maxId + 1, 4, '0', STR_PAD_LEFT);
+        // Generate daily resetting invoice number (Format: INV-YYYYMMDD-0001)
+        // Generate daily resetting invoice number starting from 0001 (Format: INV-YYYYMMDD-0001)
+        $todayDate = date('Y-m-d');
+        $todayStr  = date('Ymd');
+
+        $stmtSeq = $pdo->prepare("SELECT COUNT(*) FROM tbsale_save WHERE sale_date = :today_date");
+        $stmtSeq->execute([':today_date' => $todayDate]);
+        $todayCount = intval($stmtSeq->fetchColumn() ?? 0);
+        $nextSeq = $todayCount + 1;
+
+        $invoice_no = $todayStr . '-' . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
         
         // Insert into tbsale_save
         $stmtSave = $pdo->prepare("
-            INSERT INTO tbsale_save (sale_save_bill, sale_date, sale_time, user_receive, customer_id, customer_name, sale_qty, sale_amount, sale_discount_bill, sale_barlance, sale_pay, sale_return, type_pay, sale_status)
-            VALUES (:invoice_no, CURDATE(), CURTIME(), :user_id, :customer_id, :customer_name, :sale_qty, :sale_amount, :discount_bill, :net_total, :cash_received, :change, :payment_type, 'SUCCESS')
+            INSERT INTO tbsale_save (sale_save_bill, sale_date, sale_time, user_receive, customer_id, customer_name, ip_address, sale_qty, sale_amount, sale_discount_bill, sale_barlance, sale_pay, sale_return, type_pay, sale_status)
+            VALUES (:invoice_no, CURDATE(), CURTIME(), :user_id, :customer_id, :customer_name, :ip_address, :sale_qty, :sale_amount, :discount_bill, :net_total, :cash_received, :change, :payment_type, 'SUCCESS')
         ");
         $stmtSave->execute([
             ':invoice_no'    => $invoice_no,
             ':user_id'       => $user_id,
             ':customer_id'   => $customer_id,
             ':customer_name' => $customer_name,
+            ':ip_address'    => $client_ip,
             ':sale_qty'      => $total_qty,
             ':sale_amount'   => $subtotal,
             ':discount_bill' => $discount_bill,

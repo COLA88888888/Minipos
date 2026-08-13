@@ -82,7 +82,14 @@
                 </div>
                 <div class="col-md-5 mb-3">
                   <label class="font-weight-bold text-dark mb-1">ບາໂຄ້ດ: <span class="text-danger">*</span></label>
-                  <input type="text" id="add_barcode" name="barcode" class="form-control" placeholder="ສະແກນ ຫຼື ປ້ອນຕົວເລກ..." style="border-radius: 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                  <div class="input-group">
+                    <input type="text" id="add_barcode" name="barcode" class="form-control" placeholder="ສະແກນ ຫຼື ປ້ອນຕົວເລກ..." style="border-radius: 6px 0 0 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-outline-primary font-weight-bold" onclick="generateEAN13('add_barcode')" title="ສ້າງບາໂຄ້ດ 13 ຫຼັກ" style="border-radius: 0 6px 6px 0; height: 40px; border-color: #cbd5e1;">
+                        <i class="fas fa-barcode mr-1"></i> ສ້າງ
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -213,7 +220,14 @@ function addUnitRow(mode, data) {
         </div>
         <div class="col-md-2 col-10 mb-2 mb-md-0">
           <label class="small text-muted font-weight-bold mb-1">ບາໂຄ້ດ:</label>
-          <input type="text" name="extra_unit_barcode[]" class="form-control form-control-sm" placeholder="ບາໂຄ້ດ..." value="${barcode}">
+          <div class="input-group input-group-sm">
+            <input type="text" name="extra_unit_barcode[]" class="form-control form-control-sm" placeholder="ບາໂຄ້ດ..." value="${barcode}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-outline-primary" onclick="generateEAN13(this)" title="ສ້າງບາໂຄ້ດ 13 ຫຼັກ">
+                <i class="fas fa-barcode"></i>
+              </button>
+            </div>
+          </div>
         </div>
         <div class="col-md-1 col-2 text-right pt-md-3">
           <button type="button" class="btn btn-sm btn-outline-danger border-0" title="ລົບແຖວນີ້" onclick="$(this).closest('.unit-row').remove();">

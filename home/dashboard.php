@@ -150,7 +150,7 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
   </div>
 
   <!-- Main Footer -->
-  <footer class="main-footer" style="background: #ffffff; border-top: 1px solid #e2e8f0; color: #475569; padding: 10px 20px; font-size: 0.88rem; height: 42px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
+  <footer class="main-footer" style="background: #ffffff; border-top: 1px solid #cbd5e1; color: #475569; padding: 0 20px; font-size: 0.88rem; height: 42px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
     <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
       <span>ລະບົບຂາຍ POS</span>
     </div>

@@ -1,8 +1,8 @@
 <?php $bp = $base_path ?? ''; ?>
 <!-- UNIFIED SIDEBAR (ແຖບເມນູໄດນາມິກກວດສອບຕາມສິດ) -->
-<aside class="main-sidebar elevation-4 sidebar-dark-primary" style="background-color: #1a252f;">
+<aside class="main-sidebar elevation-4 sidebar-dark-primary" style="background-color: rgb(2, 99, 255); position: fixed; top: 0; bottom: 0; left: 0; z-index: 1038;">
   <!-- Logo & Brand -->
-  <a href="<?php echo $bp; ?>home/dashboard.php" class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none;">
+  <a href="<?php echo $bp; ?>home/home.php" target="frame" class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none; border-bottom: none; background-color: rgb(2, 99, 255);">
     <div style="background: #ffffff; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.18); width: 44px; height: 44px; min-width: 44px;">
       <img src="<?php echo $bp; ?>assets/img/logo/logo.png" alt="POS Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
     </div>
@@ -10,7 +10,7 @@
   </a>
 
   <!-- Menu Sidebar -->
-  <div class="sidebar">
+  <div class="sidebar" style="height: calc(100vh - 64px - 42px); overflow-y: auto;">
   
     <!-- ===== User Panel (ຂໍ້ມູນຜູ້ໃຊ້ຢູ່ sidebar) ===== -->
     <?php
@@ -41,7 +41,7 @@
     <!-- /User Panel -->
 
     <!-- Dynamic Menu Items Based on Permissions -->
-    <nav class="mt-2 pb-5">
+    <nav class="mt-2 pb-4">
       <ul class="nav nav-pills nav-sidebar flex-column nav-flat" data-widget="treeview" role="menu" data-accordion="true">
         
         <?php if (hasPermission('dashboard')): ?>
@@ -61,12 +61,32 @@
           <!-- Header: Sales and POS -->
           <!-- <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ການບໍລິຫານການຂາຍ</li> -->
 
-          <!-- Menu: POS -->
-          <li class="nav-item">
-            <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
+          <!-- Dropdown Treeview: ຂາຍສິນຄ້າ POS -->
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
               <i class="nav-icon fas fa-cash-register text-warning"></i>
-              <p>ຂາຍສິນຄ້າ POS</p>
+              <p>
+                ຂາຍສິນຄ້າ POS
+                <i class="right fas fa-angle-right"></i>
+              </p>
             </a>
+            <ul class="nav nav-treeview">
+              <!-- Sub-menu 1: ຂາຍສິນຄ້າ -->
+              <li class="nav-item">
+                <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
+                  <i class="nav-icon fas fa-shopping-cart text-warning"></i>
+                  <p>ຂາຍສິນຄ້າ</p>
+                </a>
+              </li>
+
+              <!-- Sub-menu 2: ລາຍການຂາຍສິນຄ້າ -->
+              <li class="nav-item">
+                <a href="<?php echo $bp; ?>pages/reports/item_sales.php" target="frame" class="nav-link">
+                  <i class="nav-icon fas fa-boxes" style="color: #a855f7;"></i>
+                  <p>ລາຍການຂາຍສິນຄ້າ</p>
+                </a>
+              </li>
+            </ul>
           </li>
         <?php endif; ?>
 
@@ -155,7 +175,7 @@
             <ul class="nav nav-treeview">
               <!-- 1. ລາຍງານປະຈຳວັນ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=daily" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/daily_report.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-calendar-day text-info"></i>
                   <p>ລາຍງານປະຈຳວັນ</p>
                 </a>
@@ -163,7 +183,7 @@
 
               <!-- 2. ລາຍງານການຂາຍທັງໝົດ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=all_sales" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/all_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-file-invoice-dollar text-success"></i>
                   <p>ລາຍງານການຂາຍທັງໝົດ</p>
                 </a>
@@ -171,7 +191,7 @@
 
               <!-- 3. ລາຍງານສິນຄ້າຂາຍດີ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=best_seller" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/best_seller.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-fire text-danger"></i>
                   <p>ລາຍງານສິນຄ້າຂາຍດີ</p>
                 </a>
@@ -179,7 +199,7 @@
 
               <!-- 4. ລາຍງານກຳໄລ-ຕົ້ນທຶນ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=profit_cost" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/profit_cost.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-chart-line text-warning"></i>
                   <p>ລາຍງານກຳໄລ-ຕົ້ນທຶນ</p>
                 </a>
@@ -187,7 +207,7 @@
 
               <!-- 5. ລາຍງານການເງິນ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=financial" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/financial.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-wallet text-info"></i>
                   <p>ລາຍງານການເງິນ</p>
                 </a>
@@ -195,7 +215,7 @@
 
               <!-- 6. ລາຍງານຕາມ/ປະເພດສິນຄ້າ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=category" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/category_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-layer-group text-primary"></i>
                   <p>ລາຍງານຕາມ/ປະເພດສິນຄ້າ</p>
                 </a>
@@ -203,7 +223,7 @@
 
               <!-- 7. ປະຫວັດການລົບບິນຂາຍ -->
               <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/reports.php?type=delete_bills" target="frame" class="nav-link">
+                <a href="<?php echo $bp; ?>pages/reports/delete_bills.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-trash-alt text-danger"></i>
                   <p>ປະຫວັດການລົບບິນຂາຍ</p>
                 </a>
@@ -237,11 +257,11 @@
           <?php endif; ?>
 
           <?php if (hasPermission('setup')): ?>
-            <!-- Menu: ຈັດການຮ້ານຄ້າ (ແຍກຕ່າງຫາກ) -->
+            <!-- Menu: ຈັດການສາຂາ (ແຍກຕ່າງຫາກ) -->
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/settings/stores.php" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-store text-primary"></i>
-                <p>ຈັດການຮ້ານຄ້າ</p>
+                <p>ຈັດການສາຂາ</p>
               </a>
             </li>
 
@@ -307,14 +327,15 @@
           <?php endif; ?>
         <?php endif; ?>
 
-        <!-- Divider & Logout Button -->
-        <li class="nav-item" style="margin-top: 15px; margin-bottom: 50px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 5px;">
-          <a href="#" class="nav-link" onclick="confirmLogout(); return false;">
-            <i class="nav-icon fas fa-power-off text-light"></i>
-            <p style="color: #ffffff;">ອອກຈາກລະບົບ</p>
-          </a>
-        </li>
       </ul>
     </nav>
+  </div>
+
+  <!-- Fixed Bottom Footer (Blue Theme, Line Aligned with Main Footer) -->
+  <div class="sidebar-footer" style="position: absolute; bottom: 0; left: 0; right: 0; height: 42px; padding: 0 16px; background-color: rgb(2, 99, 255); border-top: 1px solid rgba(255, 255, 255, 0.28); display: flex; align-items: center; z-index: 10; box-sizing: border-box;">
+    <a href="#" onclick="confirmLogout(); return false;" class="nav-link d-flex align-items-center w-100" style="padding: 0; color: #ffffff !important; text-decoration: none; height: 100%;">
+      <i class="nav-icon fas fa-power-off text-light mr-2" style="font-size: 1.05rem;"></i>
+      <p style="color: #ffffff; font-weight: 600; font-size: 0.92rem; margin: 0;">ອອກຈາກລະບົບ</p>
+    </a>
   </div>
 </aside>

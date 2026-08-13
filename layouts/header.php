@@ -37,7 +37,7 @@ if (!isset($base_path)) {
     <script src="<?php echo $base_path; ?>plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <style>
       body {
-        font-family: 'Noto Sans Lao Looped', sans-serif;
+        font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif;
       }
       /* Custom Premium Scrollbar */
       ::-webkit-scrollbar {

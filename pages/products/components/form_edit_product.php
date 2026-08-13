@@ -82,7 +82,14 @@
                 </div>
                 <div class="col-md-5 mb-3">
                   <label class="font-weight-bold text-dark mb-1">ບາໂຄ້ດ: <span class="text-danger">*</span></label>
-                  <input type="text" name="barcode" id="edit_barcode" class="form-control" placeholder="ບາໂຄ້ດ..." style="border-radius: 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                  <div class="input-group">
+                    <input type="text" name="barcode" id="edit_barcode" class="form-control" placeholder="ບາໂຄ້ດ..." style="border-radius: 6px 0 0 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-outline-primary font-weight-bold" onclick="generateEAN13('edit_barcode')" title="ສ້າງບາໂຄ້ດ 13 ຫຼັກ" style="border-radius: 0 6px 6px 0; height: 40px; border-color: #cbd5e1;">
+                        <i class="fas fa-barcode mr-1"></i> ສ້າງ
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 

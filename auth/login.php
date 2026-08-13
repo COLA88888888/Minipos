@@ -191,41 +191,37 @@ $site_logo = '../assets/img/logo/logo.png';
                             window.location.href = response.redirect;
                         } else {
                             btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ເຂົ້າສູ່ລະບົບ');
+                            $('#loginForm')[0].reset();
+                            $('#username').val('').focus();
                             $('#password').val('');
-                            if (response.message && response.message.indexOf('ບໍ່ພົບຊື່ຜູ້ໃຊ້') !== -1) {
-                                $('#username').val('').focus();
-                            } else {
-                                $('#password').focus();
-                            }
+
                             Swal.fire({
                                 icon: 'error',
-                                title: 'ຜິດພາດ',
-                                text: response.message || 'ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!',
+                                title: 'ແຈ້ງເຕືອນ',
+                                text: response.message || 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່',
                                 confirmButtonColor: '#007bff',
+                                confirmButtonText: 'ຕົກລົງ',
                                 heightAuto: false
+                            }).then(function() {
+                                $('#username').focus();
                             });
                         }
                     },
                     error: function(xhr, status, error) {
                         btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ເຂົ້າສູ່ລະບົບ');
+                        $('#loginForm')[0].reset();
+                        $('#username').val('').focus();
                         $('#password').val('');
-                        $('#username').focus();
 
-                        var errMsg = 'ມີຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບເຊີເວີ (HTTP status: ' + xhr.status + ')';
-                        if (xhr.responseText) {
-                            try {
-                                var res = JSON.parse(xhr.responseText);
-                                if (res.message) {
-                                    errMsg = res.message;
-                                }
-                            } catch(e) {}
-                        }
                         Swal.fire({
                             icon: 'error',
-                            title: 'ຜິດພາດ',
-                            text: errMsg,
+                            title: 'ແຈ້ງເຕືອນ',
+                            text: 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່',
                             confirmButtonColor: '#007bff',
+                            confirmButtonText: 'ຕົກລົງ',
                             heightAuto: false
+                        }).then(function() {
+                            $('#username').focus();
                         });
                     }
                 });

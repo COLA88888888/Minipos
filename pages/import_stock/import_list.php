@@ -413,12 +413,9 @@ require_once __DIR__ . '/../../layouts/header.php';
               </h5>
             </div>
             <div class="col-md-6 text-right d-flex align-items-center justify-content-end">
-              <span class="badge badge-success  px-3 py-2 font-weight-bold mr-2" style="font-size: 0.9rem; height: 34px;">
+              <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 0.9rem; height: 34px; line-height: 18px;">
                 ລວມ <?php echo number_format($total_records); ?> <?php echo ($view_type === 'bill') ? 'ໃບບິນ' : 'ລາຍການ'; ?>
               </span>
-              <button type="button" class="btn btn-sm btn-success font-weight-bold shadow-sm" style="border-radius: 4px; height: 34px;" onclick="exportToExcel()">
-                <i class="fas fa-file-excel mr-1"></i>Excel
-              </button>
             </div>
           </div>
         </div>

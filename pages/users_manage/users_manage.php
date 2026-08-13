@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           </h5>
         </div>
         <div class="col-sm-6 text-right">
-          <button type="button" class="btn btn-primary px-2 py-1" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px;">
+          <button type="button" class="btn btn-primary px-3 py-1.5 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px; white-space: nowrap;">
             <i class="fas fa-user-plus mr-1"></i> ເພີ່ມຜູ້ໃຊ້
           </button>
         </div>
@@ -59,10 +59,18 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="container-fluid">
       <!-- MAIN USERS TABLE CARD -->
       <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
-        <div class="card-header bg-white py-3 border-0">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center w-100">
           <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; color: #0f172a;">
             ລາຍງານຜູ້ໃຊ້ງານທັງໝົດ
           </h6>
+          
+          <!-- Search Box Aligned Absolute Far Right directly under Add User button -->
+          <div class="position-relative ml-auto" style="width: 260px; max-width: 100%;">
+            <i class="fas fa-search position-absolute text-muted" style="left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; z-index: 5;"></i>
+            <input type="text" id="userSearchInput" class="form-control form-control-sm shadow-none" 
+                   placeholder="ຄົ້ນຫາຜູ້ໃຊ້ງານ..." 
+                   style="padding-left: 34px !important; border-radius: 6px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; height: 34px; background-color: #f8fafc;">
+          </div>
         </div>
 
         <div class="card-body p-0">

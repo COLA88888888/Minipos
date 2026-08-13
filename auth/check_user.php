@@ -40,11 +40,22 @@ try {
             $password_matches = true;
         } else {
             // ກວດສອບດ້ວຍ MySQL PASSWORD() ແບບເກົ່າ
-            $stmtLegacy = $pdo->prepare("SELECT * FROM tbuser WHERE (username = ? OR fname = ?) AND (password = PASSWORD(?) OR userpass = PASSWORD(?)) LIMIT 1");
-            $stmtLegacy->execute([$username, $username, $password, $password]);
-            if ($stmtLegacy->fetch()) {
-                $password_matches = true;
-            }
+            try {
+                $hasUserpassCol = false;
+                $userCols = $pdo->query("SHOW COLUMNS FROM tbuser")->fetchAll(PDO::FETCH_COLUMN);
+                $hasUserpassCol = in_array('userpass', $userCols);
+
+                if ($hasUserpassCol) {
+                    $stmtLegacy = $pdo->prepare("SELECT * FROM tbuser WHERE (username = ? OR fname = ?) AND (password = PASSWORD(?) OR userpass = PASSWORD(?)) LIMIT 1");
+                    $stmtLegacy->execute([$username, $username, $password, $password]);
+                } else {
+                    $stmtLegacy = $pdo->prepare("SELECT * FROM tbuser WHERE (username = ? OR fname = ?) AND password = PASSWORD(?) LIMIT 1");
+                    $stmtLegacy->execute([$username, $username, $password]);
+                }
+                if ($stmtLegacy->fetch()) {
+                    $password_matches = true;
+                }
+            } catch (Exception $ex) {}
         }
 
         if ($password_matches) {
@@ -94,11 +105,11 @@ try {
                 'redirect' => $redirect
             ]);
         } else {
-            echo json_encode(['success' => false, 'message' => 'ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ']);
+            echo json_encode(['success' => false, 'message' => 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່']);
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'ບໍ່ພົບຊື່ຜູ້ໃຊ້ນີ້ໃນລະບົບ']);
+        echo json_encode(['success' => false, 'message' => 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່']);
     }
 } catch (Throwable $e) {
-    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່']);
 }

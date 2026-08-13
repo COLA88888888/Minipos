@@ -175,7 +175,7 @@
 
             <!-- Numpad -->
             <div style="flex:1;">
-              <div class="font-weight-bold mb-1" style="font-size:0.76rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">ກີ່ຕໍ່ (Numpad)</div>
+              <div class="font-weight-bold mb-1" style="font-size:0.76rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;"></div>
               <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
                 <?php foreach(['7','8','9','4','5','6','1','2','3'] as $n): ?>
                 <button onclick="numpadPress('<?= $n ?>')" class="checkout-numpad-btn"
@@ -226,7 +226,7 @@
         <h6 class="modal-title font-weight-bold"><i class="fas fa-receipt mr-1"></i> ໃບບິນຮັບເງິນສຳເລັດ</h6>
         <button type="button" class="close text-white" onclick="resetPOS()"><span>&times;</span></button>
       </div>
-      <div class="modal-body p-3" id="receiptPrintArea" style="font-family:monospace;font-size:12px;color:#1e293b;">
+      <div class="modal-body p-3" id="receiptPrintArea" style="font-family:'Noto Sans Lao Looped', monospace, sans-serif;font-size:12px;color:#000;">
         <div class="text-center mb-2">
           <?php
             $logoName = !empty($company['img_url']) ? basename($company['img_url']) : 'logo.png';
@@ -235,26 +235,35 @@
           <img src="<?php echo htmlspecialchars($logoPath); ?>" alt="Logo" class="receipt-logo"
             style="max-width:80px;height:auto;max-height:80px;object-fit:contain;margin:10px auto 2px auto;display:block;"
             onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/logo/logo.png';">
-          <h6 class="font-weight-bold mb-0" style="font-size:14px;"><?php echo htmlspecialchars($company['com_name_la']); ?></h6>
-          <small class="text-muted d-block"><?php echo htmlspecialchars($company['com_address']); ?></small>
-          <small class="text-muted d-block">ໂທ: <?php echo htmlspecialchars($company['com_tel']); ?></small>
+          <h6 class="font-weight-bold mb-0" style="font-size:15px;color:#000;font-weight:700;"><?php echo htmlspecialchars($company['com_name_la']); ?></h6>
+          <div class="receipt-header-address" style="font-size:12px;font-weight:600;color:#000;line-height:1.4;margin-top:2px;"><?php echo htmlspecialchars($company['com_address']); ?></div>
+          <div class="receipt-header-tel" style="font-size:12px;font-weight:600;color:#000;line-height:1.4;">ໂທ: <?php echo htmlspecialchars($company['com_tel']); ?></div>
         </div>
-        <div style="border-top:1px dashed #64748b;margin:6px 0;"></div>
-        <div class="d-flex justify-content-between"><span>ເລກບິນ:</span><span id="rc_bill">-</span></div>
-        <div class="d-flex justify-content-between"><span>ວັນທີ:</span><span id="rc_date">-</span></div>
-        <div class="d-flex justify-content-between"><span>ຜູ້ຂາຍ:</span><span id="rc_cashier">-</span></div>
-        <div class="d-flex justify-content-between"><span>ລູກຄ້າ:</span><span id="rc_customer">ລູກຄ້າທົ່ວໄປ</span></div>
-        <div style="border-top:1px dashed #64748b;margin:6px 0;"></div>
-        <table style="width:100%;font-size:11px;"><tbody id="rc_items"></tbody></table>
-        <div style="border-top:1px dashed #64748b;margin:6px 0;"></div>
-        <div class="d-flex justify-content-between"><span>ລວມ:</span><span id="rc_subtotal">0 ₭</span></div>
-        <div class="d-flex justify-content-between"><span>ສ່ວນຫຼຸດ:</span><span id="rc_discount">0 ₭</span></div>
-        <div class="d-flex justify-content-between font-weight-bold" style="font-size:13px;"><span>ຍອດສຸດທິ:</span><span id="rc_total">0 ₭</span></div>
-        <div style="border-top:1px dashed #64748b;margin:6px 0;"></div>
-        <div id="rc_payment_rows"></div>
-        <div class="d-flex justify-content-between font-weight-bold"><span>ເງິນທອນ:</span><span id="rc_change">0 ₭</span></div>
-        <div style="border-top:1px dashed #64748b;margin:6px 0;"></div>
-        <div class="text-center small text-muted mt-2"><?php echo htmlspecialchars($company['barcode'] ?? 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກບິນ:</span><span id="rc_bill" style="font-weight:700;">-</span></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ວັນທີ:</span><span id="rc_date">-</span></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ຜູ້ຂາຍ:</span><span id="rc_cashier">-</span></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ລູກຄ້າ:</span><span id="rc_customer">ລູກຄ້າທົ່ວໄປ</span></div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <table style="width:100%;font-size:11.5px;color:#000;">
+          <thead>
+            <tr style="border-bottom:1px dashed #000;">
+              <th style="text-align:left;padding-bottom:3px;font-weight:700;color:#000;">ລາຍການ</th>
+              <th style="text-align:center;padding-bottom:3px;font-weight:700;width:50px;color:#000;">ຈຳນວນ</th>
+              <th style="text-align:right;padding-bottom:3px;font-weight:700;width:75px;color:#000;">ລາຄາ</th>
+            </tr>
+          </thead>
+          <tbody id="rc_items" style="color:#000;font-weight:600;"></tbody>
+        </table>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ລວມ:</span><span id="rc_subtotal">0 ₭</span></div>
+        <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ສ່ວນຫຼຸດ:</span><span id="rc_discount">0 ₭</span></div>
+        <div class="d-flex justify-content-between font-weight-bold" style="font-size:13.5px;color:#000;font-weight:700;"><span>ຍອດສຸດທິ:</span><span id="rc_total">0 ₭</span></div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div id="rc_payment_rows" style="color:#000;font-weight:600;"></div>
+        <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span>ເງິນທອນ:</span><span id="rc_change">0 ₭</span></div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div class="text-center receipt-footer-msg" style="margin-top:20px !important; padding-top:10px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
       </div>
       <div class="modal-footer border-0 p-3 bg-light">
         <button type="button" class="btn btn-secondary btn-sm font-weight-bold" onclick="resetPOS()">ປິດ</button>

@@ -5,6 +5,19 @@ $(document).ready(function() {
     var codeEl = document.getElementById('add_user_code');
     if (codeEl) { codeEl.value = ''; }
   });
+
+  // Live Real-Time Search Filter
+  $('#userSearchInput').on('keyup input', function() {
+    var val = $(this).val().toLowerCase().trim();
+    $('table tbody tr').each(function() {
+      var text = $(this).text().toLowerCase();
+      if (text.indexOf(val) !== -1) {
+        $(this).show();
+      } else {
+        $(this).hide();
+      }
+    });
+  });
 });
 
 // Auto-generate ລະຫັດຜູ້ໃຊ້ (USR-XXX)

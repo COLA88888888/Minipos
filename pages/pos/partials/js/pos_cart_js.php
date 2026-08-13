@@ -216,33 +216,33 @@ function updateProductGridBadges() {
 
     if (remainingStock <= 0) {
       if (statusBadge.length) {
-        statusBadge.text('ໝົດແລ້ວ').css({'background': '#ef4444', 'display': 'inline-block'}).show();
+        statusBadge.text('ໝົດແລ້ວ').removeClass('low-stock').addClass('out-of-stock').css('display', 'inline-block').show();
       }
       if (cardEl.length) {
-        cardEl.css({'border-color': '#ef4444', 'opacity': '0.8'});
+        cardEl.css({'border': '2px solid #ef4444', 'opacity': '0.82', 'background': '#fff5f5'});
       }
       if (infoWrap.length) {
-        infoWrap.css('color', '#ef4444');
+        infoWrap.removeClass('in-stock low-stock').addClass('out-of-stock');
       }
     } else if (remainingStock <= 10) {
       if (statusBadge.length) {
-        statusBadge.text('ໃກ້ໝົດ').css({'background': '#f59e0b', 'display': 'inline-block'}).show();
+        statusBadge.text('ໃກ້ໝົດ').removeClass('out-of-stock').addClass('low-stock').css('display', 'inline-block').show();
       }
       if (cardEl.length) {
-        cardEl.css({'border-color': '#f59e0b', 'opacity': '1.0'});
+        cardEl.css({'border': '2px solid #f59e0b', 'opacity': '1.0', 'background': '#ffffff'});
       }
       if (infoWrap.length) {
-        infoWrap.css('color', '#d97706');
+        infoWrap.removeClass('in-stock out-of-stock').addClass('low-stock');
       }
     } else {
       if (statusBadge.length) {
-        statusBadge.hide();
+        statusBadge.hide().removeClass('out-of-stock low-stock');
       }
       if (cardEl.length) {
-        cardEl.css({'border-color': '#3b82f6', 'opacity': '1.0'});
+        cardEl.css({'border': '1.5px solid #3b82f6', 'opacity': '1.0', 'background': '#ffffff'});
       }
       if (infoWrap.length) {
-        infoWrap.css('color', '#2563eb');
+        infoWrap.removeClass('out-of-stock low-stock').addClass('in-stock');
       }
     }
   });

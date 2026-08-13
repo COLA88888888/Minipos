@@ -1,4 +1,4 @@
-<!-- Products Grid (2 on mobile, 3+ on larger screens) -->
+<!-- Products Grid (2 on mobile, 6 on desktop screens) -->
 <div class="row px-1" id="productGrid">
   <?php foreach ($products as $p): ?>
     <?php
@@ -13,7 +13,7 @@
          data-category="<?php echo $p['category_id']; ?>">
          
       <div class="card product-card product-card-<?php echo $p['product_id']; ?> h-100 shadow-sm" 
-           style="border-radius: 12px !important; border: 1.5px solid <?php echo $stock <= 0 ? '#ef4444' : ($stock <= 10 ? '#f59e0b' : '#3b82f6'); ?> !important; background: #ffffff; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; <?php echo $stock <= 0 ? 'opacity: 0.8;' : ''; ?>" 
+           style="border-radius: 12px !important; border: <?php echo $stock <= 0 ? '2px solid #ef4444' : ($stock <= 10 ? '2px solid #f59e0b' : '1.5px solid #3b82f6'); ?> !important; background: <?php echo $stock <= 0 ? '#fff5f5' : '#ffffff'; ?>; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; <?php echo $stock <= 0 ? 'opacity: 0.82;' : ''; ?>" 
            onclick='addProductToCart(<?php echo htmlspecialchars(json_encode($p)); ?>)'>
         
         <div class="product-img-wrap" style="position: relative; width: 100%; height: 110px; max-height: 110px; overflow: hidden; background: #f8fafc; padding: 6px; display: flex; align-items: center; justify-content: center; border-radius: 10px 10px 0 0;">
@@ -23,8 +23,8 @@
                onerror="this.src='<?php echo $base_path; ?>assets/img/image.jpg';">
           
           <!-- Stock Status Badge Top Left -->
-          <span class="stock-status-badge stock-status-badge-<?php echo $p['product_id']; ?>" 
-                style="position: absolute; top: 5px; left: 5px; z-index: 10; display: <?php echo $stock <= 10 ? 'inline-block' : 'none'; ?>; background: <?php echo $stock <= 0 ? '#ef4444' : '#f59e0b'; ?>; color: #ffffff; font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 6px; border: 1.5px solid #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); white-space: nowrap;">
+          <span class="stock-status-badge stock-status-badge-<?php echo $p['product_id']; ?> <?php echo $stock <= 0 ? 'out-of-stock' : ($stock <= 10 ? 'low-stock' : ''); ?>" 
+                style="display: <?php echo $stock <= 10 ? 'inline-block' : 'none'; ?>;">
             <?php echo $stock <= 0 ? 'ໝົດແລ້ວ' : 'ໃກ້ໝົດ'; ?>
           </span>
 
@@ -37,9 +37,10 @@
             <?php echo htmlspecialchars($p['product_name']); ?>
           </h6>
 
-          <small class="d-block mb-1 text-left stock-info-wrap-<?php echo $p['product_id']; ?>" style="font-size: 0.70rem; font-weight: 600; color: <?php echo $stock <= 0 ? '#ef4444' : ($stock <= 10 ? '#d97706' : '#2563eb'); ?>;">
-            ເຫຼືອ: <span class="font-weight-bold product-stock-val product-stock-val-<?php echo $p['product_id']; ?>" data-initial-stock="<?php echo $p['qty']; ?>" data-cut-qty="<?php echo intval($p['cut_qty'] ?? 1); ?>"><?php echo number_format($p['qty']); ?></span> <?php echo htmlspecialchars($p['unit'] ?? ''); ?>
-          </small>
+          <!-- Prominent Stock Info Pill -->
+          <div class="stock-info-wrap stock-info-wrap-<?php echo $p['product_id']; ?> <?php echo $stock <= 0 ? 'out-of-stock' : ($stock <= 10 ? 'low-stock' : 'in-stock'); ?>">
+            <span>ເຫຼືອ: <span class="font-weight-bold product-stock-val product-stock-val-<?php echo $p['product_id']; ?>" data-initial-stock="<?php echo $p['qty']; ?>" data-cut-qty="<?php echo intval($p['cut_qty'] ?? 1); ?>"><?php echo number_format($p['qty']); ?></span> <?php echo htmlspecialchars($p['unit'] ?? ''); ?></span>
+          </div>
           
           <div class="mt-auto pt-1 border-top text-left">
             <span class="font-weight-bold" style="font-size: 0.96rem; color: #16a34a;">

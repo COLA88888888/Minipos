@@ -17,12 +17,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $com_address = trim($_POST['com_address'] ?? '');
     $com_tel     = trim($_POST['com_tel'] ?? '');
     $com_email   = trim($_POST['com_email'] ?? '');
+    $barcode     = trim($_POST['barcode'] ?? 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!');
 
     if ($com_name_la !== '') {
         try {
+            // Ensure barcode column exists in tbcompanyinfo
+            try {
+                $pdo->exec("ALTER TABLE tbcompanyinfo ADD COLUMN barcode VARCHAR(255) DEFAULT 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'");
+            } catch (Throwable $e) {}
+
             // Check if logo is uploaded
             $img_sql = "";
-            $params = [$com_name_la, $com_address, $com_tel, $com_email];
+            $params = [$com_name_la, $com_address, $com_tel, $com_email, $barcode];
 
             if (isset($_FILES['logo_img']) && !empty($_FILES['logo_img']['name']) && $_FILES['logo_img']['error'] === UPLOAD_ERR_OK) {
                 $ext = strtolower(pathinfo($_FILES['logo_img']['name'], PATHINFO_EXTENSION));
@@ -40,11 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             // Check if record exists
             $cnt = $pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
             if ($cnt > 0) {
-                $stmt = $pdo->prepare("UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ? $img_sql WHERE Id = 1");
+                $stmt = $pdo->prepare("UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, barcode = ? $img_sql WHERE Id = 1");
                 $stmt->execute($params);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, img_url, branch_id) VALUES (1, ?, ?, ?, ?, 'logo.png', 1)");
-                $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email]);
+                $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, barcode, img_url, branch_id) VALUES (1, ?, ?, ?, ?, ?, 'logo.png', 1)");
+                $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $barcode]);
             }
 
             $message = 'ບັນທຶກຂໍ້ມູນຮ້ານຄ້າສຳເລັດ!';
@@ -137,6 +143,11 @@ require_once __DIR__ . '/../../layouts/header.php';
         <div class="col-md-12 mb-3">
           <label class="font-weight-bold text-dark small mb-1">ອີເມວ / ຊ່ອງທາງຕິດຕໍ່ອື່ນໆ:</label>
           <input type="email" name="com_email" class="form-control" value="<?php echo htmlspecialchars($company['com_email'] ?? ''); ?>" placeholder="example@gmail.com">
+        </div>
+        <div class="col-md-12 mb-3">
+          <label class="font-weight-bold text-dark small mb-1"><i class="fas fa-heart text-danger mr-1"></i> ຂໍ້ຄວາມທ້າຍໃບບິນ (ຄຳຂອບໃຈ):</label>
+          <input type="text" name="barcode" class="form-control font-weight-bold text-dark" value="<?php echo htmlspecialchars($company['barcode'] ?? 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?>" placeholder="ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!">
+          <small class="text-muted">ຂໍ້ຄວາມນີ້ຈະສະແດງຢູ່ສ່ວນລຸ່ມສຸດຂອງໃບບິນຮັບເງິນ POS</small>
         </div>
       </div>
 

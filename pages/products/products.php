@@ -680,6 +680,29 @@ require_once __DIR__ . '/../../layouts/header.php';
     }
   }
 
+  // ====== ຟັງຊັນ ສ້າງບາໂຄ້ດອັດຕະໂນມັດ 13 ຫຼັກ (EAN-13 Generator) ======
+  function generateEAN13(target) {
+    // Generate 12 random digits (Prefix '20' for internal POS barcodes)
+    var code = '20';
+    for (var i = 0; i < 10; i++) {
+      code += Math.floor(Math.random() * 10);
+    }
+    // Calculate EAN-13 Checksum digit
+    var sum = 0;
+    for (var i = 0; i < 12; i++) {
+      var digit = parseInt(code.charAt(i), 10);
+      sum += (i % 2 === 0) ? digit : digit * 3;
+    }
+    var checksum = (10 - (sum % 10)) % 10;
+    var finalBarcode = code + checksum;
+
+    if (typeof target === 'string') {
+      $('#' + target).val(finalBarcode).trigger('change');
+    } else if (target && (target instanceof HTMLElement || target.jquery)) {
+      $(target).closest('.input-group').find('input').val(finalBarcode).trigger('change');
+    }
+  }
+
   // ====== ຟັງຊັນຈັດ format ລາຄາມີຈຸດ (Thousand Separator) ແລະ ຮັບແຕ່ຕົວເລກ ======
   function formatPriceInput(input) {
     // ອະນຸຍາດສະເພາະຕົວເລກ 0-9

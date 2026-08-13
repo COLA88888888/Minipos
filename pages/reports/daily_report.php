@@ -1,0 +1,619 @@
+<?php
+// Standalone Page: ລາຍງານປະຈຳວັນ (Daily Sales Report)
+session_start();
+
+$scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+$base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
+
+require_once dirname(__DIR__, 2) . '/config/db.php';
+
+if (!hasPermission('report')) {
+    echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+    exit();
+}
+
+// Date Range Filter Inputs (Default: Today to Today)
+$from_date = trim($_GET['from_date'] ?? date('Y-m-d'));
+$to_date   = trim($_GET['to_date'] ?? date('Y-m-d'));
+
+// Build SQL Query for Daily Report
+$where   = ["(s.sale_status IS NULL OR s.sale_status != 'CANCEL')"];
+$params  = [];
+
+if (!empty($from_date)) {
+    $where[] = "DATE(s.sale_date) >= :from_date";
+    $params[':from_date'] = $from_date;
+}
+
+if (!empty($to_date)) {
+    $where[] = "DATE(s.sale_date) <= :to_date";
+    $params[':to_date'] = $to_date;
+}
+
+$whereClause = implode(" AND ", $where);
+
+// Fetch 10 Daily Metrics
+$daily_gross_sales     = 0;
+$daily_item_discounts  = 0;
+$daily_bill_discounts  = 0;
+$daily_total_discounts = 0;
+$daily_net_sales       = 0;
+$daily_cash_payments   = 0;
+$daily_qr_payments     = 0;
+$daily_tips_sum        = 0;
+$daily_bills_count     = 0;
+$daily_items_qty       = 0;
+
+$hasCashCol = false;
+$hasQrCol   = false;
+try {
+    $cols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+    $hasCashCol = in_array('cash_received', $cols);
+    $hasQrCol   = in_array('qr_received', $cols);
+} catch (Exception $e) {}
+
+$cashSql = $hasCashCol ? "WHEN s.cash_received > 0 THEN s.cash_received" : "";
+$qrSql   = $hasQrCol   ? "WHEN s.qr_received > 0 THEN s.qr_received" : "";
+
+try {
+    $stmtDaily = $pdo->prepare("
+        SELECT 
+            COUNT(s.Id) AS total_bills,
+            COALESCE(SUM(s.sale_qty), 0) AS total_items_qty,
+            COALESCE(SUM(s.sale_amount), 0) AS total_gross_sales,
+            COALESCE(SUM(s.sale_discount_bill), 0) AS total_bill_discounts,
+            COALESCE(SUM(s.sale_barlance), 0) AS total_net_sales,
+            COALESCE(SUM(CASE 
+                {$cashSql}
+                WHEN s.type_pay LIKE '%ເງິນສົດ%' AND (s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%') THEN s.sale_barlance
+                WHEN s.type_pay LIKE '%ເງິນສົດ%' THEN GREATEST(0, s.sale_pay - s.sale_return)
+                ELSE 0 
+            END), 0) AS total_cash_received,
+            COALESCE(SUM(CASE 
+                {$qrSql}
+                WHEN (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%') AND s.type_pay NOT LIKE '%ເງິນສົດ%' THEN s.sale_barlance
+                WHEN s.sale_transfer > 0 THEN s.sale_transfer
+                ELSE 0 
+            END), 0) AS total_qr_received,
+            COALESCE(SUM(GREATEST(0, (s.sale_pay - s.sale_return) - s.sale_barlance)), 0) AS total_tips_sum
+        FROM tbsale_save s
+        WHERE {$whereClause}
+    ");
+    $stmtDaily->execute($params);
+    $dailyStats = $stmtDaily->fetch(PDO::FETCH_ASSOC);
+
+    $hasItemDiscCol = false;
+    try {
+        $colsD = $pdo->query("SHOW COLUMNS FROM tbsale_save_detail")->fetchAll(PDO::FETCH_COLUMN);
+        $hasItemDiscCol = in_array('save_discount_item', $colsD) ? 'save_discount_item' : (in_array('save_discount', $colsD) ? 'save_discount' : '');
+    } catch (Exception $e) {}
+
+    if ($hasItemDiscCol) {
+        $stmtItemDisc = $pdo->prepare("
+            SELECT COALESCE(SUM(d.{$hasItemDiscCol}), 0) AS total_item_disc
+            FROM tbsale_save_detail d
+            INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+            WHERE {$whereClause}
+        ");
+        $stmtItemDisc->execute($params);
+        $itemDiscRes = $stmtItemDisc->fetch(PDO::FETCH_ASSOC);
+        $daily_item_discounts = (float)($itemDiscRes['total_item_disc'] ?? 0);
+    } else {
+        $daily_item_discounts = 0;
+    }
+
+    $daily_bills_count     = (int)($dailyStats['total_bills'] ?? 0);
+    $daily_items_qty       = (int)($dailyStats['total_items_qty'] ?? 0);
+    $daily_gross_sales     = (float)($dailyStats['total_gross_sales'] ?? 0);
+    $daily_bill_discounts  = (float)($dailyStats['total_bill_discounts'] ?? 0);
+    $daily_total_discounts = $daily_item_discounts + $daily_bill_discounts;
+    $daily_net_sales       = (float)($dailyStats['total_net_sales'] ?? 0);
+    $daily_cash_payments   = (float)($dailyStats['total_cash_received'] ?? 0);
+    $daily_qr_payments     = (float)($dailyStats['total_qr_received'] ?? 0);
+    $daily_tips_sum        = (float)($dailyStats['total_tips_sum'] ?? 0);
+
+    // Per-day breakdown query (GROUP BY date)
+    $stmtPerDay = $pdo->prepare("
+        SELECT
+            DATE(s.sale_date) AS day_date,
+            COUNT(s.Id) AS day_bills,
+            COALESCE(SUM(s.sale_qty), 0) AS day_qty,
+            COALESCE(SUM(s.sale_amount), 0) AS day_gross,
+            COALESCE(SUM(s.sale_discount_bill), 0) AS day_bill_disc,
+            COALESCE(SUM(s.sale_barlance), 0) AS day_net,
+            COALESCE(SUM(CASE
+                {$cashSql}
+                WHEN s.type_pay LIKE '%ເງິນສົດ%' AND (s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%') THEN s.sale_barlance
+                WHEN s.type_pay LIKE '%ເງິນສົດ%' THEN GREATEST(0, s.sale_pay - s.sale_return)
+                ELSE 0
+            END), 0) AS day_cash,
+            COALESCE(SUM(CASE
+                {$qrSql}
+                WHEN (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%') AND s.type_pay NOT LIKE '%ເງິນສົດ%' THEN s.sale_barlance
+                WHEN s.sale_transfer > 0 THEN s.sale_transfer
+                ELSE 0
+            END), 0) AS day_qr,
+            COALESCE(SUM(GREATEST(0, (s.sale_pay - s.sale_return) - s.sale_barlance)), 0) AS day_tip
+        FROM tbsale_save s
+        WHERE {$whereClause}
+        GROUP BY DATE(s.sale_date)
+        ORDER BY DATE(s.sale_date) ASC
+    ");
+    $stmtPerDay->execute($params);
+    $perDayRows = $stmtPerDay->fetchAll(PDO::FETCH_ASSOC);
+
+    // Per-day item discount (GROUP BY date)
+    $dayItemDiscMap = [];
+    if ($hasItemDiscCol) {
+        $stmtDayItemDisc = $pdo->prepare("
+            SELECT DATE(s.sale_date) AS day_date, COALESCE(SUM(d.{$hasItemDiscCol}), 0) AS day_item_disc
+            FROM tbsale_save_detail d
+            INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+            WHERE {$whereClause}
+            GROUP BY DATE(s.sale_date)
+        ");
+        $stmtDayItemDisc->execute($params);
+        foreach ($stmtDayItemDisc->fetchAll(PDO::FETCH_ASSOC) as $r) {
+            $dayItemDiscMap[$r['day_date']] = (float)$r['day_item_disc'];
+        }
+    }
+
+    // Fetch individual sales bills for transaction list table
+    $stmtSalesList = $pdo->prepare("
+        SELECT s.* 
+        FROM tbsale_save s 
+        WHERE {$whereClause}
+        ORDER BY DATE(s.sale_date) DESC, s.sale_time DESC, s.Id DESC
+    ");
+    $stmtSalesList->execute($params);
+    $todaySalesRows = $stmtSalesList->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (Exception $e) { $perDayRows = []; $dayItemDiscMap = []; $todaySalesRows = []; }
+
+require_once __DIR__ . '/../../layouts/header.php';
+?>
+
+<link rel="stylesheet" href="../../themes/reports.css?v=<?php echo filemtime(__DIR__ . '/../../themes/reports.css'); ?>">
+
+<style>
+.kpi-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+.kpi-card-item {
+  border-radius: 10px !important;
+  padding: 18px 20px !important;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transform: none !important;
+}
+.kpi-card-title {
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.kpi-card-val {
+  font-size: clamp(1.2rem, 1.3vw, 1.5rem) !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+}
+.kpi-card-icon {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(6px);
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  font-size: 1.3rem !important;
+  margin-left: 6px !important;
+}
+@media (max-width: 767px) {
+  .kpi-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .kpi-card-item {
+    padding: 14px 13px !important;
+  }
+  .kpi-card-title {
+    font-size: 0.78rem !important;
+  }
+  .kpi-card-val {
+    font-size: 1.05rem !important;
+  }
+  .kpi-card-icon {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1rem !important;
+    margin-left: 4px !important;
+    border-radius: 8px !important;
+  }
+}
+</style>
+
+<div class="container-fluid p-3 p-md-4">
+  <!-- Header & Page Meta -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+    <div>
+      <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <i class="fas fa-calendar-day text-info"></i> ລາຍງານປະຈຳວັນ
+      </h5>
+    </div>
+  </div>
+
+  <!-- Date Range Filter Box on Top (Compact Inline Row on PC, 2-Col Side-by-Side on Mobile) -->
+  <div class="report-filter-box no-print mb-3.5">
+    <form method="GET" action="daily_report.php" class="d-flex align-items-end flex-wrap flex-md-nowrap" style="gap: 10px;">
+      <!-- From Date -->
+      <div class="report-filter-date-col">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-calendar-alt text-primary mr-1"></i> ຕັ້ງແຕ່ວັນທີ:
+        </label>
+        <input type="date" name="from_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($from_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
+      </div>
+
+      <!-- To Date -->
+      <div class="report-filter-date-col">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-calendar-check text-primary mr-1"></i> ຫາວັນທີ:
+        </label>
+        <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
+      </div>
+
+      <!-- Search & Refresh Buttons -->
+      <div class="d-flex align-items-center" style="gap: 6px; flex: 0 0 auto;">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); white-space: nowrap; font-size: 0.85rem;">
+          <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
+        </button>
+        <a href="daily_report.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">
+          <i class="fas fa-redo"></i>
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- 10 Summary KPI Cards Box -->
+  <div class="mb-4 kpi-cards-grid">
+    <!-- 1. ລວມຍອດ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ລວມຍອດ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_gross_sales; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+    </div>
+
+    <!-- 2. ສ່ວນຫຼຸດສິນຄ້າ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ສ່ວນຫຼຸດສິນຄ້າ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_item_discounts; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-tag"></i></div>
+    </div>
+
+    <!-- 3. ສ່ວນຫຼຸດໃບບິນ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ສ່ວນຫຼຸດໃບບິນ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_bill_discounts; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-receipt"></i></div>
+    </div>
+
+    <!-- 4. ສ່ວນຫຼຸດທັງໝົດ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ສ່ວນຫຼຸດທັງໝົດ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_total_discounts; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-tags"></i></div>
+    </div>
+
+    <!-- 5. ຍອດຂາຍສຸດທິ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ຍອດຂາຍສຸດທິ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_net_sales; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-coins"></i></div>
+    </div>
+
+    <!-- 6. ເງິນສົດ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ເງິນສົດ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_cash_payments; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-money-bill-wave"></i></div>
+    </div>
+
+    <!-- 7. ເງິນໂອນ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ເງິນໂອນ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_qr_payments; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-qrcode"></i></div>
+    </div>
+
+    <!-- 9. ບິນ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ບິນ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_bills_count; ?>" data-suffix=" ບິນ">0 ບິນ</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-file-invoice"></i></div>
+    </div>
+
+    <!-- 10. ລາຍການ -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title">ລາຍການ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_items_qty; ?>" data-suffix=" ອັນ">0 ອັນ</span>
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-boxes"></i></div>
+    </div>
+  </div>
+
+  <!-- Charts Section (always shown) -->
+  <?php
+    // Prepare chart data (always, even if empty)
+    $chartLabels = [];
+    $chartNet    = [];
+    $chartCash   = [];
+    $chartQr     = [];
+    $chartTip    = [];
+    $chartBills  = [];
+    foreach (($perDayRows ?? []) as $row) {
+      $chartLabels[] = $row['day_date'];
+      $chartNet[]    = (float)$row['day_net'];
+      $chartCash[]   = (float)$row['day_cash'];
+      $chartQr[]     = (float)$row['day_qr'];
+      $chartTip[]    = (float)$row['day_tip'];
+      $chartBills[]  = (int)$row['day_bills'];
+    }
+    // If no data, use today as placeholder with 0
+    if (empty($chartLabels)) {
+      $chartLabels = [date('Y-m-d')];
+      $chartNet = $chartCash = $chartQr = $chartTip = $chartBills = [0];
+    }
+    $totalCash = array_sum($chartCash);
+    $totalQr   = array_sum($chartQr);
+    $totalTip  = array_sum($chartTip);
+  ?>
+
+  <div class="row mt-3" style="gap: 0;">
+    <!-- Bar Chart: ຍອດຂາຍສຸດທິລາຍວັນ -->
+    <div class="col-12 col-md-8 mb-3">
+      <div class="card border-0 shadow-sm" style="border-radius: 14px; padding: 18px 20px;">
+        <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
+          <i class="fas fa-chart-bar text-primary mr-2"></i> ຍອດຂາຍສຸດທິລາຍວັນ
+        </div>
+        <canvas id="chartDailySales" style="max-height: 240px;"></canvas>
+      </div>
+    </div>
+
+    <!-- Donut Chart: ສັດສ່ວນການຊຳລະ -->
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card border-0 shadow-sm" style="border-radius: 14px; padding: 18px 20px; height: 100%;">
+        <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
+          <i class="fas fa-chart-pie text-success mr-2"></i> ສັດສ່ວນການຊຳລະ
+        </div>
+        <canvas id="chartPaymentMethod" style="max-height: 200px;"></canvas>
+        <!-- Legend -->
+        <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap: 10px;">
+          <div class="d-flex align-items-center" style="gap: 6px; font-size: 0.8rem;">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#6366f1;"></span>
+            <span class="font-weight-bold">ເງິນສົດ</span>
+            <span class="text-muted"><?php echo number_format($totalCash); ?> ₭</span>
+          </div>
+          <div class="d-flex align-items-center" style="gap: 6px; font-size: 0.8rem;">
+            <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#06b6d4;"></span>
+            <span class="font-weight-bold">ໂອນ</span>
+            <span class="text-muted"><?php echo number_format($totalQr); ?> ₭</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bill Count Line Chart -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px; padding: 18px 20px;">
+    <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
+      <i class="fas fa-chart-line text-warning mr-2"></i> ຈຳນວນບິນລາຍວັນ
+    </div>
+    <canvas id="chartDailyBills" style="max-height: 160px;"></canvas>
+  </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ຕັ້ງຟ້ອນ Chart.js ໃຫ້ຄືກັນກັບໜ້າ
+  Chart.defaults.font.family = "'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', sans-serif";
+  Chart.defaults.font.size   = 11;
+
+  // CountUp Animation
+  document.querySelectorAll('.counter-num').forEach(function (el) {
+    var target = parseInt(el.getAttribute('data-target') || '0', 10);
+    var suffix = el.getAttribute('data-suffix') || '';
+    if (isNaN(target)) target = 0;
+    var startTime = null;
+    var duration = 1800;
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var prog = Math.min((ts - startTime) / duration, 1);
+      var ease = 1 - Math.pow(1 - prog, 3);
+      el.textContent = Math.floor(ease * target).toLocaleString() + suffix;
+      if (prog < 1) requestAnimationFrame(step);
+      else el.textContent = target.toLocaleString() + suffix;
+    }
+    requestAnimationFrame(step);
+  });
+
+  // Chart data (always defined, 0 when no data)
+  var labels   = <?php echo json_encode($chartLabels); ?>;
+  var netData  = <?php echo json_encode($chartNet); ?>;
+  var cashData = <?php echo json_encode($chartCash); ?>;
+  var qrData   = <?php echo json_encode($chartQr); ?>;
+  var tipData  = <?php echo json_encode($chartTip); ?>;
+  var billsData = <?php echo json_encode($chartBills); ?>;
+
+  // Bar Chart: Daily Net Sales
+  new Chart(document.getElementById('chartDailySales'), {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'ສຸດທິ (₭)',
+        data: netData,
+        backgroundColor: 'rgba(37,99,235,0.75)',
+        borderColor: '#1d4ed8',
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }, {
+        label: 'ເງິນສົດ (₭)',
+        data: cashData,
+        backgroundColor: 'rgba(99,102,241,0.55)',
+        borderColor: '#4338ca',
+        borderWidth: 1,
+        borderRadius: 4,
+      }, {
+        label: 'ໂອນ (₭)',
+        data: qrData,
+        backgroundColor: 'rgba(6,182,212,0.55)',
+        borderColor: '#0e7490',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12 } },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.dataset.label + ': ' + ctx.parsed.y.toLocaleString() + ' ₭';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { size: 10 },
+            callback: function(v) { return (v/1000).toFixed(0) + 'K'; }
+          }
+        }
+      }
+    }
+  });
+
+  // Donut Chart: Payment Method
+  var totalPay = <?php echo $totalCash + $totalQr ?: 1; ?>;
+  new Chart(document.getElementById('chartPaymentMethod'), {
+    type: 'doughnut',
+    data: {
+      labels: ['ເງິນສົດ', 'ໂອນ'],
+      datasets: [{
+        data: [<?php echo $totalCash; ?>, <?php echo $totalQr; ?>],
+        backgroundColor: ['#6366f1', '#06b6d4'],
+        borderColor: ['#4338ca', '#0e7490'],
+        borderWidth: 2,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              var pct = ((ctx.parsed / totalPay) * 100).toFixed(1);
+              return ctx.label + ': ' + ctx.parsed.toLocaleString() + ' ₭ (' + pct + '%)';
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Line Chart: Daily Bills Count
+  new Chart(document.getElementById('chartDailyBills'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'ຈຳນວນບິນ',
+        data: billsData,
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.12)',
+        borderWidth: 2.5,
+        pointRadius: 5,
+        pointBackgroundColor: '#f59e0b',
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: function(ctx) { return 'ບິນ: ' + ctx.parsed.y; } }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { stepSize: 1, font: { size: 10 } }
+        }
+      }
+    }
+  });
+});
+</script>
+
+<!-- Bill Details & Thermal Receipt Modals -->
+<?php require_once __DIR__ . '/partials/reports_modal.php'; ?>
+<?php require_once __DIR__ . '/partials/js/reports_js.php'; ?>
+
+<?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
