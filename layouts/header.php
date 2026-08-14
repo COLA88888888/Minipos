@@ -64,15 +64,14 @@ if (!isset($base_path)) {
         height: 100%;
         background: rgba(255, 255, 255, 0.92);
         z-index: 99999;
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
-        transition: opacity 0.35s ease-out, visibility 0.35s ease-out;
+        transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
         pointer-events: none;
       }
-      #global-preloader.fade-out {
-        opacity: 0;
-        visibility: hidden;
+      #global-preloader.show-slow-net {
+        display: flex !important;
       }
       .preloader-content {
         text-align: center;
@@ -120,14 +119,20 @@ if (!isset($base_path)) {
   </head>
   <body class="hold-transition sidebar-mini layout-fixed">
     <?php if (empty($pos_page)): ?>
-    <!-- Fast 8-Dots Circular Global Preloader -->
+    <!-- Smart Delayed Global Preloader: Triggers only if live server latency > 600ms -->
     <div id="global-preloader">
         <div class="preloader-content">
             <div class="lao-dots-spinner">
               <div></div><div></div><div></div><div></div>
               <div></div><div></div><div></div><div></div>
             </div>
-            <span class="preloader-text">ກຳລັງໂຫຼດຂໍ້ມູນ...</span>
+            <span class="preloader-text">ກຳລັງດຶງຂໍ້ມູນ...</span>
         </div>
     </div>
+    <script>
+      window._slowNetPreloaderTimer = setTimeout(function() {
+        var p = document.getElementById('global-preloader');
+        if (p) p.classList.add('show-slow-net');
+      }, 600);
+    </script>
     <?php endif; ?>

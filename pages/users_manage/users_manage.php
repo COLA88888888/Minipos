@@ -79,7 +79,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-uppercase: true;">
                 <tr>
                   <th class="text-center py-3" style="width: 50px;">ລຳດັບ</th>
-                  <th class="py-3">ລະຫັດຜູ້ໃຊ้</th>
+                  <th class="py-3">ລະຫັດຜູ້ໃຊ້</th>
                   <th class="text-center py-3" style="width: 80px;">ຮູບພາບ</th>
                   <th class="py-3">ຊື່ຜູ້ໃຊ້ງານ</th>
                   <th class="py-3">ເບີໂທລະສັບ</th>

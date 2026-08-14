@@ -47,6 +47,11 @@ function setPayMode(mode) {
     $('#payTypeRow').show();
     $('#singleSummary').show();
     $('#splitSummary').hide();
+    if (selectedPayType === 'ເງິນສົດ') {
+      $('#singleQrSection').hide();
+    } else {
+      $('#singleQrSection').show();
+    }
     calculateChange();
   } else {
     $('#payModeSplitBtn').css({ 'border-color': '#7c3aed', 'background': '#faf5ff', 'color': '#7c3aed' });
@@ -56,6 +61,7 @@ function setPayMode(mode) {
     $('#payTypeRow').hide();
     $('#singleSummary').hide();
     $('#splitSummary').show();
+    $('#singleQrSection').show();
     var totalVal = parseFloat($('#cartTotal').text().replace(/[^\d]/g, '')) || 0;
     $('#splitTotal').text(totalVal.toLocaleString() + ' ₭');
     calcSplitRemaining();
@@ -71,9 +77,20 @@ function selectPayTypeTab(type) {
   if (type === 'ເງິນສົດ') {
     $('#payTypeCashBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
     $('#payTypeQrBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
+    $('#singleQrSection').slideUp(150);
   } else {
-    $('#payTypeQrBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
+    $('#payTypeQrBtn').css({ 'border-color': '#7c3aed', 'background': '#faf5ff', 'color': '#7c3aed' });
     $('#payTypeCashBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
+    $('#singleQrSection').slideDown(150);
+
+    // Auto trigger selected/first bank option to load bank QR
+    var activeBankOpt = $('.pos-bank-option.selected-bank');
+    if (!activeBankOpt.length) {
+      activeBankOpt = $('.pos-bank-option').first();
+    }
+    if (activeBankOpt.length) {
+      activeBankOpt.click();
+    }
   }
 }
 
@@ -165,6 +182,16 @@ function fillSplitQrRemaining() {
 // OPEN CHECKOUT MODAL
 // ============================
 function openCheckoutModal() {
+  if (cart.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'ແຈ້ງເຕືອນ',
+      text: 'ກະລຸນາເພີ່ມສິນຄ້າລົງກະຕ່າກ່ອນ!',
+      confirmButtonColor: '#2563eb'
+    });
+    return;
+  }
+
   currentPayMode = 'single';
   $('#singlePaySection').show();
   $('#splitPaySection').hide();
@@ -182,6 +209,9 @@ function openCheckoutModal() {
   $('#cashReceived').val(totalText.replace(' ₭', ''));
   calculateChange();
   $('#checkoutModal').modal('show');
+  if (typeof broadcastCustomerDisplay === 'function') {
+    broadcastCustomerDisplay('checkout_modal_open', { paymentType: selectedPayType });
+  }
   setTimeout(function(){ $('#cashReceived').focus(); }, 400);
 }
 
@@ -221,19 +251,24 @@ function processCheckout() {
     change      = Math.max(0, (cashReceived + qrReceived) - total);
   }
 
+  var activeBankId = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankId || $('input[name="pos_selected_bank_id"]:checked').val() || null) : null;
+  var activeBankName = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankName || null) : null;
+
   $.ajax({
     url: '',
     type: 'POST',
     data: {
-      action:        'checkout',
-      cart:          JSON.stringify(cart),
-      cash_received: cashReceived,
-      qr_received:   qrReceived,
-      payment_type:  paymentType,
-      pay_mode:      currentPayMode,
+      action:          'checkout',
+      cart:            JSON.stringify(cart),
+      cash_received:   cashReceived,
+      qr_received:     qrReceived,
+      payment_type:    paymentType,
+      pay_mode:        currentPayMode,
       discount_amount: discount,
-      customer_id:   selectedCustomer ? selectedCustomer.customer_id : null,
-      customer_name: selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ'
+      bank_account_id: activeBankId,
+      bank_name:       activeBankName,
+      customer_id:     selectedCustomer ? selectedCustomer.customer_id : null,
+      customer_name:   selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ'
     },
     dataType: 'json',
     success: function(res) {
@@ -271,13 +306,38 @@ function processCheckout() {
         $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
         $('#rc_change').text(res.change.toLocaleString() + ' ₭');
 
-        // Payment rows (Always display Cash & Transfer amounts)
+        // Payment rows (Always display Cash & Transfer amounts, showing 0 ₭ if unreceived)
         var cashAmt = parseFloat(res.cash_received) || 0;
         var qrAmt   = parseFloat(res.qr_received) || 0;
+
+        if (cashAmt === 0 && qrAmt === 0) {
+          var pType = res.payment_type || '';
+          if (pType === 'ເງິນສົດ') {
+            cashAmt = (parseFloat(res.total_amount) || 0) + (parseFloat(res.change) || 0);
+          } else if (pType === 'ໂອນ' || pType === 'QR' || pType === 'ເງິນໂອນ') {
+            qrAmt = parseFloat(res.total_amount) || 0;
+          }
+        }
+
+        var bName = res.bank_name || window.currentSelectedBankName || '';
         var payRows = '';
-        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນສົດ):</span><span>' + cashAmt.toLocaleString() + ' ₭</span></div>';
-        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນໂອນ):</span><span>' + qrAmt.toLocaleString() + ' ₭</span></div>';
+        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cashAmt.toLocaleString() + ' ₭</span></div>';
+        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qrAmt.toLocaleString() + ' ₭</span></div>';
+        if (bName && qrAmt > 0) {
+          payRows += '<div class="d-flex justify-content-between" style="font-weight:700;"><span>ທະນາຄານໂອນ:</span><span>' + bName + '</span></div>';
+        }
         $('#rc_payment_rows').html(payRows);
+
+        // Update Receipt Bank QR & Title
+        var activeBankQr = $('#posActiveBankQrImg').attr('src');
+        if (activeBankQr && (qrAmt > 0 || bName)) {
+          $('#rc_bank_qr_img').attr('src', activeBankQr);
+        }
+        if (bName && qrAmt > 0) {
+          $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + bName + ')');
+        } else {
+          $('#rc_bank_name_lbl').text('ສະແກນ QR Code ເພື່ອຊຳລະເງິນ');
+        }
 
         // Items
         var tbody = $('#rc_items');
@@ -292,6 +352,9 @@ function processCheckout() {
           `);
         });
 
+        if (typeof broadcastCustomerDisplay === 'function') {
+          broadcastCustomerDisplay('payment_success', { cashReceived: res.cash_received, qrReceived: res.qr_received, changeAmount: res.change });
+        }
         printReceipt();
         setTimeout(function() { resetPOS(); }, 1200);
       } else {
@@ -336,8 +399,9 @@ function printReceipt() {
       .mt-2{margin-top:8px!important} 
       .text-muted { color: #000 !important; font-weight: 600 !important; }
       .receipt-header-address, .receipt-header-tel { font-size: 12px !important; font-weight: 600 !important; color: #000 !important; line-height: 1.4 !important; }
-      .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 20px !important; padding-top: 10px !important; text-align: center !important; }
+      .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 10px !important; padding-top: 8px !important; text-align: center !important; }
       img.receipt-logo { max-width:80px!important; max-height:80px!important; height:auto!important; display:block!important; margin:10px auto 2px auto!important; object-fit:contain!important; }
+      img.receipt-qr-img { max-width:100px!important; max-height:100px!important; height:auto!important; display:block!important; margin:6px auto 2px auto!important; object-fit:contain!important; }
       table { width:100%; border-collapse:collapse; margin:4px 0; font-size:11.5px; color: #000 !important; }
       td,th { padding:3px 0; vertical-align:top; color: #000 !important; font-weight: 600 !important; }
       th { font-weight: 700 !important; }
@@ -348,7 +412,40 @@ function printReceipt() {
     </style>
   </head><body>${printContent}</body></html>`);
   iframeDoc.close();
-  setTimeout(function() { iframe.contentWindow.focus(); iframe.contentWindow.print(); }, 250);
+
+  var images = iframeDoc.getElementsByTagName('img');
+  var totalImages = images.length;
+  var loadedCount = 0;
+  var printTriggered = false;
+
+  function doTriggerPOSPrint() {
+    if (printTriggered) return;
+    printTriggered = true;
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+  }
+
+  if (totalImages === 0) {
+    setTimeout(doTriggerPOSPrint, 150);
+  } else {
+    for (var i = 0; i < totalImages; i++) {
+      if (images[i].complete && images[i].naturalWidth !== 0) {
+        loadedCount++;
+      } else {
+        images[i].onload = images[i].onerror = function() {
+          loadedCount++;
+          if (loadedCount >= totalImages) {
+            setTimeout(doTriggerPOSPrint, 100);
+          }
+        };
+      }
+    }
+    if (loadedCount >= totalImages) {
+      setTimeout(doTriggerPOSPrint, 150);
+    } else {
+      setTimeout(doTriggerPOSPrint, 500);
+    }
+  }
 }
 
 // ============================
@@ -359,19 +456,39 @@ function resetPOS() {
   if (typeof resequenceActiveBills === 'function') resequenceActiveBills();
 
   if (activeBills.length === 0) {
-    var newId = 'BILL-' + Date.now();
-    activeBills = [{ id: newId, name: 'ບິນທີ 1', time: new Date().toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' }), customer: { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' }, cart: [], discount: '0' }];
     isBillOpened = false;
     localStorage.removeItem('pos_bill_opened');
+    localStorage.removeItem('pos_active_bills');
+    cart = [];
+    selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' };
+    currentBillId = null;
+    updateCartUI();
+    updateActiveBillsUI();
   } else {
     isBillOpened = true;
     localStorage.setItem('pos_bill_opened', '1');
+    currentBillId = activeBills[0].id;
+    localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
+    loadBillState(currentBillId);
   }
-  currentBillId = activeBills[0].id;
-  localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
-  loadBillState(currentBillId);
   $('#receiptModal').modal('hide');
   $('#barcodeInput').val('').focus();
+}
+
+function selectPosBank(bankId, bankName, qrPath, el) {
+  $('.pos-bank-option').css({'background': '#ffffff', 'border-color': '#cbd5e1'}).removeClass('selected-bank');
+  if (el) {
+    $(el).addClass('selected-bank').css({'background': '#f0f9ff', 'border-color': '#0284c7'});
+    $(el).find('input[type="radio"]').prop('checked', true);
+  }
+  if (qrPath) {
+    $('#posActiveBankQrImg').attr('src', qrPath);
+  }
+  if (bankName) {
+    $('#posActiveBankNameTitle').text(' - ' + bankName);
+  }
+  window.currentSelectedBankId = bankId;
+  window.currentSelectedBankName = bankName;
 }
 
 function formatPriceInput(input) {

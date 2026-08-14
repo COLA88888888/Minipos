@@ -1,4 +1,32 @@
 <script>
+// --- DUAL-SCREEN POS CUSTOMER DISPLAY BROADCAST ---
+var customerDisplayChannel = null;
+try {
+  customerDisplayChannel = new BroadcastChannel('pos_customer_display_channel');
+} catch(e) {}
+
+function broadcastCustomerDisplay(checkoutState, extraData) {
+  var payload = {
+    cart: (typeof cart !== 'undefined') ? cart : [],
+    customer: (typeof selectedCustomer !== 'undefined') ? selectedCustomer : null,
+    discount: $('#cartDiscount').val() || '0',
+    checkoutState: checkoutState || 'shopping',
+    ...(extraData || {})
+  };
+
+  localStorage.setItem('pos_customer_display_data', JSON.stringify(payload));
+  if (customerDisplayChannel) {
+    try {
+      customerDisplayChannel.postMessage(payload);
+    } catch(e) {}
+  }
+}
+
+function openCustomerDisplayWindow() {
+  window.open('customer_display.php', 'POSCustomerDisplay', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+  broadcastCustomerDisplay('shopping');
+}
+
 // --- CART & ITEM MANAGEMENT ---
 function updateCartUI() {
   var container = $('#cartItemsContainer');
@@ -12,19 +40,20 @@ function updateCartUI() {
         <small class="text-muted">ກະລຸນາເລືອກສິນຄ້າ ຫຼື ສະແກນບາໂຄ້ດ</small>
       </div>
     `);
-    $('#cartItemCountBadge').text('0 ລາຍການ');
+    $('#cartItemCountBadge').text('0 ລາຍການ (0 ຈຳນວນ)');
     $('#cartSubtotal').text('0 ₭');
     $('#cartVat').text('0 ₭');
     $('#cartTotal').text('0 ₭');
     $('#mobileCartCountBadge').text('0').hide();
-    $('#floatingCartItemCount').text('0 ລາຍການ');
+    $('#floatingCartItemCount').text('0 ລາຍການ (0 ຈຳນວນ)');
     $('#floatingCartTotal').html('0 ₭ <i class="fas fa-chevron-right ml-1"></i>');
     $('#mobileFloatingCartBar').hide();
-    $('#btnCheckout').prop('disabled', true);
-    $('#btnClearCart').prop('disabled', true);
-    $('#btnHoldOrder').prop('disabled', true);
+    $('#btnCheckout').prop('disabled', true).addClass('disabled');
+    $('#btnClearCart').prop('disabled', true).addClass('disabled');
+    $('#btnHoldOrder, #btnHoldCart').prop('disabled', true).addClass('disabled');
     updateProductGridBadges();
     saveCurrentBillState();
+    broadcastCustomerDisplay('shopping');
     return;
   }
 
@@ -90,14 +119,17 @@ function updateCartUI() {
   var vatVal = subtotal * (<?php echo $vat_rate; ?> / 100);
   var netTotal = Math.max(0, subtotal - discountVal + vatVal);
 
-  $('#cartItemCountBadge').text(totalItemsCount + ' ລາຍການ');
+  var lineCount = cart.length;
+  var countText = lineCount + ' ລາຍການ (' + totalItemsCount + ' ຈຳນວນ)';
+
+  $('#cartItemCountBadge').text(countText);
   $('#cartSubtotal').text(subtotal.toLocaleString() + ' ₭');
   $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
   $('#cartTotal').text(netTotal.toLocaleString() + ' ₭');
 
   if (totalItemsCount > 0) {
-    $('#mobileCartCountBadge').text(totalItemsCount).css('display', 'inline-block');
-    $('#floatingCartItemCount').text(totalItemsCount + ' ລາຍການ');
+    $('#mobileCartCountBadge').text(lineCount).css('display', 'inline-block');
+    $('#floatingCartItemCount').text(countText);
     $('#floatingCartTotal').html(netTotal.toLocaleString() + ' ₭ <i class="fas fa-chevron-right ml-1"></i>');
     if (window.innerWidth < 992 && $('#mobileTabProductsBtn').hasClass('active')) {
       $('#mobileFloatingCartBar').fadeIn(150);
@@ -107,12 +139,13 @@ function updateCartUI() {
     $('#mobileFloatingCartBar').hide();
   }
 
-  $('#btnCheckout').prop('disabled', false);
-  $('#btnClearCart').prop('disabled', false);
-  $('#btnHoldOrder').prop('disabled', false);
+  $('#btnCheckout').prop('disabled', false).removeClass('disabled');
+  $('#btnClearCart').prop('disabled', false).removeClass('disabled');
+  $('#btnHoldOrder, #btnHoldCart').prop('disabled', false).removeClass('disabled');
 
   updateProductGridBadges();
   saveCurrentBillState();
+  broadcastCustomerDisplay('shopping');
 }
 
 // --- STOCK CHECK HELPERS & ALERTS ---
@@ -313,12 +346,28 @@ function changeCartQty(cartKey, val) {
 }
 
 function removeFromCart(cartKey) {
-  cart = cart.filter(function(i) { return i.cartKey !== cartKey; });
+  var itemToRemove = cart.find(function(i) { return i.cartKey === cartKey; });
+  if (itemToRemove && itemToRemove.product_id) {
+    var pid = itemToRemove.product_id;
+    cart = cart.filter(function(i) { 
+      return i.cartKey !== cartKey && i.parent_product_id !== pid; 
+    });
+  } else {
+    cart = cart.filter(function(i) { return i.cartKey !== cartKey; });
+  }
   updateCartUI();
 }
 
 function clearCart() {
-  if (cart.length === 0) return;
+  if (cart.length === 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'ແຈ້ງເຕືອນ',
+      text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າຢູ່ແລ້ວ!',
+      confirmButtonColor: '#2563eb'
+    });
+    return;
+  }
   Swal.fire({
     title: 'ຢືນຢັນລ້າງກະຕ່າ?',
     text: 'ລາຍການສິນຄ້າທັງໝົດໃນກະຕ່າຈະຖືກລຶບອອກ!',
@@ -364,6 +413,22 @@ function buildAvailableUnits(product) {
 }
 
 function _doAddToCart(product, unitObj) {
+  if (!isBillOpened || activeBills.length === 0) {
+    var newId = 'BILL-' + Date.now();
+    activeBills = [{
+      id: newId,
+      name: 'ບິນທີ 1',
+      time: new Date().toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' }),
+      customer: { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' },
+      cart: [],
+      discount: '0'
+    }];
+    currentBillId = newId;
+    isBillOpened = true;
+    localStorage.setItem('pos_bill_opened', '1');
+    localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
+  }
+
   var unitName = unitObj ? unitObj.unit_name : (product.unit || 'ອັນ');
   var unitPrice = unitObj ? parseFloat(unitObj.price) : parseFloat(product.price);
   var costPrice = unitObj ? parseFloat(unitObj.bprice) : parseFloat(product.bprice);
@@ -420,11 +485,63 @@ function _doAddToCart(product, unitObj) {
     });
   }
 
+  // Handle Free Gift Auto-Adding into Cart
+  var giftName = '';
+  var giftQty = 1;
+  var targetUnit = (product && product.target_unit_name) ? product.target_unit_name : 'all';
+  var unitMatches = (targetUnit === 'all' || targetUnit === '' || String(unitName).toLowerCase() === String(targetUnit).toLowerCase());
+
+  if (unitMatches) {
+    if (product && product.gift_product_name && product.gift_product_name !== '') {
+      giftName = product.gift_product_name;
+      giftQty = parseInt(product.gift_qty) || 1;
+    } else if (product && product.promo_type === 'buy_x_get_y') {
+      giftName = 'ສິນຄ້າແຖມ';
+      giftQty = parseInt(product.gift_qty) || 1;
+    }
+  }
+
+  if (giftName !== '' && unitMatches) {
+    var giftCartKey = 'GIFT_' + product.product_id + '_' + giftName;
+    var existingGift = cart.find(function(i) { return i.cartKey === giftCartKey; });
+    
+    if (existingGift) {
+      existingGift.quantity += giftQty;
+    } else {
+      cart.push({
+        cartKey: giftCartKey,
+        product_id: 'GIFT_' + product.product_id,
+        product_name: '🎁 ' + giftName + ' (ແຖມ' + (targetUnit !== 'all' ? ' ສະເພາະ ' + targetUnit : '') + ')',
+        unit_name: 'ຊິ້ນ',
+        unit_price: 0,
+        cost_price: 0,
+        multiplier: 1,
+        quantity: giftQty,
+        image: 'image.jpg',
+        is_free_gift: true,
+        parent_product_id: product.product_id
+      });
+    }
+  }
+
   var newRemaining = currentRemaining - multiplier;
 
   // 3. ຖ້າເຫຼືອ 10 ລາຍການ (ຫຼື ຫຼຸດລົງ <= 10) -> ແຈ້ງເຕືອນວ່າສິນຄ້າໃກ້ຈະໝົດແລ້ວ (ເທົ່ານັ້ນ cut_qty = 1)
   if (getProductCutQty(product.product_id) === 1 && newRemaining <= 10 && newRemaining >= 0) {
     showLowStockToast(product.product_name, newRemaining, product.unit || 'ອັນ');
+  } else {
+    // Toast alert feedback on success
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 1200,
+      timerProgressBar: false
+    });
+    Toast.fire({
+      icon: 'success',
+      title: 'ເພີ່ມ "' + product.product_name + '" ລົງກະຕ່າແລ້ວ'
+    });
   }
 
   updateCartUI();

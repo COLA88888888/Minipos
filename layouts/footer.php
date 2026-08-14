@@ -9,21 +9,18 @@ if (!isset($base_path)) {
     <script src="<?php echo $base_path; ?>assets/js/flatpickr.min.js"></script>
     
     <script>
-      // Preloader Fade Out with delay so spin icon is clearly visible
+      // Smart Preloader: Immediately cancel timer & hide preloader on fast page load
       function hidePreloader() {
+          if (window._slowNetPreloaderTimer) clearTimeout(window._slowNetPreloaderTimer);
           var p = document.getElementById('global-preloader');
-          if (p && !p.classList.contains('fade-out')) {
-              p.classList.add('fade-out');
+          if (p) {
+              p.classList.remove('show-slow-net');
+              p.style.display = 'none';
           }
       }
-      if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', function() {
-              setTimeout(hidePreloader, 500);
-          });
-      } else {
-          setTimeout(hidePreloader, 500);
-      }
-      setTimeout(hidePreloader, 800);
+      hidePreloader();
+      document.addEventListener('DOMContentLoaded', hidePreloader);
+      window.addEventListener('load', hidePreloader);
 
       document.addEventListener('DOMContentLoaded', function() {
           // ===== SIDEBAR SMART SCROLL =====

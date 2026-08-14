@@ -1,0 +1,403 @@
+<?php
+// pages/bank/partials/bank_accounts_tab.php
+if (!defined('MINIPOS_APP')) {
+    define('MINIPOS_APP', true);
+}
+
+// Fetch all bank accounts
+$banks_stmt = $pdo->query("SELECT * FROM bank_accounts ORDER BY is_active DESC, id ASC");
+$bank_accounts_list = $banks_stmt ? $banks_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// Helper get bank logo image
+if (!function_exists('resolveBankLogo')) {
+    function resolveBankLogo($logoFile, $bankCode = '') {
+        if (!empty($logoFile)) {
+            $filename = basename(trim($logoFile));
+            if (file_exists(__DIR__ . '/../../../assets/img/banks/' . $filename)) {
+                return '../../assets/img/banks/' . $filename;
+            }
+        }
+        $code = strtolower(trim($bankCode));
+        if ($code && file_exists(__DIR__ . '/../../../assets/img/banks/' . $code . '.svg')) {
+            return '../../assets/img/banks/' . $code . '.svg';
+        }
+        return '../../assets/img/banks/default.svg';
+    }
+}
+
+// Helper get bank QR image
+if (!function_exists('resolveBankQr')) {
+    function resolveBankQr($qrFile) {
+        if (!empty($qrFile)) {
+            $filename = basename(trim($qrFile));
+            if (file_exists(__DIR__ . '/../../../assets/img/qr/' . $filename)) {
+                return '../../assets/img/qr/' . $filename;
+            }
+        }
+        return '../../assets/img/qr_placeholder.png';
+    }
+}
+
+// Calculate revenue per bank for date range ($start_date to $end_date)
+$bank_sales_sql = "
+    SELECT 
+        COALESCE(s.bank_account_id, 0) as bank_acc_id,
+        COALESCE(s.bank_name, 'ບໍ່ໄດ້ລະບຸ') as bank_label,
+        COUNT(s.sale_id) as total_tx,
+        COALESCE(SUM(s.total_amount), 0) as total_received
+    FROM sales s
+    WHERE (s.payment_type LIKE '%ໂອນ%' OR s.payment_type LIKE '%Transfer%' OR s.payment_type LIKE '%QR%' OR s.bank_account_id > 0)
+      AND DATE(COALESCE(s.created_at, NOW())) BETWEEN ? AND ?
+    GROUP BY bank_acc_id, bank_label
+";
+$bank_sales_stmt = $pdo->prepare($bank_sales_sql);
+$bank_sales_stmt->execute([$start_date, $end_date]);
+$bank_sales_data = $bank_sales_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Map sales stats by bank_account_id
+$sales_by_bank_id = [];
+$total_transfer_sum = 0.00;
+$total_transfer_count = 0;
+foreach ($bank_sales_data as $bs) {
+    $bId = intval($bs['bank_acc_id']);
+    $sales_by_bank_id[$bId] = $bs;
+    $total_transfer_sum += floatval($bs['total_received']);
+    $total_transfer_count += intval($bs['total_tx']);
+}
+
+// Helper brand colors for Lao Banks
+function getBankBrandStyle($bankCode) {
+    $code = strtoupper(trim($bankCode));
+    
+    if (strpos($code, 'BCEL') !== false || strpos($code, 'BCL') !== false || strpos($code, 'ONEPAY') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fef08a', 'bg' => 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)', 'border' => '#dc2626', 'badge_bg' => '#991b1b', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'LDB') !== false || strpos($code, 'DEVELOPMENT') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#e0f2fe', 'bg' => 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)', 'border' => '#0284c7', 'badge_bg' => '#0369a1', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'JDB') !== false || strpos($code, 'PHONGSAVANH') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#93c5fd', 'bg' => 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%)', 'border' => '#1d4ed8', 'badge_bg' => '#1e3a8a', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'STB') !== false || strpos($code, 'ST') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#ffedd5', 'bg' => 'linear-gradient(135deg, #ea580c 0%, #9a3412 100%)', 'border' => '#ea580c', 'badge_bg' => '#c2410c', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'APB') !== false || strpos($code, 'AGRICULTUR') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fde047', 'bg' => 'linear-gradient(135deg, #15803d 0%, #14532d 100%)', 'border' => '#15803d', 'badge_bg' => '#16a34a', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'LVB') !== false || strpos($code, 'LAO-VIET') !== false || strpos($code, 'LAO VIET') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fef08a', 'bg' => 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)', 'border' => '#b91c1c', 'badge_bg' => '#dc2626', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'MARUHAN') !== false || strpos($code, 'MJB') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#a7f3d0', 'bg' => 'linear-gradient(135deg, #059669 0%, #064e3b 100%)', 'border' => '#059669', 'badge_bg' => '#047857', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'INDOCHINA') !== false || strpos($code, 'IB') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#facc15', 'bg' => 'linear-gradient(135deg, #18181b 0%, #09090b 100%)', 'border' => '#27272a', 'badge_bg' => '#27272a', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'KASIKORN') !== false || strpos($code, 'KBANK') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fef08a', 'bg' => 'linear-gradient(135deg, #16a34a 0%, #14532d 100%)', 'border' => '#16a34a', 'badge_bg' => '#15803d', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'ICBC') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fecdd3', 'bg' => 'linear-gradient(135deg, #be123c 0%, #881337 100%)', 'border' => '#be123c', 'badge_bg' => '#9f1239', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'BFL') !== false || strpos($code, 'BRED') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#c7d2fe', 'bg' => 'linear-gradient(135deg, #4338ca 0%, #1e1b4b 100%)', 'border' => '#4338ca', 'badge_bg' => '#3730a3', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'BIC') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#a5f3fc', 'bg' => 'linear-gradient(135deg, #0891b2 0%, #164e63 100%)', 'border' => '#0891b2', 'badge_bg' => '#0e7490', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+    if (strpos($code, 'CANADIA') !== false) {
+        return ['color' => '#ffffff', 'acc_color' => '#fecdd3', 'bg' => 'linear-gradient(135deg, #e11d48 0%, #881337 100%)', 'border' => '#e11d48', 'badge_bg' => '#be123c', 'text_sub' => 'rgba(255,255,255,0.85)'];
+    }
+
+    // Auto-generate dynamic corporate gradient palette for any new custom bank
+    $hash = abs(crc32($code));
+    $hue = $hash % 360;
+    $bg = "linear-gradient(135deg, hsl({$hue}, 75%, 35%) 0%, hsl({$hue}, 80%, 20%) 100%)";
+    $badge_bg = "hsl({$hue}, 80%, 22%)";
+    $acc_color = "hsl({$hue}, 95%, 85%)";
+    
+    return [
+        'color' => '#ffffff',
+        'acc_color' => $acc_color,
+        'bg' => $bg,
+        'border' => "hsl({$hue}, 70%, 40%)",
+        'badge_bg' => $badge_bg,
+        'text_sub' => 'rgba(255,255,255,0.85)'
+    ];
+}
+?>
+
+<!-- Bank Summary Cards Grid -->
+<div class="row mb-4">
+
+  <?php foreach ($bank_accounts_list as $bank): ?>
+    <?php 
+      $bId = intval($bank['id']);
+      $stats = $sales_by_bank_id[$bId] ?? ['total_received' => 0, 'total_tx' => 0];
+      $receivedAmt = floatval($stats['total_received']);
+      $txCount = intval($stats['total_tx']);
+      $pct = ($total_transfer_sum > 0) ? round(($receivedAmt / $total_transfer_sum) * 100, 1) : 0;
+      $logoSrc = resolveBankLogo($bank['bank_logo'], $bank['bank_code'] ?: $bank['bank_name']);
+      $brand = getBankBrandStyle($bank['bank_code'] ?: $bank['bank_name']);
+    ?>
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="bank-card p-3 border-0 shadow-sm rounded-lg h-100 d-flex flex-column justify-content-between" style="background: <?php echo $brand['bg']; ?>; color: #ffffff; min-height: 120px;">
+        <div class="d-flex align-items-start justify-content-between mb-2">
+          <div class="d-flex align-items-center" style="gap: 12px;">
+            <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Bank Logo" style="width: 44px; height: 44px; object-fit: contain; border-radius: 10px; border: 1px solid rgba(255,255,255,0.3); background: #fff; padding: 2px;">
+            <div>
+              <h6 class="font-weight-bold text-white mb-0 text-truncate" style="max-width: 140px;" title="<?php echo htmlspecialchars($bank['bank_name']); ?>">
+                <?php echo htmlspecialchars($bank['bank_name']); ?>
+              </h6>
+              <div class="font-weight-bold" style="font-size: 0.9rem; font-family: monospace; color: <?php echo $brand['acc_color']; ?>;">
+                <?php echo htmlspecialchars($bank['account_number']); ?>
+              </div>
+              <small class="text-truncate d-block" style="max-width: 140px; color: <?php echo $brand['text_sub']; ?>;" title="<?php echo htmlspecialchars($bank['account_name']); ?>">
+                <?php echo htmlspecialchars($bank['account_name'] ?: '-'); ?>
+              </small>
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <button class="btn btn-sm btn-link text-white-50 p-0" type="button" data-toggle="dropdown">
+              <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-right shadow border-0" style="border-radius: 8px;">
+              <a class="dropdown-item py-1 text-primary" href="#" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>); return false;">
+                <i class="fas fa-edit mr-1"></i> ແກ້ໄຂຂໍ້ມູນ
+              </a>
+              <a class="dropdown-item py-1 text-danger" href="#" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>'); return false;">
+                <i class="fas fa-trash-alt mr-1"></i> ລົບບັນຊີ
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-top d-flex align-items-center justify-content-between mt-2" style="border-color: rgba(255,255,255,0.2) !important;">
+          <div>
+            <small style="color: <?php echo $brand['text_sub']; ?>;" class="font-weight-bold">ຍອດຮັບເງິນ:</small>
+            <div class="font-weight-bold text-white" style="font-size: 1.02rem;">
+              <?php echo number_format($receivedAmt, 0); ?> ₭
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="badge text-white px-2 py-1 shadow-xs" style="font-size: 0.76rem; background-color: <?php echo $brand['badge_bg']; ?>; border: 1px solid rgba(255,255,255,0.25);">
+              <?php echo number_format($txCount); ?> ບິນ (<?php echo $pct; ?>%)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php endforeach; ?>
+
+  <!-- Total Transfer Revenue Summary Card (Moved to the END) -->
+  <div class="col-lg-3 col-md-6 mb-3">
+    <div class="bank-card p-3 rounded-lg border-0 shadow-sm h-100 d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; min-height: 120px;">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <small class="text-white-50 font-weight-bold text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.5px;">ລວມຍອດຮັບເງິນໂອນທັງໝົດ</small>
+          <h4 class="font-weight-bold text-white mb-0 mt-1">
+            <?php echo number_format($total_transfer_sum, 0); ?> <span style="font-size: 0.9rem;">₭</span>
+          </h4>
+          <small class="text-white-50 font-weight-bold mt-1 d-block">
+            <i class="fas fa-exchange-alt mr-1"></i> ລວມ <?php echo number_format($total_transfer_count); ?> ລາຍການ
+          </small>
+        </div>
+        <div class="rounded-circle p-3 text-primary" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+          <i class="fas fa-qrcode fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Bank Accounts Table & Transfers Breakdown -->
+<div class="card border-0 shadow-sm rounded-lg overflow-hidden mb-4">
+  <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+    <h6 class="font-weight-bold text-dark mb-0">
+      <i class="fas fa-list-alt text-info mr-2"></i> ຕາຕະລາງລາຍການບັນຊີທະນາຄານ ແລະ ຍອດຮັບເງິນໂອນ
+    </h6>
+    <!-- <span class="badge badge-light border text-secondary font-weight-bold p-2">
+      ລວມບັນຊີທັງໝົດ: <?php echo count($bank_accounts_list); ?> ບັນຊີ
+    </span> -->
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
+      <thead class="bg-light text-uppercase text-secondary font-weight-bold" style="font-size: 0.8rem;">
+        <tr>
+          <th class="py-3 px-4" style="width: 60px;">ລຳດັບ</th>
+          <th class="py-3">ທະນາຄານ</th>
+          <th class="py-3">ເລກບັນຊີ</th>
+          <th class="py-3">ຊື່ບັນຊີ</th>
+          <th class="py-3 text-center">QR</th>
+          <th class="py-3 text-right">ຍອດຮັບເງິນໂອນ</th>
+          <th class="py-3 text-center">ຈຳນວນບິນ</th>
+          <th class="py-3 text-center">ສະຖານະ</th>
+          <th class="py-3 text-center" style="width: 110px;">ຈັດການ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php if (empty($bank_accounts_list)): ?>
+          <tr>
+            <td colspan="9" class="text-center py-4 text-muted">
+              <i class="fas fa-university fa-3x mb-2 text-secondary"></i>
+              <div>ຍັງບໍ່ທັນມີຂໍ້ມູນບັນຊີທະນາຄານ</div>
+            </td>
+          </tr>
+        <?php else: ?>
+          <?php foreach ($bank_accounts_list as $index => $bank): ?>
+            <?php 
+              $bId = intval($bank['id']);
+              $stats = $sales_by_bank_id[$bId] ?? ['total_received' => 0, 'total_tx' => 0];
+              $amt = floatval($stats['total_received']);
+              $tx = intval($stats['total_tx']);
+              $logoSrc = resolveBankLogo($bank['bank_logo'], $bank['bank_code'] ?: $bank['bank_name']);
+              $qrSrc = resolveBankQr($bank['qr_code_img']);
+              $brand = getBankBrandStyle($bank['bank_code'] ?: $bank['bank_name']);
+            ?>
+            <tr>
+              <td class="py-3 px-4 text-secondary font-weight-bold"><?php echo $index + 1; ?></td>
+              <td class="py-3 font-weight-bold">
+                <div class="d-flex align-items-center" style="gap: 10px;">
+                  <img src="<?php echo htmlspecialchars($logoSrc); ?>" alt="Bank Logo" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; padding: 2px;">
+                  <div>
+                    <div><?php echo htmlspecialchars($bank['bank_name']); ?></div>
+                  </div>
+                </div>
+              </td>
+              <td class="py-3 font-weight-bold">
+                <span class="badge px-2.5 py-1.5 border shadow-2xs" style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #0f172a !important; background: #f8fafc; border-color: #cbd5e1 !important; letter-spacing: 0.5px;">
+                  <?php echo htmlspecialchars($bank['account_number']); ?>
+                </span>
+              </td>
+              <td class="py-3 text-muted"><?php echo htmlspecialchars($bank['account_name'] ?: '-'); ?></td>
+              <td class="py-3 text-center">
+                <img src="<?php echo htmlspecialchars($qrSrc); ?>" style="width: 38px; height: 38px; object-fit: contain; border-radius: 6px; border: 1px solid #cbd5e1; padding: 2px; background: #fff;" onerror="this.src='../../assets/img/qr_placeholder.png';">
+              </td>
+              <td class="py-3 text-right font-weight-bold text-success" style="font-size: 0.95rem;">
+                <?php echo number_format($amt, 0); ?> ₭
+              </td>
+              <td class="py-3 text-center font-weight-bold text-primary">
+                <?php echo number_format($tx); ?> ບິນ
+              </td>
+              <td class="py-3 text-center">
+                <?php if ($bank['is_active']): ?>
+                  <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> ເປີດ</span>
+                <?php else: ?>
+                  <span class="badge badge-secondary px-2 py-1"><i class="fas fa-minus-circle mr-1"></i> ປິດ</span>
+                <?php endif; ?>
+              </td>
+              <td class="py-3 text-center">
+                <div class="btn-group btn-group-sm">
+                  <button type="button" class="btn btn-sm btn-outline-primary" title="ແກ້ໄຂ" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function editBankAccount(bank) {
+  $('#form_bank_action').val('edit_bank_account');
+  $('#form_bank_id').val(bank.id);
+  $('#form_bank_name').val(bank.bank_name);
+  $('#form_account_number').val(bank.account_number);
+  $('#form_account_name').val(bank.account_name);
+  $('#form_is_active').val(bank.is_active || 1);
+  
+  $('#bankModalTitle').html('<i class="fas fa-edit text-primary mr-1"></i> ແກ້ໄຂຂໍ້ມູນບັນຊີທະນາຄານ');
+  $('#addBankAccountModal').modal('show');
+}
+
+function validateBankForm(e) {
+  var bName = $.trim($('#form_bank_name').val());
+  var accNum = $.trim($('#form_account_number').val());
+  var accName = $.trim($('#form_account_name').val());
+
+  if (!bName) {
+    if (e && e.preventDefault) e.preventDefault();
+    Swal.fire({
+      icon: 'warning',
+      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+      text: 'ກະລຸນາປ້ອນ ຊື່ທະນາຄານ!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'ຕົກລົງ'
+    }).then(function() {
+      setTimeout(function() { $('#form_bank_name').focus(); }, 150);
+    });
+    return false;
+  }
+
+  if (!accNum) {
+    if (e && e.preventDefault) e.preventDefault();
+    Swal.fire({
+      icon: 'warning',
+      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+      text: 'ກະລຸນາປ້ອນ ເລກບັນຊີທະນາຄານ!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'ຕົກລົງ'
+    }).then(function() {
+      setTimeout(function() { $('#form_account_number').focus(); }, 150);
+    });
+    return false;
+  }
+
+  if (!accName) {
+    if (e && e.preventDefault) e.preventDefault();
+    Swal.fire({
+      icon: 'warning',
+      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+      text: 'ກະລຸນາປ້ອນ ຊື່ເຈົ້າຂອງບັນຊີ!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'ຕົກລົງ'
+    }).then(function() {
+      setTimeout(function() { $('#form_account_name').focus(); }, 150);
+    });
+    return false;
+  }
+
+  return true;
+}
+
+function resetBankForm() {
+  $('#form_bank_action').val('add_bank_account');
+  $('#form_bank_id').val('0');
+  $('#form_bank_name').val('');
+  $('#form_account_number').val('');
+  $('#form_account_name').val('');
+  $('#form_is_active').val('1');
+  $('#bankModalTitle').html('<i class="fas fa-plus-circle text-primary mr-1"></i> ເພີ່ມບັນຊີທະນາຄານໃໝ່');
+}
+
+function deleteBankAccount(bankId, bankName) {
+  Swal.fire({
+    title: 'ຢືນຢັນການລົບ?',
+    text: `ທ່ານຕ້ອງການລົບບັນຊີ "${bankName}" ແທ້ຫຼືບໍ່?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'ລົບເລີຍ',
+    cancelButtonText: 'ຍົກເລີກ'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      var form = $('<form action="" method="POST"></form>');
+      form.append('<input type="hidden" name="action" value="delete_bank_account">');
+      form.append(`<input type="hidden" name="bank_id" value="${bankId}">`);
+      $('body').append(form);
+      form.submit();
+    }
+  });
+}
+</script>

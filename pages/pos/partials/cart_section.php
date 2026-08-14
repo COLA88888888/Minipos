@@ -4,9 +4,14 @@
     <h5 class="mb-0 font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
       <i class="fas fa-shopping-basket mr-2"></i> ລາຍການຂາຍ
     </h5>
-    <button type="button" class="btn btn-sm btn-light text-primary font-weight-bold d-lg-none" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.82rem; padding: 4px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-      <i class="fas fa-boxes mr-1"></i> + ເລືອກສິນຄ້າ
-    </button>
+    <div class="d-flex align-items-center" style="gap: 6px;">
+      <button type="button" class="btn btn-sm btn-light text-primary font-weight-bold shadow-sm" onclick="openCustomerDisplayWindow()" title="ເປີດໜ້າຈໍສະແດງຜົນລູກຄ້າ (Customer Display)" style="border-radius: 8px; font-size: 0.82rem; padding: 4px 10px;">
+        <i class="fas fa-desktop mr-1"></i> ຈໍລູກຄ້າ
+      </button>
+      <button type="button" class="btn btn-sm btn-light text-primary font-weight-bold d-lg-none" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.82rem; padding: 4px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
+        <i class="fas fa-boxes mr-1"></i> + ເລືອກສິນຄ້າ
+      </button>
+    </div>
   </div>
 
   <!-- Active Bills Navigation Bar -->
@@ -75,12 +80,12 @@
     <!-- Hold & Clear & Checkout Action Buttons -->
     <div class="row no-gutters mb-2" style="gap: 6px;">
       <div class="col">
-        <button class="btn btn-outline-warning btn-block font-weight-bold py-1.5 text-dark" onclick="holdCurrentCart()" id="btnHoldCart" disabled style="border-radius: 8px; font-size: 0.88rem;">
+        <button class="btn btn-info btn-block font-weight-bold py-1.5 text-white" onclick="holdCurrentOrder()" id="btnHoldOrder" style="border-radius: 8px; font-size: 0.88rem;">
           <i class="fas fa-pause-circle mr-1"></i> ພັກບິນ
         </button>
       </div>
       <div class="col">
-        <button class="btn btn-info btn-block font-weight-bold py-1.5 text-white" onclick="openHeldOrdersModal()" id="btnHeldOrders" style="border-radius: 8px; font-size: 0.88rem;">
+        <button class="btn btn-primary btn-block font-weight-bold py-1.5 text-white" onclick="openHeldOrdersModal()" id="btnHeldOrders" style="border-radius: 8px; font-size: 0.88rem;">
           <i class="fas fa-history mr-1"></i> ບິນທີ່ພັກ <span class="badge badge-light badge-hold-count text-dark font-weight-bold" id="heldCountBadge">0</span>
         </button>
       </div>
@@ -88,12 +93,12 @@
 
     <div class="row no-gutters" style="gap: 6px;">
       <div class="col-4">
-        <button class="btn btn-danger btn-block font-weight-bold py-2.5" onclick="clearCart()" id="btnClearCart" disabled style="border-radius: 8px;">
+        <button class="btn btn-danger btn-block font-weight-bold py-2.5" onclick="clearCart()" id="btnClearCart" style="border-radius: 8px;">
           <i class="fas fa-trash-alt mr-1"></i> ລ້າງ
         </button>
       </div>
       <div class="col">
-        <button class="btn btn-warning btn-block font-weight-bold py-2.5 text-dark shadow-sm" onclick="openCheckoutModal()" id="btnCheckout" disabled style="border-radius: 8px;">
+        <button class="btn btn-warning btn-block font-weight-bold py-2.5 text-dark shadow-sm" onclick="openCheckoutModal()" id="btnCheckout" style="border-radius: 8px;">
           <i class="fas fa-money-bill-wave mr-1"></i> ຊຳລະເງິນ
         </button>
       </div>

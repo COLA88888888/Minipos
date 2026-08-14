@@ -95,11 +95,12 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
       </li>
     </ul>
 
-    <!-- Right side: Logout button (Visible on Mobile/Tablet ONLY, hidden on Desktop PC) -->
-    <ul class="navbar-nav ml-auto d-lg-none">
+    <!-- Right side: Compact Logout button in Top Navbar (Icon-only on mobile, Icon+Text on desktop) -->
+    <ul class="navbar-nav ml-auto">
       <li class="nav-item">
-        <a class="nav-link text-white font-weight-bold" href="javascript:void(0);" onclick="confirmLogout()" title="ອອກຈາກລະບົບ" style="font-size: 1.15rem; color: #ffffff !important; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; transition: background 0.2s;">
-          <i class="fas fa-power-off" style="font-size: 1.25rem; color: #ffffff;"></i>
+        <a class="nav-link logout-nav-btn font-weight-bold" href="javascript:void(0);" onclick="confirmLogout()" title="ອອກຈາກລະບົບ">
+          <i class="fas fa-power-off"></i>
+          <span class="d-none d-md-inline">ອອກຈາກລະບົບ</span>
         </a>
       </li>
     </ul>

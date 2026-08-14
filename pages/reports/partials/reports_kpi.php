@@ -1,83 +1,4 @@
-<style>
-.kpi-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-}
-.kpi-card-item {
-  border-radius: 10px !important;
-  padding: 18px 20px !important;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  transform: none !important;
-}
-.kpi-card-item:hover {
-  transform: none !important;
-}
-.kpi-card-title {
-  font-size: 0.88rem !important;
-  font-weight: 700 !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-.kpi-card-val {
-  font-size: clamp(1.2rem, 1.3vw, 1.5rem) !important;
-  font-weight: 800 !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-}
-.kpi-card-unit {
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  color: rgba(255, 255, 255, 0.88) !important;
-}
-.kpi-card-icon {
-  width: 46px !important;
-  height: 46px !important;
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(6px);
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
-  font-size: 1.3rem !important;
-  margin-left: 6px !important;
-}
 
-/* Mobile Phone Screens: 2 Columns side-by-side with fit font */
-@media (max-width: 767px) {
-  .kpi-cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-  .kpi-card-item {
-    padding: 14px 13px !important;
-  }
-  .kpi-card-title {
-    font-size: 0.78rem !important;
-    letter-spacing: 0.2px !important;
-  }
-  .kpi-card-val {
-    font-size: 1.05rem !important;
-    white-space: nowrap !important;
-  }
-  .kpi-card-unit {
-    font-size: 0.76rem !important;
-  }
-  .kpi-card-icon {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 1rem !important;
-    margin-left: 4px !important;
-    border-radius: 8px !important;
-  }
-}
-</style>
 
 <?php if ($type === 'daily'): ?>
 
@@ -123,6 +44,23 @@
       </div>
       <div class="kpi-card-icon">
         <i class="fas fa-receipt"></i>
+      </div>
+    </div>
+
+    <!-- 4. ໂປຣໂມຊັ່ນ & ຂອງແຖມ (Vibrant Red/Pink Gradient) -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" 
+         style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)($daily_promo_discounts ?? 0); ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+        <div class="mt-1 text-white-50" style="font-size: 0.76rem; font-weight: 600;">
+          <i class="fas fa-gift mr-1 text-warning"></i> ແຖມ: <?php echo number_format($daily_promo_gifts_count ?? 0); ?> ຊິ້ນ
+        </div>
+      </div>
+      <div class="kpi-card-icon">
+        <i class="fas fa-gift"></i>
       </div>
     </div>
 

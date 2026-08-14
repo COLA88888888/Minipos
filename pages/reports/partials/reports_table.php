@@ -28,6 +28,7 @@
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສຸດທິ</th>
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເງິນສົດ</th>
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ໂອນ</th>
+            <th class="text-center" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ທະນາຄານ</th>
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເງິນທອນ</th>
             <th class="text-left" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຜູ້ຂາຍ</th>
             <th class="text-center no-print" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຈັດການ</th>
@@ -37,7 +38,7 @@
       <tbody>
         <?php if (empty($display_data)): ?>
           <tr>
-            <td colspan="<?php echo $view_mode === 'item' ? '10' : '12'; ?>" class="text-center py-5">
+            <td colspan="<?php echo $view_mode === 'item' ? '10' : '13'; ?>" class="text-center py-5">
               <div class="text-muted font-weight-bold" style="font-size: 0.95rem;">ບໍ່ພົບຂໍ້ມູນລາຍງານການຂາຍ</div>
               <small class="text-muted">ກະລຸນາປ່ຽນເງື່ອນໄຂການຄົ້ນຫາ ຫຼື ເລືອກຊ່ວງວັນທີໃໝ່</small>
             </td>
@@ -127,6 +128,17 @@
                 <td class="text-right font-weight-bold text-success" style="font-size: 0.94rem;"><?php echo number_format($row['net'], 0); ?> ₭</td>
                 <td class="text-right font-weight-bold text-dark"><?php echo number_format($row['cash'], 0); ?> ₭</td>
                 <td class="text-right font-weight-bold text-primary"><?php echo number_format($row['qr'], 0); ?> ₭</td>
+                <td class="text-center align-middle">
+                  <?php if (!empty($row['qr']) && $row['qr'] > 0): ?>
+                    <?php 
+                      $bName = !empty($row['bank_name']) ? $row['bank_name'] : '';
+                      $bCode = !empty($row['bank_code']) ? $row['bank_code'] : $bName;
+                      $code = strtoupper(trim($bCode));
+                      $logoPath = resolveBankLogo($row['bank_logo'] ?? '', $code);
+                    ?>
+                    <img src="<?php echo htmlspecialchars($logoPath); ?>" style="width: 24px; height: 24px; object-fit: cover; border-radius: 50% !important; background: #ffffff; padding: 1px; border: 1.5px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" title="<?php echo htmlspecialchars($bName ?: $code); ?>" onerror="this.src='../../assets/img/banks/default.svg';">
+                  <?php endif; ?>
+                </td>
                 <td class="text-right font-weight-bold text-info"><?php echo number_format($row['change'] ?? 0, 0); ?> ₭</td>
                 <td class="text-left font-weight-bold text-dark" style="font-size: 0.84rem;"><?php echo htmlspecialchars($row['cashier']); ?></td>
                 <td class="text-center no-print" style="white-space: nowrap !important;">
@@ -170,6 +182,7 @@
               <td class="text-right text-success" style="font-size: 1.0rem;"><?php echo number_format($total_net, 0); ?> ₭</td>
               <td class="text-right text-dark"><?php echo number_format($total_cash, 0); ?> ₭</td>
               <td class="text-right text-primary"><?php echo number_format($total_qr, 0); ?> ₭</td>
+              <td></td>
               <td class="text-right text-info"><?php echo number_format($total_change ?? 0, 0); ?> ₭</td>
               <td colspan="2"></td>
             <?php endif; ?>

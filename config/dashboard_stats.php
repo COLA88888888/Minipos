@@ -48,8 +48,8 @@ function getDashboardQuickStats($conn)
     // 4. Low stock products (qty <= 5)
     $stats['low_stock_count'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM products WHERE qty <= 5');
     
-    // 5. Total categories from category table
-    $stats['total_categories'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM category');
+    // 5. Total categories from categories table
+    $stats['total_categories'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM categories');
     
     // 6. Total imports count from tbreceive
     $stats['total_imports'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM tbreceive');

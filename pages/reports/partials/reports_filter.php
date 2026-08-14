@@ -61,6 +61,27 @@
         <input type="text" name="search" id="reportSearchInput" class="form-control form-control-sm" placeholder="ປ້ອນເລກບິນ ຫຼື ຊື່ພະນັກງານ..." value="<?php echo htmlspecialchars($search); ?>" autocomplete="off" style="border-radius: 8px; height: 38px; font-size: 0.85rem; width: 100%;">
       </div>
 
+      <!-- Bank Account Filter Dropdown -->
+      <div style="flex: 1 1 0; min-width: 150px;">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-university text-primary mr-1"></i> ທະນາຄານ / ຊຳລະ:
+        </label>
+        <select name="bank_filter" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #0284c7; color: #0369a1; background: #f0f9ff; width: 100%;">
+          <option value="">-- ຊຳລະທັງໝົດ --</option>
+          <option value="cash" <?php echo ($bank_filter ?? '') === 'cash' ? 'selected' : ''; ?>>ເງິນສົດ</option>
+          <option value="transfer" <?php echo ($bank_filter ?? '') === 'transfer' ? 'selected' : ''; ?>>ເງິນໂອນ</option>
+          <?php if (!empty($bank_accounts)): ?>
+            <optgroup label="ແຍກຕາມບັນຊີທະນາຄານ">
+              <?php foreach ($bank_accounts as $bAcc): ?>
+                <option value="<?php echo $bAcc['id']; ?>" <?php echo (string)($bank_filter ?? '') === (string)$bAcc['id'] ? 'selected' : ''; ?>>
+                  <?php echo htmlspecialchars($bAcc['bank_name']); ?>
+                </option>
+              <?php endforeach; ?>
+            </optgroup>
+          <?php endif; ?>
+        </select>
+      </div>
+
       <!-- View Mode Dropdown -->
       <div style="flex: 1 1 0; min-width: 140px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">

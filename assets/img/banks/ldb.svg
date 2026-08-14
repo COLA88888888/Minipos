@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="36" fill="#047857"/>
+  <!-- LDB Official Emblem Motif -->
+  <g transform="translate(100, 75)">
+    <path d="M 0 -45 C -30 -20, -40 10, 0 45 C 40 10, 30 -20, 0 -45 Z" fill="#facc15"/>
+    <path d="M 0 -30 C -20 -10, -25 10, 0 35 C 25 10, 20 -10, 0 -30 Z" fill="#047857"/>
+    <circle cx="0" cy="0" r="10" fill="#facc15"/>
+  </g>
+  <!-- LDB Typography -->
+  <text x="100" y="162" font-family="'Montserrat', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="36" fill="#ffffff" text-anchor="middle" letter-spacing="2">LDB</text>
+</svg>

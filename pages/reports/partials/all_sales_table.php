@@ -70,7 +70,20 @@
                 <td class="text-right text-danger font-weight-bold"><?php echo number_format($row['discount'], 0); ?> ₭</td>
                 <td class="text-right font-weight-bold text-success" style="font-size: 0.94rem;"><?php echo number_format($row['net'], 0); ?> ₭</td>
                 <td class="text-right font-weight-bold text-dark"><?php echo number_format($row['cash'], 0); ?> ₭</td>
-                <td class="text-right font-weight-bold text-primary"><?php echo number_format($row['qr'], 0); ?> ₭</td>
+                <td class="text-right font-weight-bold text-primary">
+                  <?php if (($row['qr'] ?? 0) > 0): ?>
+                    <div><?php echo number_format($row['qr'], 0); ?> ₭</div>
+                    <?php 
+                      $bName = !empty($row['bank_name']) ? $row['bank_name'] : 'BCEL One';
+                      $bLogoUrl = getBankLogoByInfo($bName, $row['bank_account_id'] ?? 0);
+                    ?>
+                    <div class="d-inline-flex align-items-center mt-1 justify-content-end">
+                      <img src="<?php echo htmlspecialchars($bLogoUrl); ?>" style="width: 24px; height: 24px; object-fit: cover; border-radius: 50% !important; background: #ffffff; padding: 1px; border: 1.5px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" title="<?php echo htmlspecialchars($bName); ?>" onerror="this.src='../../assets/img/banks/bcel.svg';">
+                    </div>
+                  <?php else: ?>
+                    <span class="text-muted">0 ₭</span>
+                  <?php endif; ?>
+                </td>
                 <td class="text-center font-weight-bold">
                   <?php if (($row['status'] ?? 'SUCCESS') === 'CANCEL'): ?>
                     <span class="badge badge-danger px-2 py-1" style="font-size: 0.76rem;">ຍົກເລີກ</span>

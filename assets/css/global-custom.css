@@ -2,38 +2,56 @@ body { font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'S
 *:not(.fas):not(.far):not(.fab):not(.fa) { font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif; }
 
 /* ===== GLOBAL BUTTON & SAVE BUTTON CURSOR POINTER ===== */
-button,
-.btn,
-button[type="submit"],
-input[type="submit"],
-input[type="button"],
-.btn-primary,
-.btn-success,
-.btn-warning,
-.btn-danger,
-.btn-info,
-.btn-secondary,
-.btn-light,
-.btn-dark,
-.btn-outline-primary,
-.btn-outline-success,
-.btn-outline-warning,
-.btn-outline-danger,
-.btn-outline-info,
-.btn-outline-secondary,
-.modal-footer .btn,
-.modal-footer button {
+button:not(:disabled):not(.disabled),
+.btn:not(:disabled):not(.disabled),
+button[type="submit"]:not(:disabled):not(.disabled),
+input[type="submit"]:not(:disabled):not(.disabled),
+input[type="button"]:not(:disabled):not(.disabled),
+.btn-primary:not(:disabled):not(.disabled),
+.btn-success:not(:disabled):not(.disabled),
+.btn-warning:not(:disabled):not(.disabled),
+.btn-danger:not(:disabled):not(.disabled),
+.btn-info:not(:disabled):not(.disabled),
+.btn-secondary:not(:disabled):not(.disabled),
+.btn-light:not(:disabled):not(.disabled),
+.btn-dark:not(:disabled):not(.disabled),
+.btn-outline-primary:not(:disabled):not(.disabled),
+.btn-outline-success:not(:disabled):not(.disabled),
+.btn-outline-warning:not(:disabled):not(.disabled),
+.btn-outline-danger:not(:disabled):not(.disabled),
+.btn-outline-info:not(:disabled):not(.disabled),
+.btn-outline-secondary:not(:disabled):not(.disabled),
+.modal-footer .btn:not(:disabled):not(.disabled),
+.modal-footer button:not(:disabled):not(.disabled) {
     cursor: pointer !important;
 }
 
-button:hover,
-.btn:hover,
-button[type="submit"]:hover,
-input[type="submit"]:hover,
-input[type="button"]:hover,
-.modal-footer .btn:hover,
-.modal-footer button:hover {
+button:not(:disabled):not(.disabled):hover,
+.btn:not(:disabled):not(.disabled):hover,
+button[type="submit"]:not(:disabled):not(.disabled):hover,
+input[type="submit"]:not(:disabled):not(.disabled):hover,
+input[type="button"]:not(:disabled):not(.disabled):hover,
+.modal-footer .btn:not(:disabled):not(.disabled):hover,
+.modal-footer button:not(:disabled):not(.disabled):hover {
     cursor: pointer !important;
+}
+
+/* ===== DISABLED BUTTON CURSOR NOT-ALLOWED ===== */
+button:disabled,
+button[disabled],
+.btn:disabled,
+.btn.disabled,
+button:disabled:hover,
+button[disabled]:hover,
+.btn:disabled:hover,
+.btn.disabled:hover,
+input:disabled,
+input[disabled],
+a.disabled,
+a.disabled:hover {
+    cursor: not-allowed !important;
+    opacity: 0.55 !important;
+    pointer-events: auto !important;
 }
 
 /* ===== VIBRANT SELECT CUSTOMER BUTTON ===== */
@@ -444,5 +462,36 @@ button.btn-quick-cash:hover {
     }
     .container-fluid.p-4, .container.p-4, .p-4 {
         padding: 0.85rem !important;
+    }
+}
+
+/* ===== RESPONSIVE NAVBAR LOGOUT BUTTON ===== */
+.logout-nav-btn {
+    font-size: 0.85rem !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.16) !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    transition: all 0.2s ease !important;
+}
+.logout-nav-btn i {
+    font-size: 0.95rem !important;
+    color: #ffffff !important;
+}
+
+@media (max-width: 767.98px) {
+    .logout-nav-btn {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 4px 6px !important;
+    }
+    .logout-nav-btn i {
+        font-size: 1.25rem !important;
     }
 }

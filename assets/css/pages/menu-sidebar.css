@@ -68,7 +68,7 @@ body::-webkit-scrollbar,
     overflow-x: hidden !important;
 }
 .nav-sidebar {
-    padding-bottom: 90px !important;
+    padding-bottom: 20px !important;
 }
 .os-scrollbar-vertical {
     width: 6px !important;
@@ -393,6 +393,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
     .sidebar-collapse .main-sidebar .sidebar-footer {
         padding: 6px 0 !important;
         justify-content: center !important;
+        bottom: 24px !important;
     }
     .sidebar-collapse .main-sidebar .sidebar-footer .nav-link {
         justify-content: center !important;

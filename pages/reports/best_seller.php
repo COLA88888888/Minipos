@@ -54,7 +54,7 @@ $sql = "
     FROM tbsale_save_detail d
     INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
     LEFT JOIN products p ON d.save_proid = p.product_id
-    LEFT JOIN category cat ON p.category_id = cat.category_id
+    LEFT JOIN categories cat ON p.category_id = cat.category_id
     WHERE {$whereClause}
     GROUP BY d.save_proid, product_name, cat.category_name
     ORDER BY total_qty_sold DESC, total_revenue DESC

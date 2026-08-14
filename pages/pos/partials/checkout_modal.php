@@ -28,37 +28,95 @@
 
             <!-- Pay Mode -->
             <div>
-              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;"><i class="fas fa-credit-card text-primary mr-1"></i> ວິທີຊຳລະ</div>
+              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;">ວິທີຊຳລະ</div>
               <div class="d-flex" style="gap:7px;">
                 <button type="button" id="payModeSingleBtn" onclick="setPayMode('single')"
-                  style="flex:1;padding:7px 4px;border-radius:9px;border:2px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;">
-                  <i class="fas fa-hand-holding-usd mr-1"></i> ຊຳລະດຽວ
+                  style="flex:1;padding:8px 12px;border-radius:9px;border:2px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;text-align:center;">
+                  ຊຳລະດຽວ
                 </button>
                 <button type="button" id="payModeSplitBtn" onclick="setPayMode('split')"
-                  style="flex:1;padding:7px 4px;border-radius:9px;border:2px solid #cbd5e1;background:#fff;color:#64748b;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;">
-                  <i class="fas fa-code-branch mr-1"></i> ຊຳລະຫຼາຍຊ່ອງ
+                  style="flex:1;padding:8px 12px;border-radius:9px;border:2px solid #cbd5e1;background:#fff;color:#64748b;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;text-align:center;">
+                  ຊຳລະຫຼາຍຊ່ອງ
                 </button>
               </div>
             </div>
 
             <!-- Pay Type (single only) -->
             <div id="payTypeRow">
-              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;"><i class="fas fa-tag text-primary mr-1"></i> ປະເພດ</div>
+              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;">ປະເພດ</div>
               <div class="d-flex" style="gap:7px;">
                 <button type="button" id="payTypeCashBtn" onclick="selectPayTypeTab('ເງິນສົດ')"
-                  style="flex:1;padding:7px 4px;border-radius:9px;border:2px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;">
-                  <i class="fas fa-money-bill-wave mr-1"></i> ເງິນສົດ
+                  style="flex:1;padding:8px 12px;border-radius:9px;border:2px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;text-align:center;">
+                  ເງິນສົດ
                 </button>
                 <button type="button" id="payTypeQrBtn" onclick="selectPayTypeTab('ໂອນເງິນ / QR')"
-                  style="flex:1;padding:7px 4px;border-radius:9px;border:2px solid #cbd5e1;background:#fff;color:#64748b;font-weight:700;font-size:0.82rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;">
-                  <i class="fas fa-qrcode mr-1"></i> ໂອນ / QR
+                  style="flex:1;padding:8px 12px;border-radius:9px;border:2px solid #cbd5e1;background:#fff;color:#64748b;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.15s;font-family:'Noto Sans Lao Looped',sans-serif;text-align:center;">
+                  ໂອນ / QR
                 </button>
+              </div>
+            </div>
+
+            <!-- SINGLE: Bank Selection & QR Code Display Container (When payType is QR Pay) -->
+            <div id="singleQrSection" style="display:none;" class="p-3 my-2 rounded border bg-white shadow-sm">
+              <?php 
+                $pos_bank_accounts = [];
+                try {
+                    $b_stmt = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1 ORDER BY id ASC");
+                    if ($b_stmt) $pos_bank_accounts = $b_stmt->fetchAll(PDO::FETCH_ASSOC);
+                } catch (Throwable $e) {}
+
+                $defaultQrPath = !empty($company['qr_img']) ? ('../../assets/img/qr/' . $company['qr_img']) : '../../assets/img/qr_placeholder.png';
+              ?>
+
+              <div class="font-weight-bold mb-2 text-dark" style="font-size:0.85rem;">
+                <i class="fas fa-university text-primary mr-1"></i> ເລືອກທະນາຄານຮັບເງິນ:
+              </div>
+
+              <?php if (!empty($pos_bank_accounts)): ?>
+                <div class="row mb-2" style="row-gap: 8px; margin-left: -4px; margin-right: -4px;" id="posBankSelectGrid">
+                  <?php foreach ($pos_bank_accounts as $bIdx => $bAccount): ?>
+                    <?php 
+                      $bLogo = !empty($bAccount['bank_logo']) && file_exists(__DIR__ . '/../../../assets/img/banks/' . basename($bAccount['bank_logo'])) 
+                               ? ('../../assets/img/banks/' . basename($bAccount['bank_logo'])) 
+                               : ('../../assets/img/banks/' . strtolower($bAccount['bank_code']) . '.svg');
+                      $bQr = !empty($bAccount['qr_code_img']) && file_exists(__DIR__ . '/../../../assets/img/qr/' . basename($bAccount['qr_code_img']))
+                             ? ('../../assets/img/qr/' . basename($bAccount['qr_code_img'])) 
+                             : $defaultQrPath;
+                      $code = strtoupper(trim($bAccount['bank_code']));
+                      $shortName = !empty($code) ? $code : htmlspecialchars($bAccount['bank_name']);
+                      $bColor = ($code === 'BCEL') ? '#002d72' : (($code === 'LDB') ? '#047857' : (($code === 'JDB') ? '#6b21a8' : (($code === 'STB') ? '#ea580c' : (($code === 'APB') ? '#15803d' : (($code === 'LVB') ? '#b91c1c' : '#0284c7')))));
+                    ?>
+                    <div class="col-6 px-1">
+                      <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between <?php echo ($bIdx === 0) ? 'selected-bank' : ''; ?>" 
+                           style="cursor: pointer; transition: all 0.15s; background: <?php echo ($bIdx === 0) ? '#f0f9ff' : '#ffffff'; ?>; border-color: <?php echo ($bIdx === 0) ? $bColor : '#cbd5e1'; ?> !important; min-height: 38px;"
+                           onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($shortName)); ?>', '<?php echo htmlspecialchars($bQr); ?>', this)">
+                        <div class="d-flex align-items-center" style="gap: 6px;">
+                          <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px;" onerror="this.src='../../assets/img/banks/default.svg';">
+                          <div class="font-weight-bold text-dark" style="font-size: 0.82rem; font-family: 'Montserrat', 'Noto Sans Lao', sans-serif; letter-spacing: 0.3px;">
+                            <?php echo htmlspecialchars($shortName); ?>
+                          </div>
+                        </div>
+                        <input type="radio" name="pos_selected_bank_id" value="<?php echo $bAccount['id']; ?>" <?php echo ($bIdx === 0) ? 'checked' : ''; ?> style="accent-color: <?php echo $bColor; ?>; width: 14px; height: 14px; cursor: pointer;">
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+
+              <div class="text-center mt-2 pt-2 border-top">
+                <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#7c3aed;">
+                  <i class="fas fa-qrcode mr-1"></i> ສະແກນ QR Code ຊຳລະເງິນ <span id="posActiveBankNameTitle" class="text-primary font-weight-bold"></span>
+                </div>
+                <img id="posActiveBankQrImg" src="<?php echo htmlspecialchars($defaultQrPath); ?>" 
+                     style="max-width: 110px; max-height: 110px; object-fit: contain; border-radius: 8px; border: 2px solid #c4b5fd; padding: 3px; background: #fff; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.10);"
+                     onerror="this.src='../../assets/img/qr_placeholder.png';"
+                     alt="Bank QR Code">
               </div>
             </div>
 
             <!-- SINGLE: cash input -->
             <div id="singlePaySection">
-              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;"><i class="fas fa-hand-holding-usd text-primary mr-1"></i> ຈຳນວນທີ່ຮັບ <span class="text-danger">*</span></div>
+              <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#475569;">ຈຳນວນທີ່ຮັບ <span class="text-danger">*</span></div>
               <div class="input-group" style="border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(37,99,235,0.10);">
                 <input type="text" id="cashReceived" class="form-control text-right font-weight-bold"
                   placeholder="0" oninput="formatPriceInput(this);calculateChange();"
@@ -69,14 +127,14 @@
               </div>
               <!-- Shortcuts -->
               <div class="d-flex flex-wrap mt-2" style="gap:5px;">
-                <button type="button" class="btn btn-sm font-weight-bold text-white flex-fill" onclick="setExactAmount()"
-                  style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:7px;padding:5px 8px;font-size:0.78rem;">
-                  <i class="fas fa-check-circle mr-1"></i> ພໍດີ
+                <button type="button" class="btn btn-sm font-weight-bold text-white" onclick="setExactAmount()"
+                  style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:7px;padding:6px 12px;font-size:0.80rem;">
+                  ພໍດີ
                 </button>
-                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold flex-fill" onclick="addCashShortcut(20000)" style="font-size:0.78rem;padding:5px 6px;">+20K</button>
-                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold flex-fill" onclick="addCashShortcut(50000)" style="font-size:0.78rem;padding:5px 6px;">+50K</button>
-                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold flex-fill" onclick="addCashShortcut(100000)" style="font-size:0.78rem;padding:5px 6px;">+100K</button>
-                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold flex-fill" onclick="addCashShortcut(500000)" style="font-size:0.78rem;padding:5px 6px;">+500K</button>
+                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold" onclick="addCashShortcut(20000)" style="font-size:0.80rem;padding:6px 10px;">+20K</button>
+                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold" onclick="addCashShortcut(50000)" style="font-size:0.80rem;padding:6px 10px;">+50K</button>
+                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold" onclick="addCashShortcut(100000)" style="font-size:0.80rem;padding:6px 10px;">+100K</button>
+                <button type="button" class="btn btn-sm btn-quick-cash font-weight-bold" onclick="addCashShortcut(500000)" style="font-size:0.80rem;padding:6px 10px;">+500K</button>
               </div>
             </div>
 
@@ -85,7 +143,7 @@
               <!-- Cash -->
               <div class="mb-2">
                 <div class="font-weight-bold mb-1 d-flex align-items-center" style="font-size:0.80rem;color:#16a34a;">
-                  <i class="fas fa-money-bill-wave mr-1"></i> ເງິນສົດ
+                  ເງິນສົດ
                 </div>
                 <div class="input-group" style="border-radius:9px;overflow:hidden;">
                   <input type="text" id="splitCashAmount" class="form-control text-right font-weight-bold"
@@ -96,19 +154,19 @@
                   </div>
                 </div>
                 <div class="d-flex flex-wrap mt-1" style="gap:4px;">
-                  <button onclick="setSplitCashExact()" style="flex:1;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 6px;cursor:pointer;">
-                    <i class="fas fa-check mr-1"></i>ພໍດີທັງໝົດ
+                  <button onclick="setSplitCashExact()" style="flex:1;background:#dcfce7;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 6px;cursor:pointer;">
+                    ພໍດີທັງໝົດ
                   </button>
-                  <button onclick="addSplitCash(20000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 5px;cursor:pointer;">+20K</button>
-                  <button onclick="addSplitCash(50000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 5px;cursor:pointer;">+50K</button>
-                  <button onclick="addSplitCash(100000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 5px;cursor:pointer;">+100K</button>
-                  <button onclick="addSplitCash(500000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 5px;cursor:pointer;">+500K</button>
+                  <button onclick="addSplitCash(20000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 5px;cursor:pointer;">+20K</button>
+                  <button onclick="addSplitCash(50000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 5px;cursor:pointer;">+50K</button>
+                  <button onclick="addSplitCash(100000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 5px;cursor:pointer;">+100K</button>
+                  <button onclick="addSplitCash(500000)" style="flex:1;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 5px;cursor:pointer;">+500K</button>
                 </div>
               </div>
               <!-- QR -->
               <div>
                 <div class="font-weight-bold mb-1 d-flex align-items-center" style="font-size:0.80rem;color:#7c3aed;">
-                  <i class="fas fa-qrcode mr-1"></i> ໂອນເງິນ / QR
+                  ໂອນ / QR
                 </div>
                 <div class="input-group" style="border-radius:9px;overflow:hidden;">
                   <input type="text" id="splitQrAmount" class="form-control text-right font-weight-bold"
@@ -118,8 +176,8 @@
                     <span class="input-group-text font-weight-bold text-white" style="background:#7c3aed;border:2px solid #7c3aed;border-left:none;padding:0 12px;font-size:0.95rem;">₭</span>
                   </div>
                 </div>
-                <button onclick="fillSplitQrRemaining()" style="margin-top:5px;background:#f3e8ff;color:#7c3aed;border:1px solid #c4b5fd;border-radius:6px;font-size:0.74rem;font-weight:700;padding:3px 10px;cursor:pointer;">
-                  <i class="fas fa-magic mr-1"></i> ຕື່ມຍອດທີ່ຍັງຄ້າງ
+                <button onclick="fillSplitQrRemaining()" style="margin-top:5px;background:#f3e8ff;color:#7c3aed;border:1px solid #c4b5fd;border-radius:6px;font-size:0.74rem;font-weight:700;padding:4px 10px;cursor:pointer;">
+                  ຕື່ມຍອດທີ່ຍັງຄ້າງ
                 </button>
               </div>
             </div>
@@ -158,11 +216,11 @@
                   <span class="font-weight-bold text-dark text-truncate ml-2" id="splitTotal">0 ₭</span>
                 </div>
                 <div class="d-flex justify-content-between mb-1" style="font-size:0.86rem;">
-                  <span class="text-muted"><i class="fas fa-money-bill-wave text-success mr-1"></i>ເງິນສົດ:</span>
+                  <span class="text-muted">ເງິນສົດ:</span>
                   <span class="font-weight-bold text-success text-truncate ml-2" id="splitCashDisplay">0 ₭</span>
                 </div>
                 <div class="d-flex justify-content-between mb-1" style="font-size:0.86rem;">
-                  <span class="text-muted"><i class="fas fa-qrcode mr-1" style="color:#7c3aed;"></i>ໂອນ / QR:</span>
+                  <span class="text-muted">ໂອນ / QR:</span>
                   <span class="font-weight-bold text-truncate ml-2" style="color:#7c3aed;" id="splitQrDisplay">0 ₭</span>
                 </div>
                 <div style="border-top:1px dashed #e2e8f0;margin:6px 0;"></div>
@@ -200,12 +258,12 @@
             <div class="d-flex" style="gap:8px;margin-top:4px;">
               <button type="button" class="btn btn-light font-weight-bold flex-fill py-2" data-dismiss="modal"
                 style="border-radius:9px;border:1.5px solid #cbd5e1;color:#475569;font-size:0.86rem;">
-                <i class="fas fa-times mr-1"></i> ຍົກເລີກ
+                ຍົກເລີກ
               </button>
               <button type="button" class="btn font-weight-bold flex-fill py-2 text-white" id="btnSubmitPayment"
                 onclick="processCheckout()"
                 style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;border-radius:9px;font-size:0.90rem;box-shadow:0 4px 14px rgba(37,99,235,0.35);">
-                <i class="fas fa-check-circle mr-1"></i> ຢືນຢັນຊຳລະ
+                ຢືນຢັນຊຳລະ
               </button>
             </div>
 
@@ -256,14 +314,29 @@
           <tbody id="rc_items" style="color:#000;font-weight:600;"></tbody>
         </table>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div id="rc_payment_rows" style="color:#000;font-weight:600;">
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>0 ₭</span></div>
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>0 ₭</span></div>
+        </div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ລວມ:</span><span id="rc_subtotal">0 ₭</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ສ່ວນຫຼຸດ:</span><span id="rc_discount">0 ₭</span></div>
         <div class="d-flex justify-content-between font-weight-bold" style="font-size:13.5px;color:#000;font-weight:700;"><span>ຍອດສຸດທິ:</span><span id="rc_total">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <div id="rc_payment_rows" style="color:#000;font-weight:600;"></div>
         <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span>ເງິນທອນ:</span><span id="rc_change">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <div class="text-center receipt-footer-msg" style="margin-top:20px !important; padding-top:10px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
+        <?php 
+          $storeQrName = !empty($company['qr_img']) ? $company['qr_img'] : '';
+          $storeQrPath = !empty($storeQrName) ? ($base_path . 'assets/img/qr/' . $storeQrName) : ($base_path . 'assets/img/qr_placeholder.png');
+        ?>
+        <div class="text-center my-2 receipt-qr-box">
+          <img id="rc_bank_qr_img" src="<?php echo htmlspecialchars($storeQrPath); ?>" alt="QR Code" class="receipt-qr-img"
+               style="max-width:90px;max-height:90px;width:90px;height:auto;object-fit:contain;margin:4px auto 2px auto;display:block;"
+               onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/qr_placeholder.png';">
+          <div id="rc_bank_name_lbl" style="font-size:11px;font-weight:800;color:#000;margin-top:3px;">ສະແກນ QR Code ເພື່ອຊຳລະເງິນ</div>
+          <div id="rc_bank_acc_lbl" style="font-size:10.5px;font-weight:700;color:#000;display:none;margin-top:1px;"></div>
+        </div>
+        <div class="text-center receipt-footer-msg" style="margin-top:10px !important; padding-top:8px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
       </div>
       <div class="modal-footer border-0 p-3 bg-light">
         <button type="button" class="btn btn-secondary btn-sm font-weight-bold" onclick="resetPOS()">ປິດ</button>

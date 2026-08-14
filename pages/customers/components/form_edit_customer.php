@@ -19,62 +19,37 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold text-dark mb-1">ລະຫັດລູກຄ້າ <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text bg-light"><i class="fas fa-id-badge text-primary"></i></span>
-                </div>
-                <input type="text" id="edit_customer_code" name="customer_code" class="form-control bg-light" readonly style="border-radius: 0 8px 8px 0; height: 42px;">
-              </div>
+              <input type="text" id="edit_customer_code" name="customer_code" class="form-control bg-light" readonly style="border-radius: 8px; height: 42px;">
             </div>
 
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark mb-1">ຊື່ ແລະ ນາມສະກຸນລູກຄ້າ <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text bg-light"><i class="fas fa-user text-info"></i></span>
-                </div>
-                <input type="text" id="edit_customer_name" name="customer_name" class="form-control" placeholder="ປ້ອນຊື່ ແລະ ນາມສະກຸນ" style="border-radius: 0 8px 8px 0; height: 42px;">
-              </div>
+              <label class="font-weight-bold text-dark mb-1">ຊື່ ແລະ ນາມສະກຸນ <span class="text-danger">*</span></label>
+              <input type="text" id="edit_customer_name" name="customer_name" class="form-control" placeholder="ປ້ອນຊື່ ແລະ ນາມສະກຸນ" style="border-radius: 8px; height: 42px;">
             </div>
           </div>
 
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold text-dark mb-1">ເບີໂທຕິດຕໍ່</label>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text bg-light"><i class="fas fa-phone text-success"></i></span>
-                </div>
-                <input type="text" id="edit_phone" name="phone" class="form-control" placeholder="020 XXXXXXXX" style="border-radius: 0 8px 8px 0; height: 42px;">
-              </div>
+              <input type="text" id="edit_phone" name="phone" class="form-control" placeholder="020 XXXXXXXX" style="border-radius: 8px; height: 42px;">
             </div>
 
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark mb-1">ອີເມວ (Email)</label>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text bg-light"><i class="fas fa-envelope text-warning"></i></span>
-                </div>
-                <input type="email" id="edit_email" name="email" class="form-control" placeholder="example@domain.com" style="border-radius: 0 8px 8px 0; height: 42px;">
-              </div>
+              <label class="font-weight-bold text-dark mb-1">ເລກບັດສະມາຊິກ</label>
+              <input type="text" id="edit_member_card" name="member_card" class="form-control" placeholder="ກະລຸນາໃສ່ເລກບັດສະມາຊິກ" style="border-radius: 8px; height: 42px;">
             </div>
-          </div>
-
-          <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark mb-1">ທີ່ຢູ່</label>
-            <textarea name="address" id="edit_address" class="form-control" rows="2" placeholder="ປ້ອນທີ່ຢູ່ລູກຄ້າ (ບ້ານ, ເມືອງ, ແຂວງ)" style="border-radius: 8px;"></textarea>
           </div>
 
           <div class="form-group mb-0">
             <label class="font-weight-bold text-dark mb-1">ໝາຍເຫດ</label>
-            <textarea name="notes" id="edit_notes" class="form-control" rows="2" placeholder="ປ້ອນໝາຍເຫດເພີ່ມເຕີມ (ຖ້າມີ)" style="border-radius: 8px;"></textarea>
+            <textarea name="notes" id="edit_notes" class="form-control" rows="3" placeholder="ປ້ອນໝາຍເຫດເພີ່ມເຕີມ (ຖ້າມີ)" style="border-radius: 8px;"></textarea>
           </div>
         </div>
 
         <div class="modal-footer border-0 pt-0 pb-4 px-4">
           <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px;" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="button" class="btn btn-warning font-weight-bold px-4 shadow-sm" style="border-radius: 6px;" onclick="submitEditCustomer()">
-            <i class="fas fa-save mr-1"></i> ບັນທຶກການແກ້ໄຂ
+          <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px;" onclick="submitEditCustomer()">
+            <i class="fas fa-save mr-1"></i>ອັບເດດ
           </button>
         </div>
       </form>

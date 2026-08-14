@@ -5,16 +5,10 @@ function initActiveBills() {
     activeBills = JSON.parse(localStorage.getItem('pos_active_bills') || '[]');
   } catch(e) { activeBills = []; }
 
-  // ຖ້າ isBillOpened = false ໝາຍຄວາມວ່າ ຍັງບໍ່ທັນເປີດບິນ — ລ້າງ activeBills ໃຫ້ຫວ່າງ
-  if (!isBillOpened) {
-    activeBills = [];
-    localStorage.removeItem('pos_active_bills');
-    cart = [];
-    selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' };
-  }
+  isBillOpened = true;
+  localStorage.setItem('pos_bill_opened', '1');
 
-  if (isBillOpened && activeBills.length === 0) {
-    // ຖ້າ isBillOpened ແຕ່ localStorage ເສຍ — ສ້າງ ບິນທີ 1 ໃຫ້ຄືນ
+  if (activeBills.length === 0) {
     var newId = 'BILL-' + Date.now();
     activeBills = [{
       id: newId,
@@ -27,27 +21,14 @@ function initActiveBills() {
     localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
   }
 
-  if (activeBills.length > 0) {
-    currentBillId = activeBills[0].id;
-    loadBillState(currentBillId);
-  } else {
-    updateCartUI();
-  }
+  currentBillId = activeBills[0].id;
+  loadBillState(currentBillId);
 
-  // ຊິ້ງ badge ຕາມ isBillOpened
-  if (!isBillOpened) {
-    $('#currentBillBadge')
-      .text('ຍັງບໍ່ທັນເປີດ')
-      .removeClass('badge-primary badge-success')
-      .addClass('badge-secondary');
-  } else {
-    var cur = activeBills.find(function(b) { return b.id === currentBillId; });
-    $('#currentBillBadge')
-      .text(cur ? cur.name : 'ບິນທີ 1')
-      .removeClass('badge-secondary')
-      .addClass('badge-primary');
-  }
-
+  var cur = activeBills.find(function(b) { return b.id === currentBillId; });
+  $('#currentBillBadge')
+    .text(cur ? cur.name : 'ບິນທີ 1')
+    .removeClass('badge-secondary')
+    .addClass('badge-primary');
   updateActiveBillsUI();
 }
 
@@ -82,7 +63,7 @@ function resequenceActiveBills() {
   localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
 }
 
-function createNewBillModal() {
+window.createNewBillModal = function() {
   saveCurrentBillState();
 
   // ຖ້າ ບິນປັດຈຸບັນ ຍັງຫວ່າງເປົ່າ (ບໍ່ມີລາຍການ ແລະ ລູກຄ້າທົ່ວໄປ) — ໃຊ້ ບິນນັ້ນເລີຍ ບໍ່ຕ້ອງສ້າງໃໝ່
@@ -191,12 +172,27 @@ function renderActiveBills() {
 
   activeBills.forEach(function(bill) {
     var isCurrent = (bill.id === currentBillId);
-    var itemCount = 0;
+    var lineCount = (bill.cart || []).length;
+    var totalQty  = 0;
     var totalAmount = 0;
+    var itemsListHtml = '<div class="my-2 p-2 bg-white border rounded" style="font-size: 0.84rem;">';
+
     (bill.cart || []).forEach(function(i) {
-      itemCount += i.quantity;
-      totalAmount += i.quantity * i.unit_price;
+      totalQty += i.quantity;
+      var itemTotal = i.quantity * i.unit_price;
+      totalAmount += itemTotal;
+      var unitStr = i.unit_name ? (' ' + i.unit_name) : '';
+      itemsListHtml += `
+        <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color: #f1f5f9 !important;">
+          <span class="text-dark font-weight-bold text-truncate" style="max-width: 180px;">• ${i.product_name}</span>
+          <span class="text-nowrap">
+            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.78rem;">x${i.quantity}${unitStr}</span>
+            <strong class="text-dark">${itemTotal.toLocaleString()} ₭</strong>
+          </span>
+        </div>
+      `;
     });
+    itemsListHtml += '</div>';
 
     var discountVal = parseFloat((bill.discount || '0').replace(/\D/g, '')) || 0;
     var netTotal = Math.max(0, totalAmount - discountVal);
@@ -211,11 +207,12 @@ function renderActiveBills() {
           </div>
           <h5 class="font-weight-bold text-success mb-0">${netTotal.toLocaleString()} ₭</h5>
         </div>
-        <div class="small text-muted mb-2">
+        <div class="small text-muted mb-1">
           <i class="fas fa-user mr-1"></i> ລູກຄ້າ: <strong>${cusName}</strong> | 
-          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${itemCount}</strong> ລາຍການ
+          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${lineCount}</strong> ລາຍການ (${totalQty} ຈຳນວນ)
         </div>
-        <div class="d-flex justify-content-end" style="gap: 6px;">
+        ${itemsListHtml}
+        <div class="d-flex justify-content-end mt-2" style="gap: 6px;">
           ${!isCurrent ? `
             <button class="btn btn-sm btn-primary font-weight-bold" onclick="selectActiveBill('${bill.id}')">
               <i class="fas fa-sign-in-alt mr-1"></i> ເປີດບິນນີ້
@@ -253,9 +250,13 @@ function closeActiveBill(billId) {
 }
 
 // --- HELD ORDERS (ພັກບິນ) MANAGEMENT ---
+function holdCurrentCart() {
+  holdCurrentOrder();
+}
+
 function holdCurrentOrder() {
   if (cart.length === 0) {
-    Swal.fire({ icon: 'warning', title: 'ບໍ່ມີສິນຄ້າ', text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າ ບໍ່ສາມາດພັກບິນໄດ້!' });
+    Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າ ບໍ່ສາມາດພັກບິນໄດ້! ກະລຸນາເພີ່ມສິນຄ້າລົງກະຕ່າກ່ອນ', confirmButtonColor: '#2563eb' });
     return;
   }
 
@@ -314,12 +315,27 @@ function renderHeldOrders() {
   }
 
   heldOrders.forEach(function(order, idx) {
-    var itemCount = 0;
+    var lineCount = (order.cart || []).length;
+    var totalQty  = 0;
     var totalAmount = 0;
-    order.cart.forEach(function(i) {
-      itemCount += i.quantity;
-      totalAmount += i.quantity * i.unit_price;
+    var itemsListHtml = '<div class="my-2 p-2 bg-white border rounded" style="font-size: 0.84rem;">';
+
+    (order.cart || []).forEach(function(i) {
+      totalQty += i.quantity;
+      var itemTotal = i.quantity * i.unit_price;
+      totalAmount += itemTotal;
+      var unitStr = i.unit_name ? (' ' + i.unit_name) : '';
+      itemsListHtml += `
+        <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color: #f1f5f9 !important;">
+          <span class="text-dark font-weight-bold text-truncate" style="max-width: 220px;">• ${i.product_name}</span>
+          <span class="text-nowrap">
+            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.78rem;">x${i.quantity}${unitStr}</span>
+            <strong class="text-dark">${itemTotal.toLocaleString()} ₭</strong>
+          </span>
+        </div>
+      `;
     });
+    itemsListHtml += '</div>';
 
     var discountVal = parseFloat((order.discount || '0').replace(/\D/g, '')) || 0;
     var netTotal = Math.max(0, totalAmount - discountVal);
@@ -333,11 +349,12 @@ function renderHeldOrders() {
           </div>
           <h5 class="font-weight-bold text-success mb-0">${netTotal.toLocaleString()} ₭</h5>
         </div>
-        <div class="small text-muted mb-2">
+        <div class="small text-muted mb-1">
           <i class="fas fa-user mr-1"></i> ລູກຄ້າ: <strong>${order.customer.customer_name}</strong> | 
-          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${itemCount}</strong> ລາຍການ
+          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${lineCount}</strong> ລາຍການ (${totalQty} ຈຳນວນ)
         </div>
-        <div class="d-flex justify-content-end" style="gap: 6px;">
+        ${itemsListHtml}
+        <div class="d-flex justify-content-end mt-2" style="gap: 6px;">
           <button class="btn btn-sm btn-success font-weight-bold" onclick="restoreHeldOrder('${order.id}')">
             <i class="fas fa-undo mr-1"></i> ເອີ້ນຄືນບິນ
           </button>

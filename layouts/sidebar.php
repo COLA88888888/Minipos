@@ -10,7 +10,7 @@
   </a>
 
   <!-- Menu Sidebar -->
-  <div class="sidebar" style="height: calc(100vh - 64px - 42px); overflow-y: auto;">
+  <div class="sidebar" style="height: calc(100vh - 64px); overflow-y: auto;">
   
     <!-- ===== User Panel (ຂໍ້ມູນຜູ້ໃຊ້ຢູ່ sidebar) ===== -->
     <?php
@@ -58,39 +58,46 @@
         <?php endif; ?>
 
         <?php if (hasPermission('sale')): ?>
-          <!-- Header: Sales and POS -->
-          <!-- <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ການບໍລິຫານການຂາຍ</li> -->
+          <?php if (hasPermission('report')): ?>
+            <!-- Dropdown Treeview: ຂາຍສິນຄ້າ POS (When both POS and Report permissions exist) -->
+            <li class="nav-item has-treeview">
+              <a href="#" class="nav-link">
+                <i class="nav-icon fas fa-cash-register text-warning"></i>
+                <p>
+                  ຂາຍສິນຄ້າ POS
+                  <i class="right fas fa-angle-right"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <!-- Sub-menu 1: ຂາຍສິນຄ້າ -->
+                <li class="nav-item">
+                  <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
+                    <i class="nav-icon fas fa-shopping-cart text-warning"></i>
+                    <p>ຂາຍສິນຄ້າ</p>
+                  </a>
+                </li>
 
-          <!-- Dropdown Treeview: ຂາຍສິນຄ້າ POS -->
-          <li class="nav-item has-treeview">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-cash-register text-warning"></i>
-              <p>
-                ຂາຍສິນຄ້າ POS
-                <i class="right fas fa-angle-right"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <!-- Sub-menu 1: ຂາຍສິນຄ້າ -->
-              <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
-                  <i class="nav-icon fas fa-shopping-cart text-warning"></i>
-                  <p>ຂາຍສິນຄ້າ</p>
-                </a>
-              </li>
-
-              <!-- Sub-menu 2: ລາຍການຂາຍສິນຄ້າ -->
-              <li class="nav-item">
-                <a href="<?php echo $bp; ?>pages/reports/item_sales.php" target="frame" class="nav-link">
-                  <i class="nav-icon fas fa-boxes" style="color: #a855f7;"></i>
-                  <p>ລາຍການຂາຍສິນຄ້າ</p>
-                </a>
-              </li>
-            </ul>
-          </li>
+                <!-- Sub-menu 2: ລາຍການຂາຍສິນຄ້າ -->
+                <li class="nav-item">
+                  <a href="<?php echo $bp; ?>pages/reports/item_sales.php" target="frame" class="nav-link">
+                    <i class="nav-icon fas fa-boxes" style="color: #a855f7;"></i>
+                    <p>ລາຍການຂາຍສິນຄ້າ</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          <?php else: ?>
+            <!-- Single Direct Link: ຂາຍສິນຄ້າ POS (When only POS Sale permission exists) -->
+            <li class="nav-item">
+              <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-cash-register text-warning"></i>
+                <p>ຂາຍສິນຄ້າ POS</p>
+              </a>
+            </li>
+          <?php endif; ?>
         <?php endif; ?>
 
-        <?php if (hasPermission('customers') || hasPermission('sale')): ?>
+        <?php if (hasPermission('customers')): ?>
           <!-- Menu: Customer Management -->
           <li class="nav-item">
             <a href="<?php echo $bp; ?>pages/customers/customers.php" target="frame" class="nav-link">
@@ -149,15 +156,15 @@
           </li>
         <?php endif; ?>
 
-        <?php if (hasPermission('accounting') || hasPermission('report')): ?>
+        <?php if (hasPermission('accounting')): ?>
           <!-- Header: Reports & Accounting -->
           <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ລາຍງານ & ການເງິນ</li>
 
-          <!-- Menu: Accounting Management -->
+          <!-- Menu: Bank Management (ຈັດການທະນາຄານ) -->
           <li class="nav-item">
-            <a href="<?php echo $bp; ?>pages/accounting/accounting.php" target="frame" class="nav-link">
-              <i class="nav-icon fas fa-calculator text-info"></i>
-              <p>ຈັດການບັນຊີ</p>
+            <a href="<?php echo $bp; ?>pages/bank/bank.php" target="frame" class="nav-link">
+              <i class="nav-icon fas fa-university text-info"></i>
+              <p>ຈັດການທະນາຄານ</p>
             </a>
           </li>
         <?php endif; ?>
@@ -246,7 +253,7 @@
             </li>
           <?php endif; ?>
 
-          <?php if (hasPermission('permissions') || hasPermission('users')): ?>
+          <?php if (hasPermission('permissions')): ?>
             <!-- Menu: Permission Management -->
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/permissions/permissions.php" target="frame" class="nav-link">
@@ -257,10 +264,10 @@
           <?php endif; ?>
 
           <?php if (hasPermission('setup')): ?>
-            <!-- Menu: ຈັດການສາຂາ (ແຍກຕ່າງຫາກ) -->
+            <!-- Menu: ຈັດການສາຂາ (ໂຟເດີແຍກຕ່າງຫາກ pages/branches/) -->
             <li class="nav-item">
-              <a href="<?php echo $bp; ?>pages/settings/stores.php" target="frame" class="nav-link">
-                <i class="nav-icon fas fa-store text-primary"></i>
+              <a href="<?php echo $bp; ?>pages/branches/branches.php" target="frame" class="nav-link">
+                <i class="nav-icon fas fa-network-wired text-success"></i>
                 <p>ຈັດການສາຂາ</p>
               </a>
             </li>
@@ -275,17 +282,17 @@
                 </p>
               </a>
               <ul class="nav nav-treeview">
-                <!-- 1. ຂໍ້ມູນຮ້ານ -->
+                <!-- 1. ຂໍ້ມູນຮ້ານ (pages/settings/stores/) -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/company.php" target="frame" class="nav-link">
-                    <i class="nav-icon fas fa-store-alt text-primary"></i>
+                  <a href="<?php echo $bp; ?>pages/settings/stores/" target="frame" class="nav-link">
+                    <i class="nav-icon fas fa-store text-primary"></i>
                     <p>ຂໍ້ມູນຮ້ານ</p>
                   </a>
                 </li>
 
                 <!-- 2. ພິມບາໂຄ້ດ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/print_barcode.php" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/print_barcode/" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-barcode text-info"></i>
                     <p>ພິມບາໂຄ້ດ</p>
                   </a>
@@ -293,7 +300,7 @@
 
                 <!-- 3. ອັດຕາແລກປ່ຽນເງິນ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/exchange_rate.php" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/exchange_rate/" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-exchange-alt text-success"></i>
                     <p>ອັດຕາເເລກປ່ຽນເງິນ</p>
                   </a>
@@ -301,7 +308,7 @@
 
                 <!-- 4. ໂປຣໂມຊັ່ນ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/promotions.php" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/promotions/" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-percent text-danger"></i>
                     <p>ໂປຣໂມຊັ່ນ</p>
                   </a>
@@ -309,7 +316,7 @@
 
                 <!-- 5. ປັບລາຄາສິນຄ້າ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/price_adjustment.php" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/price_adjustment/" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-tags text-warning"></i>
                     <p>ປັບລາຄາສິນຄ້າ</p>
                   </a>
@@ -317,7 +324,7 @@
 
                 <!-- 6. ຕັ້ງຄ່າປິ່ນເຕີ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/printers.php" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/printers/" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-print text-teal"></i>
                     <p>ຕັ້ງຄ່າປິ່ນເຕີ</p>
                   </a>
@@ -331,11 +338,4 @@
     </nav>
   </div>
 
-  <!-- Fixed Bottom Footer (Blue Theme, Line Aligned with Main Footer) -->
-  <div class="sidebar-footer" style="position: absolute; bottom: 0; left: 0; right: 0; height: 42px; padding: 0 16px; background-color: rgb(2, 99, 255); border-top: 1px solid rgba(255, 255, 255, 0.28); display: flex; align-items: center; z-index: 10; box-sizing: border-box;">
-    <a href="#" onclick="confirmLogout(); return false;" class="nav-link d-flex align-items-center w-100" style="padding: 0; color: #ffffff !important; text-decoration: none; height: 100%;">
-      <i class="nav-icon fas fa-power-off text-light mr-2" style="font-size: 1.05rem;"></i>
-      <p style="color: #ffffff; font-weight: 600; font-size: 0.92rem; margin: 0;">ອອກຈາກລະບົບ</p>
-    </a>
-  </div>
 </aside>

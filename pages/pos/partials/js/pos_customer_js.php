@@ -35,28 +35,46 @@ function filterCustomersList() {
   tbody.empty();
 
   var filtered = allCustomers.filter(function(c) {
-    var name = (c.customer_name || '').toLowerCase();
+    if (!c || c.customer_code === 'CUST-001' || (c.customer_name && c.customer_name.indexOf('ລູກຄ້າທົ່ວໄປ') !== -1)) {
+      return false;
+    }
+    var name  = (c.customer_name || '').toLowerCase();
     var phone = (c.phone || '').toLowerCase();
-    var code = (c.customer_code || '').toLowerCase();
-    return name.indexOf(q) !== -1 || phone.indexOf(q) !== -1 || code.indexOf(q) !== -1;
+    var code  = (c.customer_code || '').toLowerCase();
+    var card  = (c.member_card || '').toLowerCase();
+    return name.indexOf(q) !== -1 || phone.indexOf(q) !== -1 || code.indexOf(q) !== -1 || card.indexOf(q) !== -1;
   });
 
   if (filtered.length === 0) {
-    tbody.append(`<tr><td colspan="5" class="text-center text-muted py-3">ບໍ່ພົບຂໍ້ມູນລູກຄ້າ</td></tr>`);
+    tbody.append(`
+      <tr>
+        <td colspan="7" class="text-center py-5 text-muted">
+          <i class="fas fa-user-slash fa-2x mb-2 d-block text-secondary"></i>
+          <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;">ບໍ່ມີຂໍ້ມູນລູກຄ້າ / ສະມາຊິກໃນລະບົບ</span>
+        </td>
+      </tr>
+    `);
     return;
   }
 
-  filtered.forEach(function(c) {
+  filtered.forEach(function(c, idx) {
     var jsonStr = JSON.stringify(c).replace(/'/g, "&apos;");
+    var createdAt = c.created_at ? new Date(c.created_at).toLocaleDateString('lo-LA') : '-';
+    var memberCardBadge = c.member_card 
+      ? `<span class="badge badge-pill px-2.5 py-1.5" style="font-size: 0.85rem; background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe;"><i class="fas fa-id-card mr-1 text-primary"></i>${c.member_card}</span>`
+      : `<span class="text-muted">-</span>`;
+
     tbody.append(`
       <tr>
-        <td><span class="badge badge-light border">${c.customer_code || '-'}</span></td>
-        <td class="font-weight-bold text-dark">${c.customer_name}</td>
-        <td>${c.phone || '-'}</td>
-        <td class="small text-muted">${c.address || '-'}</td>
-        <td class="text-center">
-          <button type="button" class="btn" onclick='selectCustomer(${jsonStr})' style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; background-color: #2563eb !important; color: #ffffff !important; border: none !important; border-radius: 20px !important; padding: 5px 14px !important; font-size: 0.82rem !important; font-weight: 700 !important; box-shadow: 0 3px 8px rgba(37, 99, 235, 0.30) !important; cursor: pointer !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px !important; line-height: 1.2 !important; white-space: nowrap !important;">
-            <i class="fas fa-check-circle mr-1" style="color: #ffffff !important; font-size: 0.85rem !important;"></i> <span style="color: #ffffff !important;">ເລືອກ</span>
+        <td class="text-center text-muted font-weight-bold align-middle">${idx + 1}</td>
+        <td class="text-center align-middle font-weight-bold"><span class="cust-code-badge">${c.customer_code || '-'}</span></td>
+        <td class="font-weight-bold text-dark align-middle">${c.customer_name}</td>
+        <td class="align-middle text-dark">${c.phone ? `<a href="tel:${c.phone}" class="text-dark">${c.phone}</a>` : '<span class="text-muted">-</span>'}</td>
+        <td class="text-center align-middle font-weight-bold">${memberCardBadge}</td>
+        <td class="text-center align-middle text-secondary" style="font-size: 0.88rem;"><i class="far fa-clock text-info mr-1"></i>${createdAt}</td>
+        <td class="text-center align-middle">
+          <button type="button" class="btn btn-sm btn-primary rounded-circle shadow-sm" title="ເລືອກລູກຄ່ານີ້" onclick='selectCustomer(${jsonStr})' style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none;">
+            <i class="fas fa-check" style="font-size: 0.85rem; color: #ffffff;"></i>
           </button>
         </td>
       </tr>
@@ -66,28 +84,52 @@ function filterCustomersList() {
 
 var matchedExistingCustomer = null;
 
-function checkExistingCustomerByPhone() {
-  var rawPhone = ($('#newCusPhone').val() || '').trim();
-  var cleanedPhone = rawPhone.replace(/\D/g, '');
-  
-  matchedExistingCustomer = null;
-  $('#existingCustomerAlert').addClass('d-none');
-  
-  if (cleanedPhone.length >= 6) {
-    var found = allCustomers.find(function(c) {
-      if (!c.phone) return false;
-      var p = c.phone.replace(/\D/g, '');
-      return p.length >= 6 && (p === cleanedPhone || p.endsWith(cleanedPhone) || cleanedPhone.endsWith(p));
-    });
+function checkExistingCustomer() {
+  var phoneVal = ($('#newCusPhone').val() || '').trim();
+  var nameVal  = ($('#newCusName').val() || '').trim().toLowerCase();
+  var cardVal  = ($('#newCusMemberCard').val() || '').trim().toLowerCase();
 
-    if (found) {
-      matchedExistingCustomer = found;
-      $('#existingCusInfoText').text(found.customer_name + ' (' + (found.phone || '-') + ')');
-      $('#existingCustomerAlert').removeClass('d-none');
-      $('#newCusName').val(found.customer_name);
-      $('#newCusCode').val(found.customer_code || '');
-      $('#newCusAddress').val(found.address || '');
+  matchedExistingCustomer = null;
+
+  if (!phoneVal && !nameVal && !cardVal) {
+    $('#existingCustomerAlert').addClass('d-none');
+    return;
+  }
+
+  var cleanedPhone = phoneVal.replace(/\D/g, '');
+
+  var found = allCustomers.find(function(c) {
+    // 1. Check Phone
+    if (cleanedPhone && cleanedPhone.length >= 4 && c.phone) {
+      var p = c.phone.replace(/\D/g, '');
+      if (p.length >= 4 && (p === cleanedPhone || p.endsWith(cleanedPhone) || cleanedPhone.endsWith(p))) {
+        return true;
+      }
     }
+    // 2. Check Name
+    if (nameVal && nameVal.length >= 3 && c.customer_name) {
+      var cName = c.customer_name.toLowerCase().trim();
+      if (cName === nameVal) {
+        return true;
+      }
+    }
+    // 3. Check Member Card
+    if (cardVal && cardVal.length >= 3 && c.member_card) {
+      var cCard = c.member_card.toLowerCase().trim();
+      if (cCard === cardVal) {
+        return true;
+      }
+    }
+    return false;
+  });
+
+  if (found) {
+    matchedExistingCustomer = found;
+    var infoStr = found.customer_name + ' (' + (found.phone || '-') + ')';
+    $('#existingCusInfoText').text(infoStr);
+    $('#existingCustomerAlert').removeClass('d-none');
+  } else {
+    $('#existingCustomerAlert').addClass('d-none');
   }
 }
 
@@ -108,39 +150,33 @@ $(document).on('click', '#btnSelectExistingCus', function() {
 function openAddCustomerModal() {
   matchedExistingCustomer = null;
   $('#existingCustomerAlert').addClass('d-none');
-  $('#newCusCode').val('');
+  
+  var maxNum = 0;
+  allCustomers.forEach(function(c) {
+    if (c.customer_id) {
+      var cid = parseInt(c.customer_id, 10);
+      if (cid > maxNum) maxNum = cid;
+    }
+  });
+  var nextCode = 'CUST-' + String(maxNum + 1).padStart(3, '0');
+
+  $('#newCusCode').val(nextCode);
   $('#newCusName').val('');
   $('#newCusPhone').val('');
-  $('#newCusAddress').val('');
-  $('#addCustomerModal').modal('show');
-  setTimeout(function() { $('#newCusPhone').focus(); }, 400);
+  $('#newCusMemberCard').val('');
+  $('#newCusNotes').val('');
+
+  // Close selectCustomerModal first to prevent overlapping modals
+  $('#selectCustomerModal').modal('hide');
+  setTimeout(function() {
+    $('#addCustomerModal').modal('show');
+    setTimeout(function() { $('#newCusPhone').focus(); }, 300);
+  }, 150);
 }
 
 function submitQuickAddCustomer() {
   var phone = $('#newCusPhone').val().trim();
   var name  = $('#newCusName').val().trim();
-
-  // Check if phone matches an existing customer
-  if (phone) {
-    var cleanedPhone = phone.replace(/\D/g, '');
-    var existing = allCustomers.find(function(c) {
-      if (!c.phone) return false;
-      var p = c.phone.replace(/\D/g, '');
-      return p.length >= 6 && p === cleanedPhone;
-    });
-
-    if (existing) {
-      selectCustomer(existing);
-      $('#addCustomerModal').modal('hide');
-      Swal.fire({
-        icon: 'info',
-        title: 'ພົບຂໍ້ມູນລູກຄ້າເກົ່າ!',
-        text: 'ລະບົບໄດ້ເລືອກລູກຄ້າເກົ່າ: "' + existing.customer_name + '" ໃຫ້ອັດຕະໂນມັດແລ້ວ',
-        confirmButtonColor: '#2563eb'
-      });
-      return;
-    }
-  }
 
   if (!name) {
     Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: 'ກະລຸນາປ້ອນຊື່ລູກຄ້າ!' });
@@ -155,7 +191,8 @@ function submitQuickAddCustomer() {
       customer_code: $('#newCusCode').val().trim(),
       customer_name: name,
       phone: phone,
-      address: $('#newCusAddress').val().trim()
+      member_card: $('#newCusMemberCard').val().trim(),
+      notes: $('#newCusNotes').val().trim()
     },
     dataType: 'json',
     success: function(res) {

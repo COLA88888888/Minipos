@@ -8,3 +8,101 @@
     border: none;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
+
+.store-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 20px rgba(15,23,42,0.04);
+}
+
+.receipt-preview-box {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    font-family: 'Noto Sans Lao Looped', monospace, sans-serif;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    color: #1e293b;
+}
+
+.receipt-divider {
+    border-top: 1px dashed #94a3b8;
+    margin: 12px 0;
+}
+
+/* ============================================================
+   Barcode Print Component
+   ============================================================ */
+.barcode-page-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.04);
+}
+
+.barcode-block-card {
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.barcode-block-card.selected {
+    border-color: #0284c7;
+    background: #f0f9ff;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.15);
+}
+
+.barcode-block-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+}
+
+.barcode-block-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #0284c7;
+}
+
+.barcode-qty-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.barcode-qty-input {
+    width: 60px;
+    height: 32px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+}
+
+.barcode-preview-box {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.sticky-print-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-top: 2px solid #0284c7;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}

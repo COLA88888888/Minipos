@@ -65,13 +65,14 @@ try {
             COALESCE(SUM(s.sale_barlance), 0) AS total_net_sales,
             COALESCE(SUM(CASE 
                 {$cashSql}
-                WHEN s.type_pay LIKE '%ເງິນສົດ%' AND (s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%') THEN s.sale_barlance
+                WHEN (s.type_pay LIKE '%ເງິນສົດ%' AND s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%' AND (s.bank_account_id IS NULL OR s.bank_account_id = 0)) THEN s.sale_barlance
                 WHEN s.type_pay LIKE '%ເງິນສົດ%' THEN GREATEST(0, s.sale_pay - s.sale_return)
+                WHEN (s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%' AND (s.bank_account_id IS NULL OR s.bank_account_id = 0)) THEN s.sale_barlance
                 ELSE 0 
             END), 0) AS total_cash_received,
             COALESCE(SUM(CASE 
                 {$qrSql}
-                WHEN (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%') AND s.type_pay NOT LIKE '%ເງິນສົດ%' THEN s.sale_barlance
+                WHEN (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%' OR s.bank_account_id > 0) THEN s.sale_barlance
                 WHEN s.sale_transfer > 0 THEN s.sale_transfer
                 ELSE 0 
             END), 0) AS total_qr_received,
@@ -81,6 +82,74 @@ try {
     ");
     $stmtDaily->execute($params);
     $dailyStats = $stmtDaily->fetch(PDO::FETCH_ASSOC);
+
+    // Bank Transfer Revenue Breakdown (Accurately Grouped Per Bank)
+    $bank_daily_breakdown = [];
+    try {
+        $bStmt = $pdo->prepare("
+            SELECT 
+                COALESCE(s.bank_account_id, 0) as bank_acc_id,
+                COALESCE(s.bank_name, '') as bank_label,
+                COUNT(s.Id) as total_tx,
+                COALESCE(SUM(CASE 
+                    WHEN s.sale_transfer > 0 THEN s.sale_transfer
+                    WHEN (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%' OR s.bank_account_id > 0) THEN s.sale_barlance
+                    ELSE 0
+                END), 0) as total_received
+            FROM tbsale_save s
+            WHERE {$whereClause} AND (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%' OR s.bank_account_id > 0 OR s.sale_transfer > 0)
+            GROUP BY bank_acc_id, bank_label
+            ORDER BY total_received DESC
+        ");
+        $bStmt->execute($params);
+        $bank_daily_breakdown_raw = $bStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Fetch bank accounts master list for accurate ID mapping
+        $bank_accounts_map = [];
+        try {
+            $bList = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1 ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($bList as $b) {
+                $bank_accounts_map[$b['id']] = $b;
+            }
+        } catch (Exception $e) {}
+
+        // Strictly group per bank account ID
+        $bank_summary_grouped = [];
+        foreach ($bank_daily_breakdown_raw as $bRow) {
+            $accId = intval($bRow['bank_acc_id']);
+            $label = trim($bRow['bank_label'] ?? '');
+            
+            // Match accId by label if 0
+            if ($accId === 0 && !empty($label) && !empty($bank_accounts_map)) {
+                foreach ($bank_accounts_map as $bId => $bAcc) {
+                    if (stripos($label, $bAcc['bank_name']) !== false || stripos($bAcc['bank_name'], $label) !== false) {
+                        $accId = $bId;
+                        break;
+                    }
+                }
+            }
+
+            if ($accId === 0 && !empty($bank_accounts_map)) {
+                $firstAcc = reset($bank_accounts_map);
+                $accId = $firstAcc['id'];
+            }
+
+            if ($accId > 0) {
+                if (!isset($bank_summary_grouped[$accId])) {
+                    $bank_summary_grouped[$accId] = [
+                        'bank_acc_id' => $accId,
+                        'bank_label'  => $bank_accounts_map[$accId]['bank_name'] ?? $label,
+                        'total_tx'    => 0,
+                        'total_received' => 0
+                    ];
+                }
+                $bank_summary_grouped[$accId]['total_tx'] += intval($bRow['total_tx']);
+                $bank_summary_grouped[$accId]['total_received'] += floatval($bRow['total_received']);
+            }
+        }
+
+        $bank_daily_breakdown = array_values($bank_summary_grouped);
+    } catch (Exception $e) {}
 
     $hasItemDiscCol = false;
     try {
@@ -111,6 +180,20 @@ try {
     $daily_cash_payments   = (float)($dailyStats['total_cash_received'] ?? 0);
     $daily_qr_payments     = (float)($dailyStats['total_qr_received'] ?? 0);
     $daily_tips_sum        = (float)($dailyStats['total_tips_sum'] ?? 0);
+
+    // Promotion & Free Gift Statistics
+    $daily_promo_discounts = $daily_item_discounts;
+    $daily_promo_gifts_count = 0;
+    try {
+        $stmtGifts = $pdo->prepare("
+            SELECT COALESCE(SUM(d.save_qty), 0) AS total_gifts
+            FROM tbsale_save_detail d
+            INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+            WHERE {$whereClause} AND (d.save_name LIKE '%(ແຖມ)%' OR d.save_name LIKE '%🎁%' OR d.save_price = 0)
+        ");
+        $stmtGifts->execute($params);
+        $daily_promo_gifts_count = (int)($stmtGifts->fetchColumn() ?: 0);
+    } catch (Exception $e) {}
 
     // Per-day breakdown query (GROUP BY date)
     $stmtPerDay = $pdo->prepare("
@@ -174,71 +257,6 @@ require_once __DIR__ . '/../../layouts/header.php';
 ?>
 
 <link rel="stylesheet" href="../../themes/reports.css?v=<?php echo filemtime(__DIR__ . '/../../themes/reports.css'); ?>">
-
-<style>
-.kpi-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-}
-.kpi-card-item {
-  border-radius: 10px !important;
-  padding: 18px 20px !important;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  transform: none !important;
-}
-.kpi-card-title {
-  font-size: 0.88rem !important;
-  font-weight: 700 !important;
-  color: rgba(255, 255, 255, 0.9) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-.kpi-card-val {
-  font-size: clamp(1.2rem, 1.3vw, 1.5rem) !important;
-  font-weight: 800 !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
-}
-.kpi-card-icon {
-  width: 46px !important;
-  height: 46px !important;
-  border-radius: 10px !important;
-  background: rgba(255, 255, 255, 0.22) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(6px);
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-shrink: 0 !important;
-  font-size: 1.3rem !important;
-  margin-left: 6px !important;
-}
-@media (max-width: 767px) {
-  .kpi-cards-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-  .kpi-card-item {
-    padding: 14px 13px !important;
-  }
-  .kpi-card-title {
-    font-size: 0.78rem !important;
-  }
-  .kpi-card-val {
-    font-size: 1.05rem !important;
-  }
-  .kpi-card-icon {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 1rem !important;
-    margin-left: 4px !important;
-    border-radius: 8px !important;
-  }
-}
-</style>
 
 <div class="container-fluid p-3 p-md-4">
   <!-- Header & Page Meta -->
@@ -316,6 +334,20 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="kpi-card-icon"><i class="fas fa-receipt"></i></div>
     </div>
 
+    <!-- 4. ໂປຣໂມຊັ່ນ & ຂອງແຖມ (Promotion Summary Block) -->
+    <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
+      <div style="z-index: 2; min-width: 0;">
+        <div class="kpi-card-title"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ</div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <span class="counter-num" data-target="<?php echo (int)$daily_promo_discounts; ?>" data-suffix=" ₭">0 ₭</span>
+        </div>
+        <div class="mt-1 text-white-50" style="font-size: 0.76rem; font-weight: 600;">
+          <i class="fas fa-gift mr-1 text-warning"></i> ແຖມ: <?php echo number_format($daily_promo_gifts_count); ?> ຊິ້ນ
+        </div>
+      </div>
+      <div class="kpi-card-icon"><i class="fas fa-gift"></i></div>
+    </div>
+
     <!-- 4. ສ່ວນຫຼຸດທັງໝົດ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
       <div style="z-index: 2; min-width: 0;">
@@ -382,6 +414,55 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="kpi-card-icon"><i class="fas fa-boxes"></i></div>
     </div>
   </div>
+
+  <!-- Bank Revenue Breakdown Row -->
+  <?php if (!empty($bank_daily_breakdown)): ?>
+    <div class="card border-0 shadow-sm mb-4 w-100" style="border-radius: 12px; background: #f8fafc; border: 1.5px solid #e2e8f0;">
+      <div class="card-body p-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="font-weight-bold text-dark mb-0">
+            <i class="fas fa-university text-primary mr-1.5"></i> ຍອດຮັບເງິນໂອນແຍກຕາມທະນາຄານ
+          </h6>
+          <span class="badge badge-primary font-weight-bold px-2.5 py-1" style="font-size: 0.82rem;">ລວມ: <?php echo number_format($daily_qr_payments, 0); ?> ₭</span>
+        </div>
+        <div class="row" style="row-gap: 12px;">
+          <?php foreach ($bank_daily_breakdown as $bRow): ?>
+            <?php 
+              $bAccId = intval($bRow['bank_acc_id']);
+              $bInfo = $bank_accounts_map[$bAccId] ?? [];
+              $label = !empty($bInfo['bank_name']) ? $bInfo['bank_name'] : (!empty($bRow['bank_label']) && $bRow['bank_label'] !== 'ບໍ່ໄດ້ລະບຸ' ? $bRow['bank_label'] : 'ບໍ່ໄດ້ລະບຸ');
+              if ($label === 'ບໍ່ໄດ້ລະບຸ' && !empty($bank_accounts_map)) {
+                  $firstBank = reset($bank_accounts_map);
+                  $label = $firstBank['bank_name'];
+                  $bInfo = $firstBank;
+              }
+              $bCode = $bInfo['bank_code'] ?? $label;
+              $code = strtoupper(trim($bCode));
+              $bColor = ($code === 'BCEL' || stripos($label, 'BCEL') !== false) ? '#002d72' : (($code === 'LDB' || stripos($label, 'LDB') !== false) ? '#047857' : (($code === 'JDB' || stripos($label, 'JDB') !== false) ? '#6b21a8' : (($code === 'STB' || stripos($label, 'ST') !== false) ? '#ea580c' : '#0284c7')));
+              $logoFile = $bInfo['bank_logo'] ?? '';
+              $bLogo = (!empty($logoFile) && file_exists(__DIR__ . '/../../assets/img/banks/' . basename($logoFile)))
+                       ? ('../../assets/img/banks/' . basename($logoFile))
+                       : ('../../assets/img/banks/' . strtolower($code) . '.svg');
+            ?>
+            <div class="col-lg-3 col-md-4 col-sm-6">
+              <div class="px-2.5 py-1.5 rounded border bg-white d-flex align-items-center justify-content-between shadow-2xs h-100" style="border: 1px solid #e2e8f0; min-height: 44px;">
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                  <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 32px; height: 32px; object-fit: cover; border-radius: 50% !important; padding: 1px; border: 1.5px solid #cbd5e1; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08);" onerror="this.src='../../assets/img/banks/default.svg';">
+                  <div>
+                    <div class="font-weight-bold text-dark" style="font-size: 0.82rem; line-height: 1.1;"><?php echo htmlspecialchars($label); ?></div>
+                    <small class="text-muted font-weight-bold" style="font-size: 0.72rem;"><?php echo number_format($bRow['total_tx']); ?> ບິນ</small>
+                  </div>
+                </div>
+                <div class="font-weight-bold text-right pl-1" style="font-size: 0.92rem; color: <?php echo $bColor; ?>;">
+                  <?php echo number_format($bRow['total_received'], 0); ?> ₭
+                </div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
 
   <!-- Charts Section (always shown) -->
   <?php

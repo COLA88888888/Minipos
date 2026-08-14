@@ -7,25 +7,25 @@ var selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າ�
 var heldOrders = [];
 var activeBills = [];
 var currentBillId = '';
-var isBillOpened = localStorage.getItem('pos_bill_opened') === '1';
+var isBillOpened = true;
 
 function checkBillOpenedOrAlert() {
-  if (!isBillOpened) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'ກະລຸນາເປີດບິນກ່ອນ!',
-      text: 'ທ່ານຕ້ອງກົດປຸ່ມ "ເປີດບິນໃໝ່" ກ່ອນ ຈຶ່ງສາມາດເລືອກຂາຍສິນຄ້າໄດ້.',
-      confirmButtonText: '<i class="fas fa-plus-circle mr-1"></i> ເປີດບິນໃໝ່ດຽວນີ້',
-      confirmButtonColor: '#2563eb',
-      showCancelButton: true,
-      cancelButtonText: 'ຍົກເລີກ',
-      cancelButtonColor: '#64748b'
-    }).then(function(result) {
-      if (result.isConfirmed) {
-        createNewBillModal();
-      }
-    });
-    return false;
+  if (!isBillOpened || !activeBills || activeBills.length === 0) {
+    var newId = 'BILL-' + Date.now();
+    activeBills = [{
+      id: newId,
+      name: 'ບິນທີ 1',
+      time: new Date().toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' }),
+      customer: { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' },
+      cart: [],
+      discount: '0'
+    }];
+    currentBillId = newId;
+    isBillOpened = true;
+    localStorage.setItem('pos_bill_opened', '1');
+    localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
+    if (typeof renderBillTabs === 'function') renderBillTabs();
+    if (typeof updateCartUI === 'function') updateCartUI();
   }
   return true;
 }
@@ -33,10 +33,19 @@ function checkBillOpenedOrAlert() {
 try {
   heldOrders = JSON.parse(localStorage.getItem('pos_held_orders') || '[]');
 } catch(e) { heldOrders = []; }
+</script>
 
+<?php
+// POS Modular JS Includes
+require_once __DIR__ . '/js/pos_bills_js.php';
+require_once __DIR__ . '/js/pos_customer_js.php';
+require_once __DIR__ . '/js/pos_cart_js.php';
+require_once __DIR__ . '/js/pos_barcode_js.php';
+require_once __DIR__ . '/js/pos_checkout_js.php';
+?>
+
+<script>
 $(document).ready(function() {
-  // ເຊື່ອງ sidebar ໃນ parent window (dashboard.php) ຕອນໂຫຼດໜ້າ POS
-  // ຄືນ sidebar ຕອນອອກຈາກໜ້າ POS
   updateHeldOrdersBadge();
   initActiveBills();
 
@@ -60,12 +69,3 @@ $(document).ready(function() {
   });
 });
 </script>
-
-<?php
-// POS Modular JS Includes
-require_once __DIR__ . '/js/pos_bills_js.php';
-require_once __DIR__ . '/js/pos_customer_js.php';
-require_once __DIR__ . '/js/pos_cart_js.php';
-require_once __DIR__ . '/js/pos_barcode_js.php';
-require_once __DIR__ . '/js/pos_checkout_js.php';
-?>

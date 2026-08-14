@@ -7,10 +7,18 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
 require_once dirname(__DIR__, 3) . '/config/db.php';
 
-// Check permissions
-if (!hasPermission('report')) {
-    echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
-    exit();
+// Check permissions (Item sales report is accessible with either 'sale' or 'report' permission)
+$currentReportType = trim($_GET['type'] ?? 'all_sales');
+if ($currentReportType === 'item_sales') {
+    if (!hasPermission('sale') && !hasPermission('report')) {
+        echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+        exit();
+    }
+} else {
+    if (!hasPermission('report')) {
+        echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+        exit();
+    }
 }
 
 // 1. Get Filter Input Parameters
@@ -45,6 +53,51 @@ function getReportPageUrl($targetPage) {
     return $currentScript . '?' . http_build_query($queryParams);
 }
 
+function getBankLogoByInfo($bankName, $bankAccountId = 0) {
+    global $pdo, $bank_accounts_map;
+    $logoFile = '';
+    $bankCode = '';
+    
+    // 1. Search by bankAccountId
+    if (!empty($bankAccountId) && isset($bank_accounts_map[$bankAccountId])) {
+        $logoFile = $bank_accounts_map[$bankAccountId]['bank_logo'] ?? '';
+        $bankCode = $bank_accounts_map[$bankAccountId]['bank_code'] ?? '';
+    }
+    
+    // 2. Search bank_accounts_map by bank_name or bank_code if logoFile is empty
+    if (empty($logoFile) && !empty($bank_accounts_map)) {
+        $search = strtolower(trim($bankName));
+        foreach ($bank_accounts_map as $acc) {
+            $bName = strtolower(trim($acc['bank_name'] ?? ''));
+            $bCode = strtolower(trim($acc['bank_code'] ?? ''));
+            if ($search && (($bName && strpos($search, $bName) !== false) || ($bCode && strpos($search, $bCode) !== false) || ($bName && strpos($bName, $search) !== false))) {
+                $logoFile = $acc['bank_logo'] ?? '';
+                $bankCode = $acc['bank_code'] ?? '';
+                break;
+            }
+        }
+    }
+    
+    if (empty($bankCode) && !empty($bankName)) {
+        if (stripos($bankName, 'BCEL') !== false || stripos($bankName, 'BCL') !== false) { $bankCode = 'BCEL'; }
+        elseif (stripos($bankName, 'LDB') !== false) { $bankCode = 'LDB'; }
+        elseif (stripos($bankName, 'JDB') !== false) { $bankCode = 'JDB'; }
+        elseif (stripos($bankName, 'STB') !== false || stripos($bankName, 'ST') !== false) { $bankCode = 'STB'; }
+        elseif (stripos($bankName, 'APB') !== false) { $bankCode = 'APB'; }
+        elseif (stripos($bankName, 'LVB') !== false) { $bankCode = 'LVB'; }
+    }
+
+    $root = dirname(__DIR__, 3); // Root directory of MiniPos
+    if (!empty($logoFile) && file_exists($root . '/assets/img/banks/' . basename($logoFile))) {
+        return '../../assets/img/banks/' . basename($logoFile);
+    }
+    $code = strtolower(trim($bankCode));
+    if (!empty($code) && file_exists($root . '/assets/img/banks/' . $code . '.svg')) {
+        return '../../assets/img/banks/' . $code . '.svg';
+    }
+    return '../../assets/img/banks/bcel.svg';
+}
+
 // Handle AJAX Request for Bill Items Modal Details
 if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
     header('Content-Type: application/json');
@@ -69,7 +122,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
             SELECT d.*, p.product_name, cat.category_name 
             FROM tbsale_save_detail d
             LEFT JOIN products p ON d.save_proid = p.product_id
-            LEFT JOIN category cat ON p.category_id = cat.category_id
+            LEFT JOIN categories cat ON p.category_id = cat.category_id
             WHERE d.save_bill = :bill
             ORDER BY d.Id ASC
         ");
@@ -211,6 +264,21 @@ if ($type === 'delete_bills') {
 }
 $params = [];
 
+$bank_filter = trim($_GET['bank_filter'] ?? '');
+
+// Fetch all bank accounts for filter & breakdown
+$bank_accounts = [];
+$bank_accounts_map = [];
+try {
+    $b_stmt = $pdo->query("SELECT * FROM bank_accounts ORDER BY id ASC");
+    if ($b_stmt) {
+        $bank_accounts = $b_stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($bank_accounts as $bAcc) {
+            $bank_accounts_map[$bAcc['id']] = $bAcc;
+        }
+    }
+} catch (Throwable $e) {}
+
 // Always apply date range filter
 if (!empty($from_date)) {
     $where[] = "DATE(s.sale_date) >= :from_date";
@@ -225,6 +293,45 @@ if (!empty($to_date)) {
 if (!empty($search)) {
     $where[] = "(s.sale_save_bill LIKE :search OR s.user_receive LIKE :search OR s.customer_name LIKE :search)";
     $params[':search'] = '%' . $search . '%';
+}
+
+if (!empty($bank_filter)) {
+    if ($bank_filter === 'cash') {
+        $where[] = "(s.type_pay LIKE '%ເງິນສົດ%' AND (s.type_pay NOT LIKE '%ໂອນ%' AND s.type_pay NOT LIKE '%QR%'))";
+    } elseif ($bank_filter === 'transfer') {
+        $where[] = "(s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%' OR s.bank_account_id > 0)";
+    } elseif (is_numeric($bank_filter) && intval($bank_filter) > 0) {
+        $bId = intval($bank_filter);
+        $bAcc = $bank_accounts_map[$bId] ?? [];
+        $bName = trim($bAcc['bank_name'] ?? '');
+        $bCode = trim($bAcc['bank_code'] ?? '');
+        $shortCode = strtok($bName, ' '); // e.g. "BCEL" from "BCEL One"
+
+        $bankConds = ["s.bank_account_id = :b_id"];
+        $params[':b_id'] = $bId;
+
+        if (!empty($bName)) {
+            $bankConds[] = "s.bank_name LIKE :b_name";
+            $bankConds[] = "s.type_pay LIKE :b_name2";
+            $params[':b_name'] = '%' . $bName . '%';
+            $params[':b_name2'] = '%' . $bName . '%';
+        }
+
+        if (!empty($shortCode) && strlen($shortCode) >= 2 && $shortCode !== $bName) {
+            $bankConds[] = "s.bank_name LIKE :b_code";
+            $bankConds[] = "s.type_pay LIKE :b_code2";
+            $params[':b_code'] = '%' . $shortCode . '%';
+            $params[':b_code2'] = '%' . $shortCode . '%';
+        }
+
+        // Include unassigned transfer sales under the primary bank account (e.g. BCEL One)
+        $firstBankId = !empty($bank_accounts) ? intval($bank_accounts[0]['id']) : 1;
+        if ($bId === $firstBankId) {
+            $bankConds[] = "( (s.bank_account_id IS NULL OR s.bank_account_id = 0) AND (s.bank_name IS NULL OR s.bank_name = '') AND (s.type_pay LIKE '%ໂອນ%' OR s.type_pay LIKE '%QR%') )";
+        }
+
+        $where[] = "(" . implode(" OR ", $bankConds) . ")";
+    }
 }
 
 $whereClause = implode(" AND ", $where);
@@ -314,6 +421,20 @@ if ($type === 'daily') {
         $daily_cash_payments   = (float)($dailyStats['total_cash_received'] ?? 0);
         $daily_qr_payments     = (float)($dailyStats['total_qr_received'] ?? 0);
         $daily_tips_sum        = (float)($dailyStats['total_tips_sum'] ?? 0);
+
+        // Promotion & Free Gift Statistics
+        $daily_promo_discounts = $daily_item_discounts;
+        $daily_promo_gifts_count = 0;
+        try {
+            $stmtGifts = $pdo->prepare("
+                SELECT COALESCE(SUM(d.save_qty), 0) AS total_gifts
+                FROM tbsale_save_detail d
+                INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+                WHERE {$whereClause} AND (d.save_name LIKE '%(ແຖມ)%' OR d.save_name LIKE '%🎁%' OR d.save_price = 0)
+            ");
+            $stmtGifts->execute($params);
+            $daily_promo_gifts_count = (int)($stmtGifts->fetchColumn() ?: 0);
+        } catch (Exception $e) {}
     } catch (Exception $e) {}
 }
 
@@ -329,7 +450,7 @@ if ($view_mode === 'item') {
         FROM tbsale_save_detail d
         INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
         LEFT JOIN products p ON d.save_proid = p.product_id
-        LEFT JOIN category cat ON p.category_id = cat.category_id
+        LEFT JOIN categories cat ON p.category_id = cat.category_id
         WHERE {$whereClause}
         ORDER BY s.sale_date DESC, s.sale_time DESC, d.Id DESC
     ";
@@ -466,20 +587,53 @@ if ($view_mode === 'item') {
 
         $change = floatval($r['sale_return'] ?? 0);
 
+        $bAccId = intval($r['bank_account_id'] ?? 0);
+        $bInfo = $bank_accounts_map[$bAccId] ?? [];
+        $bName = !empty($r['bank_name']) ? $r['bank_name'] : ($bInfo['bank_name'] ?? '');
+        $bCode = !empty($bInfo['bank_code']) ? $bInfo['bank_code'] : $bName;
+        $bLogo = !empty($bInfo['bank_logo']) ? $bInfo['bank_logo'] : '';
+
+        if (empty($bName) && $qr > 0) {
+            $tPay = strtoupper($r['type_pay'] ?? '');
+            if (strpos($tPay, 'BCEL') !== false || strpos($tPay, 'BCL') !== false) {
+                $bName = 'BCEL One';
+                $bCode = 'BCEL';
+            } else if (strpos($tPay, 'LDB') !== false) {
+                $bName = 'LDB';
+                $bCode = 'LDB';
+            } else if (strpos($tPay, 'JDB') !== false) {
+                $bName = 'JDB';
+                $bCode = 'JDB';
+            } else if (!empty($bank_accounts_map)) {
+                $firstBank = reset($bank_accounts_map);
+                $bName = $firstBank['bank_name'];
+                $bCode = !empty($firstBank['bank_code']) ? $firstBank['bank_code'] : $bName;
+                $bLogo = !empty($firstBank['bank_logo']) ? $firstBank['bank_logo'] : '';
+            } else {
+                $bName = 'BCEL One';
+                $bCode = 'BCEL';
+            }
+        }
+
         $sales_data[] = [
-            'bill_no'   => $r['sale_save_bill'],
-            'date_time' => date('d/m/Y', strtotime($r['sale_date'])) . ' ' . substr($r['sale_time'], 0, 5),
-            'qty'       => $qty,
-            'gross'     => $gross,
-            'discount'  => $disc,
-            'net'       => $net,
-            'cash'      => $cash,
-            'qr'        => $qr,
-            'change'    => $change,
-            'tip'       => $tip,
-            'status'    => $r['sale_status'] ?? 'SUCCESS',
-            'cashier'   => $r['user_receive'] ?? 'Admin',
-            'customer'  => $r['customer_name'] ?? 'ລູກຄ້າທົ່ວໄປ'
+            'bill_no'         => $r['sale_save_bill'],
+            'date_time'       => date('d/m/Y', strtotime($r['sale_date'])) . ' ' . substr($r['sale_time'], 0, 5),
+            'qty'             => $qty,
+            'gross'           => $gross,
+            'discount'        => $disc,
+            'net'             => $net,
+            'cash'            => $cash,
+            'qr'              => $qr,
+            'change'          => $change,
+            'tip'             => $tip,
+            'status'          => $r['sale_status'] ?? 'SUCCESS',
+            'type_pay'        => $typePay,
+            'bank_account_id' => $bAccId,
+            'bank_name'       => $bName,
+            'bank_code'       => $bCode,
+            'bank_logo'       => $bLogo,
+            'cashier'         => $r['user_receive'] ?? 'Admin',
+            'customer'        => $r['customer_name'] ?? 'ລູກຄ້າທົ່ວໄປ'
         ];
 
         $total_qty    += $qty;

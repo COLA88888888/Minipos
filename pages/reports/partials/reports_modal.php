@@ -21,8 +21,9 @@
             <span class="text-muted">ຜູ້ຂາຍ:</span> <br>
             <strong id="modal_cashier" class="text-dark"></strong>
           </div>
-          <div class="col-12 mt-1 border-top pt-1 text-muted">
-            ລູກຄ້າ: <strong id="modal_customer" class="text-dark"></strong>
+          <div class="col-12 mt-1 border-top pt-1 text-muted d-flex justify-content-between flex-wrap" style="gap: 4px;">
+            <div>ລູກຄ້າ: <strong id="modal_customer" class="text-dark"></strong></div>
+            <div id="modal_bank_wrapper" style="display:none;"><i class="fas fa-university text-info mr-1"></i> ທະນາຄານ: <strong id="modal_bank_name" class="text-primary font-weight-bold"></strong></div>
           </div>
         </div>
 
@@ -124,14 +125,44 @@
           <tbody id="rc_rep_items" style="color:#000;font-weight:600;"></tbody>
         </table>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div id="rc_rep_payment_rows" style="color:#000;font-weight:600;">
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>0 ₭</span></div>
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>0 ₭</span></div>
+        </div>
+        <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ລວມ:</span><span id="rc_rep_subtotal">0 ₭</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ສ່ວນຫຼຸດ:</span><span id="rc_rep_discount">0 ₭</span></div>
         <div class="d-flex justify-content-between font-weight-bold" style="font-size:13.5px;color:#000;font-weight:700;"><span>ຍອດສຸດທິ:</span><span id="rc_rep_total">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <div id="rc_rep_payment_rows" style="color:#000;font-weight:600;"></div>
         <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span>ເງິນທອນ:</span><span id="rc_rep_change">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <div class="text-center receipt-footer-msg" style="margin-top:20px !important; padding-top:10px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
+        <?php 
+          if (empty($company)) {
+              try {
+                  $company = $pdo->query("SELECT * FROM tbcompanyinfo LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
+              } catch (Exception $e) {
+                  $company = [];
+              }
+          }
+          $storeQrName = !empty($company['qr_img']) ? basename($company['qr_img']) : '';
+          $storeQrPath = '';
+          if (!empty($storeQrName) && file_exists(__DIR__ . '/../../../assets/img/qr/' . $storeQrName)) {
+              $storeQrPath = $base_path . 'assets/img/qr/' . $storeQrName;
+          } elseif (file_exists(__DIR__ . '/../../../assets/img/qr_placeholder.png')) {
+              $storeQrPath = $base_path . 'assets/img/qr_placeholder.png';
+          } elseif (file_exists(__DIR__ . '/../../../assets/img/qr/qr_default.png')) {
+              $storeQrPath = $base_path . 'assets/img/qr/qr_default.png';
+          }
+        ?>
+        <?php if (!empty($storeQrPath)): ?>
+        <div class="text-center my-2 receipt-qr-box">
+          <img src="<?php echo htmlspecialchars($storeQrPath); ?>" alt="QR Code" class="receipt-qr-img"
+               style="max-width:100px;max-height:100px;width:100px;height:auto;object-fit:contain;margin:6px auto 2px auto;display:block;"
+               onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/qr_placeholder.png';">
+          <div style="font-size:10.5px;font-weight:700;color:#000;margin-top:2px;">ສະແກນ QR Code ເພື່ອຊຳລະເງິນ</div>
+        </div>
+        <?php endif; ?>
+        <div class="text-center receipt-footer-msg" style="margin-top:10px !important; padding-top:8px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
       </div>
       <div class="modal-footer border-0 p-3 bg-light">
         <button type="button" class="btn btn-secondary btn-sm font-weight-bold" data-dismiss="modal">ປິດ</button>

@@ -1,0 +1,86 @@
+<!-- Component: Customer Table -->
+<div class="card-body p-0">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0 text-nowrap" id="customerTable">
+      <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-transform: uppercase;">
+        <tr>
+          <th class="py-3 text-center" style="width: 60px;">ລຳດັບ</th>
+          <th class="py-3 text-center" style="width: 120px;">ລະຫັດ</th>
+          <th class="py-3">ຊື່</th>
+          <th class="py-3">ເບີໂທ</th>
+          <th class="py-3 text-center" style="width: 150px;">ເລກບັດສະມາຊິກ</th>
+          <th class="py-3 text-center" style="width: 160px;">ເວລາທີ່ສະໝັກ</th>
+          <th class="text-center py-3" style="width: 120px;">ຈັດການ</th>
+        </tr>
+      </thead>
+      <tbody style="font-size: 0.95rem;">
+        <tr id="noCustomerDataRow" style="<?php echo empty($allCustomers) ? '' : 'display: none;'; ?>">
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="fas fa-user-slash fa-2x mb-2 text-secondary d-block"></i>
+            <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;">ບໍ່ມີຂໍ້ມູນລູກຄ້າໃນລະບົບ</span>
+          </td>
+        </tr>
+
+        <?php if (!empty($allCustomers)): ?>
+          <?php $idx = 1; foreach ($allCustomers as $cust): 
+            $custJson = htmlspecialchars(json_encode($cust), ENT_QUOTES, 'UTF-8');
+            $createdAt = !empty($cust['created_at']) ? date('d/m/Y H:i', strtotime($cust['created_at'])) : '-';
+            $createdDateIso = !empty($cust['created_at']) ? date('Y-m-d', strtotime($cust['created_at'])) : date('Y-m-d');
+            $memberCard = !empty($cust['member_card']) ? $cust['member_card'] : '-';
+            $searchData = strtolower($cust['customer_code'] . ' ' . $cust['customer_name'] . ' ' . ($cust['phone'] ?? '') . ' ' . ($cust['member_card'] ?? '') . ' ' . ($cust['email'] ?? '') . ' ' . ($cust['address'] ?? ''));
+          ?>
+            <tr class="cust-row" data-search="<?php echo htmlspecialchars($searchData); ?>" data-date="<?php echo $createdDateIso; ?>">
+              <td class="align-middle text-center text-muted font-weight-bold row-index"><?php echo $idx++; ?></td>
+              
+              <td class="align-middle text-center font-weight-bold">
+                <span class="cust-code-badge"><?php echo htmlspecialchars($cust['customer_code']); ?></span>
+              </td>
+
+              <td class="align-middle font-weight-bold text-dark cust-name-cell">
+                <?php echo htmlspecialchars($cust['customer_name']); ?>
+              </td>
+
+              <td class="align-middle text-dark cust-phone-cell">
+                <?php if (!empty($cust['phone'])): ?>
+                  <a href="tel:<?php echo htmlspecialchars($cust['phone']); ?>" class="text-dark">
+                    <?php echo htmlspecialchars($cust['phone']); ?>
+                  </a>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
+
+              <td class="align-middle text-center font-weight-bold">
+                <?php if (!empty($cust['member_card'])): ?>
+                  <span class="badge badge-pill px-2.5 py-1.5" style="font-size: 0.85rem; background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe;">
+                    <i class="fas fa-id-card mr-1 text-primary"></i> <?php echo htmlspecialchars($cust['member_card']); ?>
+                  </span>
+                <?php else: ?>
+                  <span class="text-muted">-</span>
+                <?php endif; ?>
+              </td>
+
+              <td class="align-middle text-center text-secondary" style="font-size: 0.88rem;">
+                <i class="far fa-clock text-info mr-1"></i> <?php echo $createdAt; ?>
+              </td>
+
+              <td class="text-center align-middle">
+                <div class="btn-group btn-group-sm">
+                  <!-- Edit Button -->
+                  <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <!-- Delete Button -->
+                  <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
+</div>

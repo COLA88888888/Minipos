@@ -307,3 +307,10 @@ label.font-weight-bold {
         padding: 9px 10px;
     }
 }
+
+/* ============================================================
+   Barcode Modal Header Component
+   ============================================================ */
+.barcode-modal-header {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+}

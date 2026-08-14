@@ -374,6 +374,9 @@ require_once __DIR__ . '/../../layouts/header.php';
       </h5>
     </div>
     <div class="col-sm-6 text-right">
+      <button type="button" class="btn btn-info px-3 font-weight-bold mr-2 text-white" onclick="openPrintBarcodeModal()" style="border-radius: 6px; font-weight: 600;">
+        <i class="fas fa-barcode mr-1"></i> ປິ່ນບາໂຄ້ດ
+      </button>
       <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600;">
         <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
       </button>

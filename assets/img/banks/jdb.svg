@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect width="200" height="200" rx="36" fill="#581c87"/>
+  <!-- JDB Shield Emblem -->
+  <g transform="translate(100, 75)">
+    <polygon points="0,-45 36,-18 24,30 -24,30 -36,-18" fill="#eab308"/>
+    <polygon points="0,-32 24,-12 16,20 -16,20 -24,-12" fill="#581c87"/>
+    <circle cx="0" cy="4" r="9" fill="#eab308"/>
+  </g>
+  <!-- JDB Typography -->
+  <text x="100" y="162" font-family="'Montserrat', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="36" fill="#ffffff" text-anchor="middle" letter-spacing="2">JDB</text>
+</svg>

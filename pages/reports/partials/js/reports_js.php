@@ -3,8 +3,13 @@ function viewBillDetails(billNo) {
   if (!billNo) return;
 
   $('#modal_bill_no').text(billNo);
-  $('#modal_items_body').html('<tr><td colspan="4" class="text-center py-3 text-muted"><i class="fas fa-spinner fa-spin mr-1"></i> ກຳລັງໂຫຼດຂໍ້ມູນ...</td></tr>');
+  $('#modal_items_body').empty();
   $('#reportBillModal').modal('show');
+
+  // Smart Slow Network Fallback: Only show loading if server takes > 600ms
+  var slowNetTimer = setTimeout(function() {
+    $('#modal_items_body').html('<tr><td colspan="4" class="text-center py-3 text-muted" style="font-size:0.9rem;"><i class="fas fa-wifi text-warning mr-1"></i> ກຳລັງເຊື່ອມຕໍ່ເຊີບເວີ...</td></tr>');
+  }, 600);
 
   $.ajax({
     url: 'reports.php',
@@ -12,11 +17,19 @@ function viewBillDetails(billNo) {
     data: { action: 'get_bill_details', bill_no: billNo },
     dataType: 'json',
     success: function(res) {
+      clearTimeout(slowNetTimer);
       if (res.success && res.bill) {
         var b = res.bill;
         $('#modal_date').text(b.sale_date + ' ' + b.sale_time);
         $('#modal_cashier').text(b.user_receive || 'Admin');
         $('#modal_customer').text(b.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+
+        if (b.bank_name) {
+          $('#modal_bank_wrapper').show();
+          $('#modal_bank_name').text(b.bank_name);
+        } else {
+          $('#modal_bank_wrapper').hide();
+        }
 
         var subtotal = parseFloat(b.sale_amount || 0);
         var discount = parseFloat(b.sale_discount_bill || 0);
@@ -58,6 +71,7 @@ function viewBillDetails(billNo) {
       }
     },
     error: function() {
+      clearTimeout(slowNetTimer);
       $('#modal_items_body').html('<tr><td colspan="4" class="text-center text-danger">ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່!</td></tr>');
     }
   });
@@ -82,17 +96,31 @@ function printBill(billNo) {
         var subtotal = parseFloat(b.sale_amount || 0);
         var discount = parseFloat(b.sale_discount_bill || 0);
         var net      = parseFloat(b.sale_barlance || 0);
-        var cash     = parseFloat(b.cash_received || (b.sale_pay || 0));
+        var cash     = parseFloat(b.cash_received || 0);
         var qr       = parseFloat(b.qr_received || 0);
         var change   = parseFloat(b.sale_return || 0);
+        var typePay  = b.type_pay || b.payment_type || '';
+
+        if (cash === 0 && qr === 0) {
+          if (typePay.indexOf('ເງິນສົດ') !== -1) {
+            cash = parseFloat(b.sale_pay || b.sale_barlance || 0);
+          }
+          if (typePay.indexOf('ໂອນ') !== -1 || typePay.indexOf('QR') !== -1) {
+            qr = parseFloat(b.sale_barlance || 0);
+          }
+        }
 
         $('#rc_rep_subtotal').text(subtotal.toLocaleString() + ' ₭');
         $('#rc_rep_discount').text(discount.toLocaleString() + ' ₭');
         $('#rc_rep_total').text(net.toLocaleString() + ' ₭');
         $('#rc_rep_change').text(change.toLocaleString() + ' ₭');
 
-        var payHtml = '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນສົດ):</span><span>' + cash.toLocaleString() + ' ₭</span></div>';
-        payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນ (ເງິນໂອນ):</span><span>' + qr.toLocaleString() + ' ₭</span></div>';
+        var payHtml = '';
+        payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cash.toLocaleString() + ' ₭</span></div>';
+        payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qr.toLocaleString() + ' ₭</span></div>';
+        if (b.bank_name && qr > 0) {
+          payHtml += '<div class="d-flex justify-content-between" style="font-weight:700;"><span>ທະນາຄານໂອນ:</span><span>' + b.bank_name + '</span></div>';
+        }
         $('#rc_rep_payment_rows').html(payHtml);
 
         var tbody = $('#rc_rep_items');
@@ -154,8 +182,9 @@ function doPrintReportReceipt() {
       .mt-2{margin-top:8px!important} 
       .text-muted { color: #000 !important; font-weight: 600 !important; }
       .receipt-header-address, .receipt-header-tel { font-size: 12px !important; font-weight: 600 !important; color: #000 !important; line-height: 1.4 !important; }
-      .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 20px !important; padding-top: 10px !important; text-align: center !important; }
+      .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 10px !important; padding-top: 8px !important; text-align: center !important; }
       img.receipt-logo { max-width:80px!important; max-height:80px!important; height:auto!important; display:block!important; margin:10px auto 2px auto!important; object-fit:contain!important; }
+      img.receipt-qr-img { max-width:100px!important; max-height:100px!important; height:auto!important; display:block!important; margin:6px auto 2px auto!important; object-fit:contain!important; }
       table { width:100%; border-collapse:collapse; margin:4px 0; font-size:11.5px; color: #000 !important; }
       td,th { padding:3px 0; vertical-align:top; color: #000 !important; font-weight: 600 !important; }
       th { font-weight: 700 !important; }
@@ -166,10 +195,40 @@ function doPrintReportReceipt() {
     </style>
   </head><body>${printContent}</body></html>`);
   iframeDoc.close();
-  setTimeout(function() {
+
+  var images = iframeDoc.getElementsByTagName('img');
+  var totalImages = images.length;
+  var loadedCount = 0;
+  var printTriggered = false;
+
+  function doTriggerPrint() {
+    if (printTriggered) return;
+    printTriggered = true;
     iframe.contentWindow.focus();
     iframe.contentWindow.print();
-  }, 250);
+  }
+
+  if (totalImages === 0) {
+    setTimeout(doTriggerPrint, 150);
+  } else {
+    for (var i = 0; i < totalImages; i++) {
+      if (images[i].complete && images[i].naturalWidth !== 0) {
+        loadedCount++;
+      } else {
+        images[i].onload = images[i].onerror = function() {
+          loadedCount++;
+          if (loadedCount >= totalImages) {
+            setTimeout(doTriggerPrint, 100);
+          }
+        };
+      }
+    }
+    if (loadedCount >= totalImages) {
+      setTimeout(doTriggerPrint, 150);
+    } else {
+      setTimeout(doTriggerPrint, 500);
+    }
+  }
 }
 
 function floatval(val) {
@@ -339,6 +398,17 @@ function doExportExcel() {
   links.forEach(function(a) {
     var textNode = document.createTextNode(a.textContent);
     a.parentNode.replaceChild(textNode, a);
+  });
+
+  var images = cloneTable.querySelectorAll('img');
+  images.forEach(function(img) {
+    var title = img.getAttribute('title') || img.getAttribute('alt') || '';
+    if (title && img.parentNode) {
+      var textNode = document.createTextNode(title);
+      img.parentNode.replaceChild(textNode, img);
+    } else if (img.parentNode) {
+      img.remove();
+    }
   });
 
   var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';

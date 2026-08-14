@@ -159,9 +159,9 @@ require_once __DIR__ . '/../../layouts/header.php';
           <label>ສະຖານະວັນໝົດອາຍຸ</label>
           <select name="status_filter" class="form-control">
             <option value="">-- ທັງໝົດ --</option>
-            <option value="expired" <?php echo $status_filter === 'expired' ? 'selected' : ''; ?>>ໝົດອາຍຸແລ້ວ (Expired)</option>
-            <option value="near" <?php echo $status_filter === 'near' ? 'selected' : ''; ?>>ໃກ້ໝົດອາຍຸ (Near Expired)</option>
-            <option value="normal" <?php echo $status_filter === 'normal' ? 'selected' : ''; ?>>ປົກກະຕິ (Normal)</option>
+            <option value="expired" <?php echo $status_filter === 'expired' ? 'selected' : ''; ?>>ໝົດອາຍຸແລ້ວ</option>
+            <option value="near" <?php echo $status_filter === 'near' ? 'selected' : ''; ?>>ໃກ້ໝົດອາຍຸ</option>
+            <option value="normal" <?php echo $status_filter === 'normal' ? 'selected' : ''; ?>>ປົກກະຕິ</option>
           </select>
         </div>
         <div class="col-md-3 mb-2 d-flex align-items-end">

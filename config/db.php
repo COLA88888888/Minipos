@@ -21,26 +21,32 @@ if ($conn && isset($_SESSION['user_id'])) {
         $isAdmin = (
             strtolower($userStatusVal) === 'admin' ||
             $userStatusVal === 'ຜູ້ບໍລິຫານ' ||
-            strtolower($refresh_row['username'] ?? '') === 'admin' ||
             ($refresh_row['Id'] ?? 0) == 1
         );
         $_SESSION['status'] = $isAdmin ? 'ຜູ້ບໍລິຫານ' : ($userStatusVal ?: 'ພະນັກງານ');
         $_SESSION['username'] = $refresh_row['username'] ?? ($_SESSION['username'] ?? 'user');
         $_SESSION['store_id'] = (int)($refresh_row['store_id'] ?? $refresh_row['branch_id'] ?? 1);
         $_SESSION['permissions'] = [
+            'dashboard' => $isAdmin ? 1 : (int)($refresh_row['dashboard'] ?? 0),
             'sale' => $isAdmin ? 1 : (int)($refresh_row['sale'] ?? 0),
             'stock' => $isAdmin ? 1 : (int)($refresh_row['stock'] ?? 0),
             'report' => $isAdmin ? 1 : (int)($refresh_row['report'] ?? 0),
             'accounting' => $isAdmin ? 1 : (int)($refresh_row['accounting'] ?? 0),
             'setup' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0),
             'users' => $isAdmin ? 1 : (int)($refresh_row['users'] ?? 0),
-            'permissions' => $isAdmin ? 1 : (int)($refresh_row['users'] ?? 0),
+            'permissions' => $isAdmin ? 1 : (int)($refresh_row['permissions'] ?? $refresh_row['users'] ?? 0),
             'edit' => $isAdmin ? 1 : (int)($refresh_row['edit'] ?? 0),
-            'cafe' => $isAdmin ? 1 : (int)($refresh_row['cafe'] ?? 0),
-            'order' => $isAdmin ? 1 : (int)($refresh_row['order'] ?? 0),
-            'kitchen' => $isAdmin ? 1 : (int)($refresh_row['kitchen'] ?? 0),
-            'tbl' => $isAdmin ? 1 : (int)($refresh_row['tbl'] ?? 0)
+            'customers' => $isAdmin ? 1 : (int)($refresh_row['customers'] ?? $refresh_row['sale'] ?? 0),
+            'branches' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0)
         ];
+
+        // Multi-Branch Store Switcher Handler for Executive / Admin Users
+        if (isset($_GET['switch_store_id'])) {
+            $switchId = intval($_GET['switch_store_id']);
+            if ($isAdmin) {
+                $_SESSION['active_store_id'] = $switchId;
+            }
+        }
     }
 }
 
@@ -61,6 +67,7 @@ try {
             `store_id` INT AUTO_INCREMENT PRIMARY KEY,
             `store_code` VARCHAR(50) NOT NULL UNIQUE,
             `store_name` VARCHAR(150) NOT NULL,
+            `is_main` TINYINT(1) DEFAULT 0,
             `address` TEXT NULL,
             `tel` VARCHAR(50) NULL,
             `status` VARCHAR(20) DEFAULT 'active',
@@ -69,14 +76,74 @@ try {
 
         $storeCount = (int)$pdo->query("SELECT COUNT(*) FROM tbstore")->fetchColumn();
         if ($storeCount === 0) {
-            $pdo->exec("INSERT INTO tbstore (store_id, store_code, store_name, address, tel, status) 
-                        VALUES (1, 'ST-001', 'ຮ້ານຕົ້ນແບບ / Main Store', 'ນະຄອນຫຼວງວຽງຈັນ', '020-00000000', 'active')");
+            $pdo->exec("INSERT INTO tbstore (store_id, store_code, store_name, is_main, address, tel, status) 
+                        VALUES (1, '1', 'ສາຂາໃຫຍ່ ວຽງຈັນ (HQ)', 1, 'ນະຄອນຫຼວງວຽງຈັນ', '020-55555555', 'active')");
+        }
+
+        // Auto update ST-001 to numeric '1'
+        $pdo->exec("UPDATE tbstore SET store_code = '1' WHERE store_id = 1 AND store_code = 'ST-001'");
+
+        // Ensure is_main column exists
+        $hasMain = $pdo->query("SHOW COLUMNS FROM `tbstore` LIKE 'is_main'")->fetch();
+        if (!$hasMain) {
+            $pdo->exec("ALTER TABLE `tbstore` ADD COLUMN `is_main` TINYINT(1) DEFAULT 0 AFTER `store_name`");
+        }
+        $pdo->exec("UPDATE `tbstore` SET is_main = 1 WHERE store_id = 1");
+    } catch (Throwable $ex) {}
+
+    // Ensure store_id column exists in all core data tables for multi-branch isolation
+    $coreTablesForStore = ['sales', 'tbsale_save', 'products', 'accounting_records', 'imports', 'customers', 'tbuser'];
+    foreach ($coreTablesForStore as $tblName) {
+        try {
+            $hasCol = $pdo->query("SHOW COLUMNS FROM `{$tblName}` LIKE 'store_id'")->fetch();
+            if (!$hasCol) {
+                $pdo->exec("ALTER TABLE `{$tblName}` ADD COLUMN `store_id` INT(11) NOT NULL DEFAULT 1");
+            }
+        } catch (Throwable $ex) {}
+    }
+
+    // Ensure all permission columns exist in tbuser
+    $allPermCols = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'branches'];
+    foreach ($allPermCols as $pCol) {
+        try {
+            $hasCol = $pdo->query("SHOW COLUMNS FROM `tbuser` LIKE '{$pCol}'")->fetch();
+            if (!$hasCol) {
+                $pdo->exec("ALTER TABLE `tbuser` ADD COLUMN `{$pCol}` TINYINT(1) DEFAULT 0");
+            }
+        } catch (Throwable $ex) {}
+    }
+
+    // Ensure Tax/VAT columns exist in tbcompanyinfo and sales tables
+    try {
+        $hasVat = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'vat_percent'")->fetch();
+        if (!$hasVat) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `vat_percent` DECIMAL(5,2) DEFAULT 7.00");
+        }
+        $hasTaxType = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'tax_type'")->fetch();
+        if (!$hasTaxType) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `tax_type` VARCHAR(20) DEFAULT 'inclusive'");
+        }
+        $hasSalesTaxType = $pdo->query("SHOW COLUMNS FROM `sales` LIKE 'tax_type'")->fetch();
+        if (!$hasSalesTaxType) {
+            $pdo->exec("ALTER TABLE `sales` ADD COLUMN `tax_type` VARCHAR(20) DEFAULT 'inclusive'");
+        }
+        $hasSalesVatRate = $pdo->query("SHOW COLUMNS FROM `sales` LIKE 'vat_rate'")->fetch();
+        if (!$hasSalesVatRate) {
+            $pdo->exec("ALTER TABLE `sales` ADD COLUMN `vat_rate` DECIMAL(5,2) DEFAULT 7.00");
+        }
+        $hasQrImg = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'qr_img'")->fetch();
+        if (!$hasQrImg) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `qr_img` VARCHAR(255) NULL AFTER `img_url`");
         }
     } catch (Throwable $ex) {}
 
-    try {
-        $pdo->exec("DROP TABLE IF EXISTS `tbbranch`");
-    } catch (Throwable $ex) {}
+    // Clean up unused/deprecated database tables
+    $unusedTables = ['tbbranch', 'tbunit', 'tbsale', 'tbsale_detail', 'category', 'tbsupplier', 'tbcurrency'];
+    foreach ($unusedTables as $uTbl) {
+        try {
+            $pdo->exec("DROP TABLE IF EXISTS `{$uTbl}`");
+        } catch (Throwable $ex) {}
+    }
 
     try {
         $hasBranchId = $pdo->query("SHOW COLUMNS FROM tbuser LIKE 'branch_id'")->fetch();
@@ -120,11 +187,12 @@ try {
             `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-        $custCount = (int)$pdo->query("SELECT COUNT(*) FROM customers")->fetchColumn();
-        if ($custCount === 0) {
-            $pdo->exec("INSERT INTO customers (customer_code, customer_name, phone, address, notes) 
-                        VALUES ('CUST-001', 'ລູກຄ້າທົ່ວໄປ / General Customer', '020-00000000', 'ນະຄອນຫຼວງວຽງຈັນ', 'ລູກຄ້າທົ່ວໄປເລີ່ມຕົ້ນ')");
+        $custCols = $pdo->query("SHOW COLUMNS FROM customers")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('member_card', $custCols)) {
+            $pdo->exec("ALTER TABLE `customers` ADD COLUMN `member_card` VARCHAR(50) NULL AFTER `phone`");
         }
+
+
     } catch (Throwable $ex) {}
 
     // Auto Migration for User Detail Columns
@@ -191,6 +259,108 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     } catch (Throwable $ex) {}
 
+    // Ensure tbcompanyinfo exists and has DB record
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `tbcompanyinfo` (
+            `com_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `com_name_la` VARCHAR(255) DEFAULT 'Mini POS Store',
+            `com_address` TEXT DEFAULT NULL,
+            `com_tel` VARCHAR(50) DEFAULT NULL,
+            `barcode` TEXT DEFAULT NULL,
+            `img_url` VARCHAR(255) DEFAULT 'logo.png',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $compCount = (int)$pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
+        if ($compCount === 0) {
+            $pdo->exec("INSERT INTO tbcompanyinfo (com_name_la, com_address, com_tel, barcode, img_url, branch_id) VALUES 
+                ('', '', '', 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!', 'logo.png', 1)");
+        }
+    } catch (Throwable $ex) {}
+
+    // Ensure tbstore exists and has DB record
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `tbstore` (
+            `store_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `store_code` VARCHAR(50) DEFAULT 'STORE01',
+            `store_name` VARCHAR(255) DEFAULT 'Mini POS Store',
+            `address` TEXT DEFAULT NULL,
+            `tel` VARCHAR(50) DEFAULT NULL,
+            `logo_path` VARCHAR(255) DEFAULT 'assets/img/logo/logo.png',
+            `status` VARCHAR(20) DEFAULT 'active',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $storeCount = (int)$pdo->query("SELECT COUNT(*) FROM tbstore")->fetchColumn();
+        if ($storeCount === 0) {
+            $pdo->exec("INSERT INTO tbstore (store_code, store_name, address, tel, logo_path, status) VALUES 
+                ('STORE01', 'Mini POS Store', 'ນະຄອນຫຼວງວຽງຈັນ', '020-55555555', 'assets/img/logo/logo.png', 'active')");
+        }
+    } catch (Throwable $ex) {}
+
+    // Ensure accounting_categories exists and has DB records
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `accounting_categories` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `category_name` VARCHAR(100) NOT NULL,
+            `record_type` VARCHAR(20) NOT NULL DEFAULT 'expense',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $accCatCount = (int)$pdo->query("SELECT COUNT(*) FROM accounting_categories")->fetchColumn();
+        if ($accCatCount === 0) {
+            $pdo->exec("INSERT INTO accounting_categories (category_name, record_type) VALUES 
+                ('ຄ່າໄຟຟ້າ', 'expense'),
+                ('ຄ່ານໍ້າປະປາ', 'expense'),
+                ('ຄ່າເຊົ່າສະຖານທີ່', 'expense'),
+                ('ເງິນດ່ວນ/ເງິນເດືອນ', 'expense'),
+                ('ຄ່າຕົ້ນທຶນ/ເຄື່ອງໃຊ້', 'expense'),
+                ('ລາຍຮັບຄ່ານາຍໜ້າ', 'income'),
+                ('ລາຍຮັບບໍລິການ', 'income')");
+        }
+    } catch (Throwable $ex) {}
+
+    // Ensure bank_accounts table exists and has seed bank records
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `bank_accounts` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `bank_name` VARCHAR(100) NOT NULL,
+            `account_number` VARCHAR(100) NOT NULL,
+            `account_name` VARCHAR(150) NOT NULL,
+            `bank_code` VARCHAR(50) DEFAULT 'BCEL',
+            `bank_logo` VARCHAR(255) DEFAULT NULL,
+            `qr_code_img` VARCHAR(255) DEFAULT NULL,
+            `is_active` TINYINT(1) DEFAULT 1,
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $bankCount = (int)$pdo->query("SELECT COUNT(*) FROM bank_accounts")->fetchColumn();
+        if ($bankCount === 0) {
+            $pdo->exec("INSERT INTO bank_accounts (bank_name, account_number, account_name, bank_code, bank_logo, is_active) VALUES 
+                ('BCEL One (ທະນາຄານ ການຄ້າຕ່າງປະເທດລາວ)', '16012000012345', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'BCEL', 'bcel.png', 1),
+                ('LDB (ທະນາຄານ ພັດທະນາລາວ)', '01011000098765', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'LDB', 'ldb.png', 1),
+                ('JDB (ທະນາຄານ ພົງສະຫວັນ)', '05012000045678', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'JDB', 'jdb.png', 1),
+                ('STB (ທະນາຄານ ເອັສທີ)', '08012000033221', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'STB', 'stb.png', 1)");
+        }
+
+        // Add columns to tbsale_save & sales if missing
+        $saleCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('bank_account_id', $saleCols)) {
+            $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN `bank_account_id` INT DEFAULT NULL");
+        }
+        if (!in_array('bank_name', $saleCols)) {
+            $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN `bank_name` VARCHAR(100) DEFAULT NULL");
+        }
+
+        $salesCols = $pdo->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('bank_account_id', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `bank_account_id` INT DEFAULT NULL");
+        }
+        if (!in_array('bank_name', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `bank_name` VARCHAR(100) DEFAULT NULL");
+        }
+    } catch (Throwable $ex) {}
+
     try {
         $hasSize = $pdo->query("SHOW COLUMNS FROM products LIKE 'size'")->fetch();
         if ($hasSize) {
@@ -202,7 +372,7 @@ try {
         }
 
         // ລົບຟິວພາສາອັງກິດ (_en) ທີ່ບໍ່ໄດ້ໃຊ້ງານ
-        $pdo->exec("ALTER TABLE category DROP COLUMN IF EXISTS category_name_en");
+        $pdo->exec("ALTER TABLE categories DROP COLUMN IF EXISTS category_name_en");
         $pdo->exec("ALTER TABLE products DROP COLUMN IF EXISTS product_name_en");
         $pdo->exec("ALTER TABLE tbcompanyinfo DROP COLUMN IF EXISTS com_name_en");
 
@@ -261,6 +431,37 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     } catch (Throwable $ex) {}
 
+    // Auto Migration for promotions table
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `promotions` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `promo_name` VARCHAR(255) NOT NULL,
+            `promo_type` VARCHAR(50) DEFAULT 'discount',
+            `discount_type` VARCHAR(20) DEFAULT 'percentage',
+            `discount_value` DECIMAL(12,2) DEFAULT 0.00,
+            `start_date` DATE DEFAULT NULL,
+            `end_date` DATE DEFAULT NULL,
+            `min_qty` INT DEFAULT 0,
+            `min_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `status` TINYINT(1) DEFAULT 1,
+            `branch_id` INT DEFAULT 1,
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $hasMinQty = $pdo->query("SHOW COLUMNS FROM `promotions` LIKE 'min_qty'")->fetch();
+        if (!$hasMinQty) {
+            $pdo->exec("ALTER TABLE `promotions` ADD COLUMN `min_qty` INT DEFAULT 0 AFTER `end_date`");
+        }
+        $hasTargetType = $pdo->query("SHOW COLUMNS FROM `promotions` LIKE 'target_type'")->fetch();
+        if (!$hasTargetType) {
+            $pdo->exec("ALTER TABLE `promotions` ADD COLUMN `target_type` VARCHAR(50) DEFAULT 'all' AFTER `min_amount`");
+            $pdo->exec("ALTER TABLE `promotions` ADD COLUMN `target_name` VARCHAR(255) DEFAULT 'ທຸກສິນຄ້າ' AFTER `target_type`");
+        }
+
+        // Auto-deactivate expired promotions
+        $pdo->exec("UPDATE promotions SET status = 0 WHERE status = 1 AND end_date < CURDATE()");
+    } catch (Throwable $ex) {}
+
     // Auto Migration for system_settings table
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `system_settings` (
@@ -276,6 +477,108 @@ try {
                 ('vat_rate', '0'),
                 ('expiry_warning_days', '30')");
         }
+    } catch (Throwable $ex) {}
+
+    // Auto Migration for tbsale_save, tbsale_save_detail & sales view
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `tbsale_save` (
+            `sale_save_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `sale_save_bill` VARCHAR(50) NOT NULL,
+            `sale_date` DATE DEFAULT NULL,
+            `sale_time` TIME DEFAULT NULL,
+            `user_receive` INT DEFAULT NULL,
+            `customer_id` INT DEFAULT NULL,
+            `customer_name` VARCHAR(150) DEFAULT 'ລູກຄ້າທົ່ວໄປ',
+            `ip_address` VARCHAR(50) DEFAULT NULL,
+            `sale_qty` DECIMAL(10,2) DEFAULT 0.00,
+            `sale_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `sale_discount_bill` DECIMAL(12,2) DEFAULT 0.00,
+            `sale_barlance` DECIMAL(12,2) DEFAULT 0.00,
+            `sale_pay` DECIMAL(12,2) DEFAULT 0.00,
+            `sale_return` DECIMAL(12,2) DEFAULT 0.00,
+            `type_pay` VARCHAR(50) DEFAULT 'ເງິນສົດ',
+            `sale_status` VARCHAR(20) DEFAULT 'SUCCESS',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX (`sale_save_bill`),
+            INDEX (`sale_date`),
+            INDEX (`user_receive`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `tbsale_save_detail` (
+            `save_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `save_bill` VARCHAR(50) NOT NULL,
+            `save_date` DATE DEFAULT NULL,
+            `save_time` TIME DEFAULT NULL,
+            `save_proid` INT DEFAULT NULL,
+            `save_proname` VARCHAR(255) DEFAULT NULL,
+            `save_qty` DECIMAL(10,2) DEFAULT 1.00,
+            `save_price` DECIMAL(12,2) DEFAULT 0.00,
+            `cost_price` DECIMAL(12,2) DEFAULT 0.00,
+            `save_money` DECIMAL(12,2) DEFAULT 0.00,
+            `save_net_money` DECIMAL(12,2) DEFAULT 0.00,
+            `user_receives` INT DEFAULT NULL,
+            INDEX (`save_bill`),
+            INDEX (`save_proid`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `sales` (
+            `sale_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `invoice_number` VARCHAR(50) NOT NULL,
+            `sold_by` INT DEFAULT NULL,
+            `customer_id` INT DEFAULT NULL,
+            `customer_name` VARCHAR(150) DEFAULT 'ລູກຄ້າທົ່ວໄປ',
+            `subtotal` DECIMAL(12,2) DEFAULT 0.00,
+            `discount_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `vat_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `total_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `total_profit` DECIMAL(12,2) DEFAULT 0.00,
+            `cash_received` DECIMAL(12,2) DEFAULT 0.00,
+            `change_amount` DECIMAL(12,2) DEFAULT 0.00,
+            `payment_type` VARCHAR(50) DEFAULT 'ເງິນສົດ',
+            `status` VARCHAR(20) DEFAULT 'SUCCESS',
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY `inv_num` (`invoice_number`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        $salesCols = $pdo->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN);
+        if (!in_array('created_at', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP");
+        }
+        if (!in_array('sold_by', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `sold_by` INT DEFAULT NULL");
+        }
+        if (!in_array('subtotal', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `subtotal` DECIMAL(12,2) DEFAULT 0.00");
+        }
+        if (!in_array('discount_amount', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `discount_amount` DECIMAL(12,2) DEFAULT 0.00");
+        }
+        if (!in_array('vat_amount', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `vat_amount` DECIMAL(12,2) DEFAULT 0.00");
+        }
+        if (!in_array('total_amount', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `total_amount` DECIMAL(12,2) DEFAULT 0.00");
+        }
+        if (!in_array('total_profit', $salesCols)) {
+            $pdo->exec("ALTER TABLE sales ADD COLUMN `total_profit` DECIMAL(12,2) DEFAULT 0.00");
+        }
+
+        $pdo->exec("INSERT IGNORE INTO sales (sale_id, invoice_number, sold_by, customer_id, customer_name, subtotal, discount_amount, total_amount, cash_received, change_amount, payment_type, status, created_at)
+            SELECT 
+                sale_save_id,
+                sale_save_bill,
+                user_receive,
+                customer_id,
+                customer_name,
+                sale_amount,
+                sale_discount_bill,
+                sale_barlance,
+                sale_pay,
+                sale_return,
+                type_pay,
+                sale_status,
+                COALESCE(created_at, CONCAT(sale_date, ' ', COALESCE(sale_time, '00:00:00')), NOW())
+            FROM tbsale_save");
     } catch (Throwable $ex) {}
 
 } catch (PDOException $e) {
@@ -329,18 +632,18 @@ if (!function_exists('logActivity')) {
 // === Permission Helper Functions ===
 if (!function_exists('hasPermission')) {
     function hasPermission($module, $action = 'view') {
-        if (!isset($_SESSION['checked']) || empty($_SESSION['checked'])) return false;
+        if (empty($_SESSION['user_id'])) return false;
         
         $status = $_SESSION['status'] ?? '';
         
         // 1. Admin (ຜູ້ບໍລິຫານ): Full access to all modules and actions
-        if ($status === 'ຜູ້ບໍລິຫານ' || strtolower($status) === 'admin' || strtolower($_SESSION['username'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? null) == 1) {
+        if ($status === 'ຜູ້ບໍລິຫານ' || strtolower($status) === 'admin' || ($_SESSION['user_id'] ?? null) == 1) {
             return true;
         }
         
         // 2. Module alias mappings
         $aliasMap = [
-            'dashboard' => ['sale', 'stock', 'report', 'setup', 'users'], // Any access grants dashboard
+            'dashboard' => 'dashboard',
             'pos' => 'sale',
             'categories' => 'stock',
             'products' => 'stock',
@@ -350,11 +653,12 @@ if (!function_exists('hasPermission')) {
             'expiry_check' => 'stock',
             'reports' => 'report',
             'financial' => 'report',
-            'accounting' => ['accounting', 'report'],
+            'accounting' => 'accounting',
             'settings' => 'setup',
-            'permissions' => 'users',
+            'branches' => ['branches', 'setup'],
+            'permissions' => ['permissions', 'users'],
             'user_manage' => 'users',
-            'customers' => ['customers', 'sale', 'users']
+            'customers' => ['customers', 'sale']
         ];
         
         $perms = $_SESSION['permissions'] ?? [];
@@ -405,6 +709,44 @@ if (!function_exists('hasPermission')) {
 if (!function_exists('getPermissionLimit')) {
     function getPermissionLimit($module) {
         return 0; // Visibility limit feature removed, always return 0 (no limit)
+    }
+}
+
+// Global Helper Functions for Bank Assets
+if (!function_exists('resolveBankLogo')) {
+    function resolveBankLogo($logoFile, $bankCode = '') {
+        $root = dirname(__DIR__);
+        if (!empty($logoFile)) {
+            $filename = basename(trim($logoFile));
+            if (file_exists($root . '/assets/img/banks/' . $filename)) {
+                return '../../assets/img/banks/' . $filename;
+            }
+        }
+        $code = strtolower(trim($bankCode));
+        if (strpos($code, 'bcel') !== false || strpos($code, 'bcl') !== false) $code = 'bcel';
+        else if (strpos($code, 'ldb') !== false) $code = 'ldb';
+        else if (strpos($code, 'jdb') !== false) $code = 'jdb';
+        else if (strpos($code, 'stb') !== false) $code = 'stb';
+        else if (strpos($code, 'apb') !== false) $code = 'apb';
+        else if (strpos($code, 'lvb') !== false) $code = 'lvb';
+
+        if ($code && file_exists($root . '/assets/img/banks/' . $code . '.svg')) {
+            return '../../assets/img/banks/' . $code . '.svg';
+        }
+        return '../../assets/img/banks/bcel.svg';
+    }
+}
+
+if (!function_exists('resolveBankQr')) {
+    function resolveBankQr($qrFile) {
+        $root = dirname(__DIR__);
+        if (!empty($qrFile)) {
+            $filename = basename(trim($qrFile));
+            if (file_exists($root . '/assets/img/qr/' . $filename)) {
+                return '../../assets/img/qr/' . $filename;
+            }
+        }
+        return '../../assets/img/qr_placeholder.png';
     }
 }
 ?>

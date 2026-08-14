@@ -26,6 +26,10 @@ function handleUserProfileUpload($fileInputName, $existingImg = 'default.png') {
             }
             $dest_path = $uploadFileDir . $newFileName;
             if (move_uploaded_file($fileTmpPath, $dest_path)) {
+                // Delete old profile image if not default
+                if ($existingImg && $existingImg !== 'default.png' && file_exists($uploadFileDir . $existingImg)) {
+                    @unlink($uploadFileDir . $existingImg);
+                }
                 return $newFileName;
             }
         }
@@ -185,7 +189,10 @@ if ($action === 'edit_user') {
         }
 
         $remove_flag = intval($_POST['remove_profile_img'] ?? 0);
-        if ($remove_flag === 1 && (empty($_FILES['profile_img']['name']) || $_FILES['profile_img']['error'] !== UPLOAD_ERR_OK)) {
+        if ($remove_flag === 1) {
+            if ($currImg && $currImg !== 'default.png' && file_exists(__DIR__ . '/../../assets/img/users/' . $currImg)) {
+                @unlink(__DIR__ . '/../../assets/img/users/' . $currImg);
+            }
             $profile_img = 'default.png';
         } else {
             $profile_img = handleUserProfileUpload('profile_img', $currImg);
@@ -217,6 +224,16 @@ if ($action === 'delete_user') {
     }
 
     try {
+        $uStmt = $pdo->prepare("SELECT profile_img FROM tbuser WHERE Id = ?");
+        $uStmt->execute([$user_id]);
+        $uImg = $uStmt->fetchColumn();
+        if ($uImg && $uImg !== 'default.png') {
+            $uPath = __DIR__ . '/../../assets/img/users/' . $uImg;
+            if (file_exists($uPath)) {
+                @unlink($uPath);
+            }
+        }
+
         $stmt = $pdo->prepare("DELETE FROM tbuser WHERE Id = ?");
         $stmt->execute([$user_id]);
         logActivity($pdo, "ລົບຜູ້ໃຊ້", "ID: $user_id");

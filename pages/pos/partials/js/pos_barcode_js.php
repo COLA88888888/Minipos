@@ -88,7 +88,32 @@ function findAndAddByBarcode(code) {
   }
 }
 
+window.selectProductById = function(productId) {
+  if (typeof allProducts === 'undefined' || !allProducts) {
+    console.error('allProducts array not loaded yet!');
+    return;
+  }
+  var p = allProducts.find(function(item) {
+    return String(item.product_id) === String(productId);
+  });
+  if (p) {
+    addProductToCart(p);
+  } else {
+    console.error('Product not found for ID:', productId);
+  }
+};
+
+$(document).on('click', '.product-card', function(e) {
+  e.stopPropagation();
+  var id = $(this).attr('data-id');
+  if (id) {
+    window.selectProductById(id);
+  }
+});
+
 function addProductToCart(product, specificUnit) {
+  if (!product) return;
+
   // 1. ກວດ stock ກ່ອນທຸກຢ່າງ — ຖ້າໝົດແລ້ວ ສະແດງ alert "ສິນຄ້າໝົດແລ້ວ!" ທັນທີ (ບໍ່ໃຫ້ເຕືອນເປີດບິນ)
   var cutQty = getProductCutQty(product.product_id);
   var remaining = getProductRemainingStock(product.product_id);
@@ -110,7 +135,7 @@ function addProductToCart(product, specificUnit) {
     return;
   }
 
-  // 2. ຖ້າສິນຄ້າມີໃນສາງ — ກວດສອບວ່າເປີດບິນແລ້ວຫຼືບໍ່
+  // 2. ຖ້າສິນຄ້າມີໃນສາງ — ກວດສອບວ່າເປີດບິນແລ້ວຫຼືບໍ່ (ຫຼື ເປີດບິນອັດໂນມັດ)
   if (!checkBillOpenedOrAlert()) return;
 
   var allUnits = buildAvailableUnits(product);
@@ -122,8 +147,8 @@ function addProductToCart(product, specificUnit) {
   }
 
   // ຖ້າມີຫຼາຍຫົວໜ່ວຍ — popup ໃຫ້ເລືອກ
-  var htmlOptions = allUnits.map(function(u) {
-    return `<button class="unit-pick-btn" data-unit='${JSON.stringify(u)}'
+  var htmlOptions = allUnits.map(function(u, uIdx) {
+    return `<button class="unit-pick-btn" data-unit-idx="${uIdx}"
       style="display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:8px; padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:10px; background:#fff; cursor:pointer; transition:all 0.15s ease; font-family:inherit;"
       onmouseover="this.style.borderColor='#2563eb'; this.style.background='#eff6ff';"
       onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#fff';">
@@ -140,7 +165,8 @@ function addProductToCart(product, specificUnit) {
     showCloseButton: true,
     didOpen: function() {
       $('.unit-pick-btn').on('click', function() {
-        var uObj = $(this).data('unit');
+        var uIdx = parseInt($(this).data('unit-idx'));
+        var uObj = allUnits[uIdx];
         Swal.close();
         _doAddToCart(product, uObj);
       });
