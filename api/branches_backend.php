@@ -79,6 +79,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+// Handle GET Toggle Branch Status (Open / Close Branch)
+if (isset($_GET['toggle_status_id'])) {
+    $toggle_id = intval($_GET['toggle_status_id']);
+    if ($toggle_id > 0) {
+        try {
+            $curStatus = $pdo->query("SELECT status, store_name FROM tbstore WHERE store_id = {$toggle_id}")->fetch(PDO::FETCH_ASSOC);
+            if ($curStatus) {
+                $newStatus = ($curStatus['status'] === 'active') ? 'inactive' : 'active';
+                $stmt = $pdo->prepare("UPDATE tbstore SET status = ? WHERE store_id = ?");
+                $stmt->execute([$newStatus, $toggle_id]);
+
+                $statusLabel = ($newStatus === 'active') ? 'ເປີດໃຊ້ງານ' : 'ປິດໃຊ້ງານ';
+                $message = "ປ່ຽນສະຖານະສາຂາ \"{$curStatus['store_name']}\" ເປັນ {$statusLabel} ສຳເລັດແລ້ວ!";
+                $message_type = 'success';
+                logActivity($pdo, "ປ່ຽນສະຖານະສາຂາ", "{$curStatus['store_name']} ({$statusLabel})");
+            }
+        } catch (Exception $e) {
+            $message = 'ຜິດພາດ: ' . $e->getMessage();
+            $message_type = 'danger';
+        }
+    }
+}
+
 // Fetch all branch stores
 $all_branches = $pdo->query("SELECT * FROM tbstore ORDER BY is_main DESC, store_id ASC")->fetchAll();
 $branches = $all_branches;

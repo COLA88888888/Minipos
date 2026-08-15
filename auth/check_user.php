@@ -94,14 +94,16 @@ try {
 
             // ໂຫຼດສິດການໃຊ້ງານຕາມໂມດູນ (Module Permissions)
             $_SESSION['permissions'] = [
+                'dashboard' => $isAdmin ? 1 : (int)($user['dashboard'] ?? 0),
                 'sale' => $isAdmin ? 1 : (int)($user['sale'] ?? 0),
                 'stock' => $isAdmin ? 1 : (int)($user['stock'] ?? 0),
                 'report' => $isAdmin ? 1 : (int)($user['report'] ?? 0),
                 'accounting' => $isAdmin ? 1 : (int)($user['accounting'] ?? 0),
                 'setup' => $isAdmin ? 1 : (int)($user['setup'] ?? 0),
                 'users' => $isAdmin ? 1 : (int)($user['users'] ?? 0),
-                'permissions' => $isAdmin ? 1 : (int)($user['users'] ?? 0),
+                'permissions' => $isAdmin ? 1 : (int)($user['permissions'] ?? $user['users'] ?? 0),
                 'edit' => $isAdmin ? 1 : (int)($user['edit'] ?? 0),
+                'customers' => $isAdmin ? 1 : (int)($user['customers'] ?? $user['sale'] ?? 0),
                 'cafe' => $isAdmin ? 1 : (int)($user['cafe'] ?? 0),
                 'order' => $isAdmin ? 1 : (int)($user['order'] ?? 0),
                 'kitchen' => $isAdmin ? 1 : (int)($user['kitchen'] ?? 0),

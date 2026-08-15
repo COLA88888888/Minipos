@@ -70,10 +70,12 @@
                   <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
                     <i class="fas fa-edit"></i>
                   </button>
-                  <!-- Delete Button -->
-                  <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
+                  <?php if (hasPermission('edit')): ?>
+                    <!-- Delete Button -->
+                    <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  <?php endif; ?>
                 </div>
               </td>
 

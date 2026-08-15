@@ -101,11 +101,6 @@ function getToast() {
  */
 function toggleUserPerm(userId, perm, checkbox) {
   var val = checkbox.checked ? 1 : 0;
-  
-  // Sync ທຸກສະວິດຂອງສິດດຽວກັນສຳລັບຜູ້ໃຊ້ນີ້ໃນຕາຕະລາງ
-  document.querySelectorAll('[data-user-id="' + userId + '"][data-perm="' + perm + '"]').forEach(function(cb) {
-    cb.checked = checkbox.checked;
-  });
 
   $.ajax({
     url: window.location.href,
@@ -134,9 +129,6 @@ function toggleUserPerm(userId, perm, checkbox) {
       } else {
         // ຄືນຄ່າສະວິດ ຖ້າອັບເດດບໍ່ສຳເລັດ
         checkbox.checked = !checkbox.checked;
-        document.querySelectorAll('[data-user-id="' + userId + '"][data-perm="' + perm + '"]').forEach(function(cb) {
-          cb.checked = checkbox.checked;
-        });
         if (typeof Swal !== 'undefined') {
           Swal.fire({
             icon: 'error',

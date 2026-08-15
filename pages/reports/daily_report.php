@@ -149,9 +149,9 @@ try {
                 }
             }
 
-            if ($accId === 0 && !empty($bank_accounts_map)) {
-                $firstAcc = reset($bank_accounts_map);
-                $accId = $firstAcc['id'];
+            // Strictly check bank matching - ignore unassigned transactions
+            if ($accId === 0) {
+                continue;
             }
 
             if ($accId > 0) {

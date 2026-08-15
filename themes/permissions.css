@@ -207,15 +207,16 @@ body {
 }
 
 .perm-matrix-table td {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid #f1f5f9;
-  vertical-align: middle;
+  vertical-align: middle !important;
+  text-align: center;
   background-color: #ffffff;
   transition: background-color 0.15s ease;
 }
 
-.perm-matrix-table tr:last-child td {
-  border-bottom: none;
+.perm-matrix-table td:first-child {
+  text-align: left;
 }
 
 .perm-matrix-table tr:hover td {
@@ -270,7 +271,7 @@ body {
   display: inline-block;
   width: 38px;
   height: 20px;
-  margin-bottom: 0;
+  margin: 0 auto;
   vertical-align: middle;
 }
 
@@ -317,7 +318,9 @@ input:disabled + .matrix-slider {
 }
 
 .perm-na-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 2px 8px;
   border-radius: 4px;
   background-color: #f8fafc;
@@ -328,6 +331,7 @@ input:disabled + .matrix-slider {
   letter-spacing: 0.1px;
   cursor: not-allowed;
   user-select: none;
+  line-height: 1.2;
 }
 
 .empty-users-state {

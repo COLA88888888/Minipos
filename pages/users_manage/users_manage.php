@@ -114,10 +114,12 @@ require_once __DIR__ . '/../../layouts/header.php';
                           <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $userJson; ?>)'>
                             <i class="fas fa-edit"></i>
                           </button>
-                          <!-- Delete Button -->
-                          <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteUser(<?php echo $u['Id']; ?>, '<?php echo htmlspecialchars(addslashes($u['username'])); ?>')">
-                            <i class="fas fa-trash-alt"></i>
-                          </button>
+                          <?php if (hasPermission('edit')): ?>
+                            <!-- Delete Button -->
+                            <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteUser(<?php echo $u['Id']; ?>, '<?php echo htmlspecialchars(addslashes($u['username'])); ?>')">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          <?php endif; ?>
                         </div>
                       </td>
                     </tr>

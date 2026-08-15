@@ -39,16 +39,66 @@ if (!function_exists('resolveBankQr')) {
 }
 
 // Calculate revenue per bank for date range ($start_date to $end_date)
+// Exclusively sums the net bank transfer amount (sale_transfer or net transfer total), strictly excluding cash
 $bank_sales_sql = "
     SELECT 
-        COALESCE(s.bank_account_id, 0) as bank_acc_id,
-        COALESCE(s.bank_name, 'ບໍ່ໄດ້ລະບຸ') as bank_label,
+        b.id as bank_acc_id,
         COUNT(s.sale_id) as total_tx,
-        COALESCE(SUM(s.total_amount), 0) as total_received
-    FROM sales s
-    WHERE (s.payment_type LIKE '%ໂອນ%' OR s.payment_type LIKE '%Transfer%' OR s.payment_type LIKE '%QR%' OR s.bank_account_id > 0)
-      AND DATE(COALESCE(s.created_at, NOW())) BETWEEN ? AND ?
-    GROUP BY bank_acc_id, bank_label
+        COALESCE(SUM(s.transfer_net_amount), 0) as total_received
+    FROM bank_accounts b
+    LEFT JOIN (
+        SELECT 
+            Id as sale_id,
+            CASE 
+                WHEN sale_transfer > 0 THEN sale_transfer
+                WHEN (type_pay LIKE '%ໂອນ%' OR type_pay LIKE '%QR%' OR bank_account_id > 0) AND type_pay NOT LIKE '%ເງິນສົດ%' THEN sale_barlance
+                ELSE 0
+            END as transfer_net_amount,
+            type_pay as payment_type,
+            bank_account_id,
+            bank_name,
+            sale_date as created_at
+        FROM tbsale_save
+        WHERE (sale_status IS NULL OR sale_status = 'SUCCESS' OR sale_status != 'CANCEL')
+        UNION ALL
+        SELECT 
+            sale_id,
+            CASE 
+                WHEN (payment_type LIKE '%ໂອນ%' OR payment_type LIKE '%QR%' OR bank_account_id > 0) AND payment_type NOT LIKE '%ເງິນສົດ%' THEN total_amount
+                ELSE 0
+            END as transfer_net_amount,
+            payment_type,
+            bank_account_id,
+            bank_name,
+            DATE(created_at) as created_at
+        FROM sales
+        WHERE (status IS NULL OR status = 'SUCCESS' OR status != 'CANCEL') 
+          AND invoice_number NOT IN (SELECT sale_save_bill FROM tbsale_save WHERE sale_save_bill IS NOT NULL)
+    ) s ON (
+        (
+            (s.bank_account_id IS NOT NULL AND s.bank_account_id > 0 AND s.bank_account_id = b.id)
+            OR (
+                (s.bank_account_id IS NULL OR s.bank_account_id = 0)
+                AND (
+                    (s.bank_name IS NOT NULL AND s.bank_name != '' AND (
+                        LOWER(s.bank_name) = LOWER(b.bank_name)
+                        OR LOWER(s.bank_name) = LOWER(b.bank_code)
+                        OR LOWER(s.bank_name) LIKE CONCAT('%', LOWER(b.bank_name), '%')
+                        OR LOWER(s.bank_name) LIKE CONCAT('%', LOWER(b.bank_code), '%')
+                        OR LOWER(b.bank_name) LIKE CONCAT('%', LOWER(s.bank_name), '%')
+                        OR LOWER(b.bank_code) LIKE CONCAT('%', LOWER(s.bank_name), '%')
+                    ))
+                    OR (
+                        (s.bank_name IS NULL OR s.bank_name = '' OR LOWER(s.bank_name) LIKE '%bcel%' OR LOWER(s.bank_name) LIKE '%onepay%')
+                        AND (LOWER(b.bank_code) = 'BCEL' OR LOWER(b.bank_name) LIKE '%bcel%')
+                    )
+                )
+            )
+        )
+        AND s.transfer_net_amount > 0
+        AND s.created_at BETWEEN ? AND ?
+    )
+    GROUP BY b.id
 ";
 $bank_sales_stmt = $pdo->prepare($bank_sales_sql);
 $bank_sales_stmt->execute([$start_date, $end_date]);
@@ -294,9 +344,11 @@ function getBankBrandStyle($bankCode) {
                   <button type="button" class="btn btn-sm btn-outline-primary" title="ແກ້ໄຂ" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
+                  <?php if (hasPermission('edit')): ?>
+                    <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  <?php endif; ?>
                 </div>
               </td>
             </tr>

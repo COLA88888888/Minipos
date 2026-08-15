@@ -567,10 +567,12 @@ require_once __DIR__ . '/../../layouts/header.php';
                     onclick='editProduct(<?php echo json_encode($p); ?>)'>
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
-                    onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
+                  <?php if (hasPermission('edit')): ?>
+                    <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
+                      onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                  <?php endif; ?>
                 </td>
 
               </tr>

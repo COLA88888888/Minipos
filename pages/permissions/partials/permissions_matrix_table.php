@@ -126,7 +126,7 @@
                 </thead>
                 <tbody>
 
-                  <!-- ໂມດູນ 1: ດາດຊ໌ບອດ (Dashboard) -->
+                                    <!-- ໂມດູນ 1: ດາດສ໌ບອດ (Dashboard) -->
                   <tr>
                     <td>
                       <div class="perm-module-info">
@@ -134,18 +134,19 @@
                           <i class="fas fa-chart-line"></i>
                         </div>
                         <div>
-                          <div class="perm-module-title">ດາດຊ໌ບອດ</div>
+                          <div class="perm-module-title">ໜ້າ ດາດສ໌ບອດ</div>
+                          <div class="perm-module-desc">ເຂົ້າເຖິງ ແລະ ເບິ່ງສະຖິຕິໜ້າດາດສ໌ບອດຫຼັກ</div>
                         </div>
                       </div>
                     </td>
                     <td class="text-center">
                       <label class="matrix-switch">
                         <input type="checkbox" 
-                               id="perm_dash_view_<?php echo $u['Id']; ?>" 
+                               id="perm_dashboard_view_<?php echo $u['Id']; ?>" 
                                data-perm="dashboard" 
-                               data-user-id="<?php echo $u['Id']; ?>"
+                               data-perm-type="view"
                                <?php echo (!empty($u['dashboard']) || $isAdmin) ? 'checked' : ''; ?>
-                               <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+                               <?php echo $isAdmin ? 'disabled' : ''; ?>
                                onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'dashboard', this)">
                         <span class="matrix-slider"></span>
                       </label>
@@ -269,11 +270,11 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_customers_del_<?php echo $u['Id']; ?>" 
-                               data-perm="edit" 
+                               data-perm="customers" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['customers']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'customers', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
@@ -319,11 +320,11 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_stock_edit_<?php echo $u['Id']; ?>" 
-                               data-perm="edit" 
+                               data-perm="stock" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['stock']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'stock', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
@@ -331,11 +332,11 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_stock_del_<?php echo $u['Id']; ?>" 
-                               data-perm="edit" 
+                               data-perm="stock" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['stock']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'stock', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
@@ -432,11 +433,11 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_report_edit_<?php echo $u['Id']; ?>" 
-                               data-perm="edit" 
+                               data-perm="report" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['report']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'report', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
@@ -444,11 +445,11 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_report_del_<?php echo $u['Id']; ?>" 
-                               data-perm="edit" 
+                               data-perm="report" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['report']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'report', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
@@ -618,7 +619,7 @@
                     </td>
                   </tr>
 
-                  <!-- ໂມດູນ 10: ຕັ້ງຄ່າລະບົບ (System Settings) -->
+                                    <!-- ໂມດູນ 10: ຕັ້ງຄ່າລະບົບ (System Settings) -->
                   <tr>
                     <td>
                       <div class="perm-module-info">
@@ -626,7 +627,8 @@
                           <i class="fas fa-cogs"></i>
                         </div>
                         <div>
-                          <div class="perm-module-title">ຕັ້ງຄ່າລະບົບ</div>
+                          <div class="perm-module-title">ຕັ້ງຄ່າລະບົບ & ຈັດການສາຂາ</div>
+                          <div class="perm-module-desc">ເຂົ້າເຖິງ ແລະ ຕັ້ງຄ່າລະບົບ, ຮ້ານ, ບາໂຄ້ດ, ອັດຕາແລກປ່ຽນ ຯລຯ</div>
                         </div>
                       </div>
                     </td>
@@ -647,18 +649,18 @@
                       <label class="matrix-switch">
                         <input type="checkbox" 
                                id="perm_setup_edit_<?php echo $u['Id']; ?>" 
-                               data-perm="setup" 
+                               data-perm="edit" 
                                data-user-id="<?php echo $u['Id']; ?>"
-                               <?php echo (!empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
                                <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'setup', this)">
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
                         <span class="matrix-slider"></span>
                       </label>
                     </td>
                     <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
                   </tr>
 
-                </tbody>
+</tbody>
               </table>
             </div>
 

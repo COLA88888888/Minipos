@@ -115,10 +115,12 @@ require_once __DIR__ . '/../../layouts/header.php';
                           <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $catJson; ?>)'>
                             <i class="fas fa-edit"></i>
                           </button>
-                          <!-- Delete Button -->
-                          <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCat(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['category_name'])); ?>', <?php echo $productCount; ?>)">
-                            <i class="fas fa-trash-alt"></i>
-                          </button>
+                          <?php if (hasPermission('edit')): ?>
+                            <!-- Delete Button -->
+                            <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCat(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['category_name'])); ?>', <?php echo $productCount; ?>)">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          <?php endif; ?>
                         </div>
                       </td>
 

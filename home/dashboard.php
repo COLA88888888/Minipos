@@ -26,6 +26,28 @@ if (empty($profile_img) || !file_exists(__DIR__ . '/../assets/img/users/' . $pro
     $profile_img = 'default.png';
 }
 $profile_img_path = '../assets/img/users/' . $profile_img;
+
+// ດຶງໜ້າເລີ່ມຕົ້ນຕາມສິດ (Default Page Route based on permissions)
+$default_iframe_src = 'home.php';
+if (!hasPermission('dashboard')) {
+    if (hasPermission('sale')) {
+        $default_iframe_src = '../pages/pos/pos.php';
+    } elseif (hasPermission('customers')) {
+        $default_iframe_src = '../pages/customers/customers.php';
+    } elseif (hasPermission('stock')) {
+        $default_iframe_src = '../pages/products/products.php';
+    } elseif (hasPermission('accounting')) {
+        $default_iframe_src = '../pages/bank/bank.php';
+    } elseif (hasPermission('report')) {
+        $default_iframe_src = '../pages/reports/daily_report.php';
+    } elseif (hasPermission('users')) {
+        $default_iframe_src = '../pages/users_manage/users_manage.php';
+    } elseif (hasPermission('permissions')) {
+        $default_iframe_src = '../pages/permissions/permissions.php';
+    } elseif (hasPermission('setup')) {
+        $default_iframe_src = '../pages/settings/stores/';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="lo">
@@ -135,20 +157,18 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
       }
     ?>
 
-    <!-- Right side: Subscription Info + Live Date/Time + Logout button -->
+    <!-- Right side: Live Date/Time + Logout button -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
       <!-- Real-Time Current Date & Time Display (Clean text without box or icon) -->
       <li class="nav-item d-none d-sm-flex align-items-center text-white mr-1" style="font-size: 0.85rem; font-weight: 600;">
         <span id="live_datetime_clock"><?php echo date('d/m/Y H:i:s'); ?></span>
       </li>
 
-      <!-- Clean text subscription info on right side -->
-      <li class="nav-item d-flex align-items-center text-white" style="font-size: 0.85rem; font-weight: 600; gap: 8px;">
-        <!-- Always visible on all screens (Mobile & PC): ເຫຼືອ ... ວັນ -->
+      <!-- Subscription info (Visible on Desktop, hidden on Mobile) -->
+      <li class="nav-item d-none d-md-flex align-items-center text-white" style="font-size: 0.85rem; font-weight: 600; gap: 8px;">
         <span class="d-inline-flex align-items-center">
           ເຫຼືອ <span class="mx-1 text-warning" style="font-size: 0.95rem; font-weight: 800; text-decoration: underline;"><?php echo $daysRemaining; ?></span> ວັນ
         </span>
-        <!-- Hidden on Mobile / Tablet (Only visible on Desktop) -->
         <span class="opacity-50 d-none d-xl-inline" style="color: rgba(255,255,255,0.6);">|</span>
         <span class="d-none d-xl-inline opacity-90">
           <i class="fas fa-play-circle mr-1 text-light"></i>ເລີ່ມ: <strong><?php echo $formattedStart; ?></strong>
@@ -193,16 +213,27 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
   
   <script>
     (function() {
-      // 1. Expand the saved active menu item synchronously during initial parse
-      var savedSrc = sessionStorage.getItem('currentIframeSrc') || 'home.php';
-      if (savedSrc) {
+  <script>
+    (function() {
+      var defaultSrc = '<?php echo $default_iframe_src; ?>';
+      var hasDashboardPerm = <?php echo hasPermission('dashboard') ? 'true' : 'false'; ?>;
+      var savedSrc = sessionStorage.getItem('currentIframeSrc');
+      
+      // If user does not have dashboard permission and savedSrc is home.php, clear it
+      if (!hasDashboardPerm && (!savedSrc || savedSrc === 'home.php')) {
+        savedSrc = defaultSrc;
+        sessionStorage.setItem('currentIframeSrc', defaultSrc);
+      }
+      
+      var targetSrc = savedSrc || defaultSrc;
+      if (targetSrc) {
         var links = document.querySelectorAll('.nav-sidebar a.nav-link');
         for (var i = 0; i < links.length; i++) {
           links[i].classList.remove('active');
         }
         for (var i = 0; i < links.length; i++) {
           var href = links[i].getAttribute('href');
-          if (href && href !== '#' && (href === savedSrc || savedSrc.endsWith(href))) {
+          if (href && href !== '#' && (href === targetSrc || targetSrc.endsWith(href))) {
             links[i].classList.add('active');
             var treeview = links[i].closest('.nav-treeview');
             if (treeview) {
@@ -220,11 +251,16 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
 
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper" style="height: calc(100vh - 64px - 42px) !important; background-color: #f4f6f9;">
-    <iframe width="100%" height="100%" frameborder="0" name="frame" src="home.php" style="background-color: #f4f6f9;"></iframe>
+    <iframe width="100%" height="100%" frameborder="0" name="frame" src="<?php echo $default_iframe_src; ?>" style="background-color: #f4f6f9;"></iframe>
     <script>
       (function() {
+        var defaultSrc = '<?php echo $default_iframe_src; ?>';
+        var hasDashboardPerm = <?php echo hasPermission('dashboard') ? 'true' : 'false'; ?>;
         var savedSrc = sessionStorage.getItem('currentIframeSrc');
-        if (savedSrc && savedSrc !== 'home.php') {
+        if (!hasDashboardPerm && (!savedSrc || savedSrc === 'home.php')) {
+          savedSrc = defaultSrc;
+        }
+        if (savedSrc) {
           document.getElementsByName('frame')[0].src = savedSrc;
         }
       })();

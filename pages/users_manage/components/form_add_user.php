@@ -148,19 +148,20 @@
                          onclick="this.showPicker ? this.showPicker() : null"
                          class="form-control" style="cursor:pointer;" required>
                 </div>
+                <!-- ເບີໂທ & ທີ່ຢູ່ -->
                 <div class="col-md-6 form-group mb-3">
                   <label class="font-weight-bold text-muted mb-1">ເບີໂທ: <span class="text-danger">*</span></label>
                   <input type="text" name="tel" class="form-control" placeholder="020..." required>
                 </div>
-
-                <!-- ທີ່ຢູ່ & ໝາຍເຫດ -->
                 <div class="col-md-6 form-group mb-3">
                   <label class="font-weight-bold text-muted mb-1">ທີ່ຢູ່: <span class="text-danger">*</span></label>
-                  <textarea name="address" class="form-control" rows="2"
+                  <textarea name="address" class="form-control" rows="1"
                             placeholder="ບ້ານ, ເມືອງ, ແຂວງ (ບໍ່ບັງຄັບ)"></textarea>
                 </div>
-                <div class="col-md-6 form-group mb-3">
-                  <label class="font-weight-bold text-muted mb-1">ໝາຍເຫດ (ຂວາມື):</label>
+
+                <!-- ໝາຍເຫດ (ດ້ານລຸ່ມ) -->
+                <div class="col-md-12 form-group mb-3">
+                  <label class="font-weight-bold text-muted mb-1">ໝາຍເຫດ:</label>
                   <textarea name="notes" class="form-control" rows="2"
                             placeholder="ໝາຍເຫດ (ບໍ່ບັງຄັບ)"></textarea>
                 </div>

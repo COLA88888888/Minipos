@@ -127,6 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Date Range Filter parameters for revenue breakdown
-$start_date = $_GET['start_date'] ?? date('Y-m-01');
+// Date Range Filter parameters for revenue breakdown (Default to all sales history)
+$start_date = $_GET['start_date'] ?? '2000-01-01';
 $end_date   = $_GET['end_date'] ?? date('Y-m-d');
