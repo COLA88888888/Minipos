@@ -1,5 +1,12 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'httponly' => true
+    ]);
+    session_start();
+}
 if (isset($_SESSION['checked']) && $_SESSION['checked'] === 1 && !empty($_SESSION['user_id'])) {
     header("Location: ../home/dashboard.php");
     exit();
@@ -187,6 +194,8 @@ $site_logo = '../assets/img/logo/logo.png';
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
+                            var tabToken = 'TOKEN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                            sessionStorage.setItem('pos_tab_active', tabToken);
                             sessionStorage.setItem('isSessionActive', 'true');
                             window.location.href = response.redirect;
                         } else {

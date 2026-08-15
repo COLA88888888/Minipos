@@ -2,11 +2,11 @@
 <div class="modal fade" id="activeBillsModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 14px; overflow: hidden;">
-      <div class="modal-header bg-warning text-dark py-3 px-4">
+      <div class="modal-header bg-primary text-white py-3 px-4">
         <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
           <i class="fas fa-list-alt mr-2"></i> ລາຍການບິນທີ່ເປີດຢູ່
         </h5>
-        <button type="button" class="close text-dark" data-dismiss="modal"><span>&times;</span></button>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
       </div>
       <div class="modal-body p-4" style="max-height: 420px; overflow-y: auto;">
         <div class="d-flex justify-content-between align-items-center mb-3">

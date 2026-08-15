@@ -37,13 +37,21 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
   
   <script>
     (function() {
+      // ກວດສອບວ່າ Tab ນີ້ໄດ້ຜ່ານການ Login ໂດຍກົງຫຼືບໍ່ (ຖ້າກັອບປີ້ Link ມາວາງຢູ່ Tab ໃໝ່ -> ເດັ້ງໄປ Login ທັນທີ)
       try {
+        var activeTabToken = sessionStorage.getItem('pos_tab_active');
+        if (!activeTabToken || activeTabToken.indexOf('TOKEN_') !== 0) {
+          window.location.href = '../auth/logout.php?expired=1';
+          return;
+        }
         var savedSrc = sessionStorage.getItem('currentIframeSrc') || '';
         var isPos = savedSrc.indexOf('pos.php') !== -1 || savedSrc.indexOf('pos/') !== -1;
         if (isPos) {
           document.documentElement.classList.add('sidebar-collapse');
         }
-      } catch(e) {}
+      } catch(e) {
+        window.location.href = '../auth/logout.php?expired=1';
+      }
     })();
   </script>
 

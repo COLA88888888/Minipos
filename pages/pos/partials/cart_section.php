@@ -15,16 +15,13 @@
   </div>
 
   <!-- Active Bills Navigation Bar -->
-  <div class="pos-active-bills-bar bg-light border-bottom p-2 d-flex justify-content-between align-items-center" style="overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;">
-    <div class="d-flex align-items-center mr-1" style="overflow: hidden; flex-shrink: 0;">
-      <span class="badge badge-secondary px-2 py-1 font-weight-bold" id="currentBillBadge">ຍັງບໍ່ທັນເປີດ</span>
-    </div>
-    <div class="d-flex align-items-center" style="gap: 4px; flex-shrink: 0;">
-      <button type="button" class="btn btn-sm btn-success font-weight-bold px-2 py-1" onclick="createNewBillModal()" title="ເປີດບິນໃໝ່" style="white-space: nowrap;">
+  <div class="pos-active-bills-bar bg-light border-bottom p-2 d-flex justify-content-end align-items-center">
+    <div class="d-flex align-items-center" style="gap: 6px;">
+      <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 py-1.5 shadow-sm" onclick="createNewBillModal()" title="ເປີດບິນໃໝ່" style="border-radius: 8px; white-space: nowrap; font-size: 0.85rem;">
         <i class="fas fa-plus-circle mr-1"></i> ເປີດບິນໃໝ່
       </button>
-      <button type="button" class="btn btn-sm btn-outline-warning text-dark font-weight-bold px-2 py-1" id="btnActiveBills" onclick="openActiveBillsModal()" title="ບິນທີ່ເປີດຢູ່" disabled style="white-space: nowrap;">
-        <i class="fas fa-list-alt mr-1"></i> ບິນທີ່ເປີດຢູ່ <span class="badge badge-dark font-weight-bold ml-1" id="activeBillsCountBadge" style="display: none;">0</span>
+      <button type="button" class="btn btn-sm btn-outline-warning text-dark font-weight-bold px-3 py-1.5 shadow-sm" id="btnActiveBills" onclick="openActiveBillsModal()" title="ບິນທີ່ເປີດຢູ່" disabled style="border-radius: 8px; white-space: nowrap; font-size: 0.85rem; background: #ffffff;">
+        <i class="fas fa-list-alt mr-1 text-primary"></i> ບິນທີ່ເປີດຢູ່ <span class="badge badge-dark font-weight-bold ml-1" id="activeBillsCountBadge" style="display: none;">0</span>
       </button>
     </div>
   </div>

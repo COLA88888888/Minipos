@@ -2,6 +2,10 @@
 if (!isset($base_path)) {
     $base_path = '';
 }
+if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
+    echo "<script>window.top.location.href = '" . $base_path . "auth/login.php?expired=1';</script>";
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="lo">

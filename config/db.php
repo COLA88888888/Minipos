@@ -9,6 +9,12 @@ $conn = mysqli_connect($server, $username, $password, $database);
 mysqli_set_charset($conn, "utf8");
 
 if (session_status() === PHP_SESSION_NONE) {
+    // ຕັ້ງຄ່າ Session Cookie ໃຫ້ເປັນ 0 (Expired ເມື່ອປິດ Browser)
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'httponly' => true
+    ]);
     session_start();
 }
 if ($conn && isset($_SESSION['user_id'])) {
