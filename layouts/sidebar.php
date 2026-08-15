@@ -224,7 +224,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/category_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-layer-group text-primary"></i>
-                  <p>ລາຍງານຕາມ/ປະເພດສິນຄ້າ</p>
+                  <p>ລາຍງານຕາມປະເພດສິນຄ້າ</p>
                 </a>
               </li>
 

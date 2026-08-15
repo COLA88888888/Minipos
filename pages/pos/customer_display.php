@@ -509,8 +509,11 @@ function renderDisplayData(data) {
     `);
   } else {
     cart.forEach(function(item, idx) {
-      var itemTotal = (item.quantity * item.unit_price).toLocaleString();
+      var isGift = !!item.is_free_gift;
+      var itemTotal = isGift ? '0 ₭' : (item.quantity * item.unit_price).toLocaleString() + ' ₭';
+      var unitPriceStr = isGift ? '0 ₭' : parseFloat(item.unit_price).toLocaleString() + ' ₭';
       var unitStr = item.unit_name ? (' ' + item.unit_name) : '';
+      var giftBadgeHtml = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.72rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
       
       var imgSrc = item.image || item.img_url || '';
       if (!imgSrc || imgSrc === '') {
@@ -520,20 +523,20 @@ function renderDisplayData(data) {
       }
 
       tbody.append(`
-        <tr>
+        <tr style="${isGift ? 'background:#f0fdf4;' : ''}">
           <td class="text-center text-muted font-weight-bold">${idx + 1}</td>
           <td class="text-center" style="width: 55px;">
             <img src="${imgSrc}" alt="${item.product_name}" 
-                 style="width: 42px; height: 42px; object-fit: cover; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff;" 
+                 style="width: 42px; height: 42px; object-fit: cover; border-radius: 8px; border: 1.5px solid ${isGift ? '#86efac' : '#cbd5e1'}; background: #ffffff;" 
                  onerror="this.onerror=null; this.src='../../assets/img/product_img/default.png';">
           </td>
           <td class="font-weight-bold text-dark">
-            ${item.product_name}
+            ${item.product_name} ${giftBadgeHtml}
             ${item.barcode ? `<small class="text-muted d-block font-weight-normal">${item.barcode}</small>` : ''}
           </td>
           <td class="text-center"><span class="badge-qty">x${item.quantity}${unitStr}</span></td>
-          <td class="text-right text-primary font-weight-bold">${parseFloat(item.unit_price).toLocaleString()} ₭</td>
-          <td class="text-right text-success font-weight-bold" style="font-size: 1.05rem;">${itemTotal} ₭</td>
+          <td class="text-right ${isGift ? 'text-success' : 'text-primary'} font-weight-bold">${unitPriceStr}</td>
+          <td class="text-right text-success font-weight-bold" style="font-size: 1.05rem;">${itemTotal}</td>
         </tr>
       `);
     });

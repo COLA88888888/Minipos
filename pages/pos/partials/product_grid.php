@@ -2,8 +2,13 @@
 <div class="row px-1" id="productGrid">
   <?php foreach ($products as $p): ?>
     <?php
-      $imgName = $p['img_url'] ? basename($p['img_url']) : 'image.jpg';
-      $imgPath = $base_path . 'assets/product_img/' . $imgName;
+      $rawImg = $p['img_url'] ?? '';
+      $imgName = $rawImg ? basename($rawImg) : '';
+      if (!empty($imgName) && file_exists(__DIR__ . '/../../../assets/product_img/' . $imgName)) {
+          $imgPath = $base_path . 'assets/product_img/' . $imgName;
+      } else {
+          $imgPath = $base_path . 'assets/img/image.jpg';
+      }
       $stock = floatval($p['qty'] ?? 0);
       $hasPromo = !empty($p['has_promo']);
       $isGiftPromo = ($p['promo_type'] ?? '') === 'buy_x_get_y' || !empty($p['gift_product_name']);
@@ -27,30 +32,32 @@
           
           <!-- Stock Status Badge Top Left -->
           <span class="stock-status-badge stock-status-badge-<?php echo $p['product_id']; ?> <?php echo $stock <= 0 ? 'out-of-stock' : ($stock <= 10 ? 'low-stock' : ''); ?>" 
-                style="display: <?php echo $stock <= 10 ? 'inline-block' : 'none'; ?>; position: absolute; top: 5px; left: 5px; z-index: 10;">
+                style="display: <?php echo $stock <= 10 ? 'inline-block' : 'none'; ?>; position: absolute; top: 4px; left: 4px; z-index: 10;">
             <?php echo $stock <= 0 ? 'ໝົດແລ້ວ' : 'ໃກ້ໝົດ'; ?>
           </span>
 
-          <!-- Promo Badge (Discount or Free Gift - RED Theme, Full Text Wrapping) -->
-          <?php if ($hasPromo): ?>
-            <?php 
-              $isGiftPromo = ($p['promo_type'] ?? '') === 'buy_x_get_y' || !empty($p['gift_product_name']);
-              $badgeBg = 'linear-gradient(135deg, #ef4444, #dc2626)';
-              $badgeShadow = 'rgba(239,68,68,0.45)';
-              $badgeIcon = $isGiftPromo ? 'fa-gift' : 'fa-fire';
-              $topPos = ($stock <= 10) ? '28px' : '6px';
-            ?>
-            <span class="badge badge-danger font-weight-bold" 
-                  style="position: absolute; top: <?php echo $topPos; ?>; left: 6px; right: 6px; z-index: 11; font-size: 0.68rem; padding: 3px 6px; border-radius: 6px; box-shadow: 0 2px 6px <?php echo $badgeShadow; ?>; background: <?php echo $badgeBg; ?>; color: #ffffff; white-space: normal; word-break: break-word; line-height: 1.25; text-align: center;">
-              <i class="fas <?php echo $badgeIcon; ?> mr-1" style="font-size: 0.64rem;"></i> <?php echo htmlspecialchars($p['promo_badge']); ?>
-            </span>
-          <?php endif; ?>
-
           <span class="cart-qty-badge product-qty-badge-<?php echo $p['product_id']; ?>" 
-                style="position: absolute; top: 5px; right: 5px; z-index: 10; display: none; background: #ef4444; color: #ffffff; font-size: 0.75rem; font-weight: 800; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 3px 8px rgba(239,68,68,0.45); padding: 0 4px; white-space: nowrap;">0</span>
+                style="position: absolute; top: 4px; right: 4px; z-index: 10; display: none; background: #ef4444; color: #ffffff; font-size: 0.75rem; font-weight: 800; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 3px 8px rgba(239,68,68,0.45); padding: 0 4px; white-space: nowrap;">0</span>
         </div>
         
         <div class="card-body d-flex flex-column text-left" style="padding: 7px 8px !important;">
+          <!-- Promo Tag Banner Inside Card Body (Doesn't cover image or status badges) -->
+          <?php if ($hasPromo): ?>
+            <?php 
+              $isGiftPromo = ($p['promo_type'] ?? '') === 'buy_x_get_y' || !empty($p['gift_product_name']);
+              $badgeBg = $isGiftPromo && floatval($p['original_price'] ?? 0) <= floatval($p['price'] ?? 0)
+                          ? 'linear-gradient(135deg, #10b981, #059669)'
+                          : 'linear-gradient(135deg, #ef4444, #dc2626)';
+              $badgeShadow = $isGiftPromo && floatval($p['original_price'] ?? 0) <= floatval($p['price'] ?? 0)
+                            ? 'rgba(16,185,129,0.3)'
+                            : 'rgba(239,68,68,0.3)';
+              $badgeIcon = $isGiftPromo ? 'fa-gift' : 'fa-tags';
+            ?>
+            <div class="mb-1" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 5px; background: <?php echo $badgeBg; ?>; color: #ffffff; font-weight: 700; line-height: 1.25; text-align: center; box-shadow: 0 2px 5px <?php echo $badgeShadow; ?>;">
+              <i class="fas <?php echo $badgeIcon; ?> mr-1" style="font-size: 0.64rem;"></i> <?php echo htmlspecialchars($p['promo_badge']); ?>
+            </div>
+          <?php endif; ?>
+
           <h6 class="font-weight-bold text-dark mb-1" style="font-size: 0.84rem; line-height: 1.2; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<?php echo htmlspecialchars($p['product_name']); ?>">
             <?php echo htmlspecialchars($p['product_name']); ?>
           </h6>
@@ -63,7 +70,7 @@
           <div class="mt-auto pt-1 border-top text-left">
             <?php if ($hasPromo && floatval($p['original_price'] ?? 0) > floatval($p['price'] ?? 0)): ?>
               <div class="d-flex align-items-baseline flex-wrap justify-content-start" style="gap: 3px;">
-                <small class="font-weight-bold text-muted" style="font-size: 0.74rem; text-decoration: line-through; color: #94a3b8 !important;">
+                <small class="font-weight-bold text-muted" style="font-size: 0.72rem; text-decoration: line-through; color: #94a3b8 !important;">
                   <?php echo number_format($p['original_price'], 0); ?> ₭
                 </small>
                 <span class="font-weight-bold text-danger" style="font-size: 0.94rem; color: #ef4444 !important;">

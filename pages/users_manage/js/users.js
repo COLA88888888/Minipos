@@ -267,6 +267,11 @@ function openEditModal(user) {
   document.getElementById('edit_password').value = '';
   document.getElementById('edit_confirm_password').value = '';
 
+  var editStoreEl = document.getElementById('edit_store_id');
+  if (editStoreEl) {
+    editStoreEl.value = user.store_id || user.branch_id || '1';
+  }
+
   var genderVal = (user.gender || 'ຊາຍ').trim();
   if (genderVal === 'ຍິງ') {
     document.getElementById('edit_gender_female').checked = true;

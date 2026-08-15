@@ -213,9 +213,6 @@ require_once __DIR__ . '/../layouts/header.php';
       </h4>
       <p class="text-muted mb-0" style="font-size: 0.85rem;">ສະຫຼຸບພາບລວມຍອດຂາຍ, ຕົ້ນທຶນ, ກຳໄລ ແລະ ສະຖິຕິການຂາຍປະຈຳປີ</p>
     </div>
-    <div class="text-muted font-weight-bold" style="font-size: 0.86rem; background: #ffffff; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
-      <i class="far fa-calendar-alt text-primary mr-1"></i> ວັນທີປັດຈຸບັນ: <?php echo date('d/m/Y'); ?>
-    </div>
   </div>
 
   <!-- Modern Filter Box: Date Range + Dynamic Auto Year Selector -->

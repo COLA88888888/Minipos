@@ -1,34 +1,24 @@
 <script>
 // --- ACTIVE BILLS & HELD ORDERS MANAGEMENT ---
 function initActiveBills() {
+  var storedOpened = localStorage.getItem('pos_bill_opened');
   try {
     activeBills = JSON.parse(localStorage.getItem('pos_active_bills') || '[]');
   } catch(e) { activeBills = []; }
 
-  isBillOpened = true;
-  localStorage.setItem('pos_bill_opened', '1');
-
-  if (activeBills.length === 0) {
-    var newId = 'BILL-' + Date.now();
-    activeBills = [{
-      id: newId,
-      name: 'ບິນທີ 1',
-      time: new Date().toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' }),
-      customer: { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' },
-      cart: [],
-      discount: '0'
-    }];
-    localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
+  if (storedOpened === '1' && activeBills && activeBills.length > 0) {
+    isBillOpened = true;
+    currentBillId = activeBills[0].id;
+    loadBillState(currentBillId);
+  } else {
+    isBillOpened = false;
+    activeBills = [];
+    currentBillId = '';
+    cart = [];
+    localStorage.removeItem('pos_bill_opened');
+    localStorage.removeItem('pos_active_bills');
   }
 
-  currentBillId = activeBills[0].id;
-  loadBillState(currentBillId);
-
-  var cur = activeBills.find(function(b) { return b.id === currentBillId; });
-  $('#currentBillBadge')
-    .text(cur ? cur.name : 'ບິນທີ 1')
-    .removeClass('badge-secondary')
-    .addClass('badge-primary');
   updateActiveBillsUI();
 }
 
@@ -65,6 +55,32 @@ function resequenceActiveBills() {
 
 window.createNewBillModal = function() {
   saveCurrentBillState();
+
+  if (!isBillOpened || activeBills.length === 0) {
+    var newId = 'BILL-' + Date.now();
+    var firstBill = {
+      id: newId,
+      name: 'ບິນທີ 1',
+      time: new Date().toLocaleTimeString('lo-LA', { hour: '2-digit', minute: '2-digit' }),
+      customer: { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' },
+      cart: [],
+      discount: '0'
+    };
+    activeBills = [firstBill];
+    isBillOpened = true;
+    localStorage.setItem('pos_bill_opened', '1');
+    localStorage.setItem('pos_active_bills', JSON.stringify(activeBills));
+    loadBillState(newId);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'ເປີດບິນທີ 1 ສຳເລັດ!',
+      text: 'ທ່ານສາມາດເພີ່ມລາຍການຂາຍໃນ ບິນທີ 1 ໄດ້ເລີຍ',
+      timer: 1200,
+      showConfirmButton: false
+    });
+    return;
+  }
 
   // ຖ້າ ບິນປັດຈຸບັນ ຍັງຫວ່າງເປົ່າ (ບໍ່ມີລາຍການ ແລະ ລູກຄ້າທົ່ວໄປ) — ໃຊ້ ບິນນັ້ນເລີຍ ບໍ່ຕ້ອງສ້າງໃໝ່
   var currentBill = activeBills.find(function(b) { return b.id === currentBillId; });
@@ -117,25 +133,18 @@ window.createNewBillModal = function() {
 }
 
 function updateActiveBillsUI() {
-  // ຖ້າຍັງບໍ່ໄດ້ເປີດບິນ — ສະແດງ 0 ແລະ ບໍ່ໃຫ້ກົດໄດ້
-  if (!isBillOpened) {
+  // ຖ້າຍັງບໍ່ໄດ້ເປີດບິນ ຫຼື activeBills ຫວ່າງເປົ່າ — ສະແດງ 0 ແລະ ຍັງບໍ່ທັນເປີດ
+  if (!isBillOpened || !activeBills || activeBills.length === 0) {
     $('#activeBillsCountBadge').text('0').show();
     $('#btnActiveBills').prop('disabled', true).addClass('disabled').css('opacity', '0.6');
-    $('#currentBillBadge').text('ຍັງບໍ່ທັນເປີດ');
+    $('#currentBillBadge')
+      .text('ຍັງບໍ່ທັນເປີດ')
+      .removeClass('badge-primary')
+      .addClass('badge-secondary');
     return;
   }
 
-  var openedCount = 0;
-  activeBills.forEach(function(b) {
-    var hasItems = b.cart && b.cart.length > 0;
-    var hasCustomer = b.customer && b.customer.customer_id;
-    if (hasItems || hasCustomer || isBillOpened) {
-      openedCount++;
-    }
-  });
-
-  // ນັບຕາມຈຳນວນ activeBills ຈິງ ຖ້າ isBillOpened
-  openedCount = activeBills.length;
+  var openedCount = activeBills.length;
 
   if (openedCount > 0) {
     $('#activeBillsCountBadge').text(openedCount).show();
@@ -151,6 +160,11 @@ function updateActiveBillsUI() {
       .text(currentBill.name)
       .removeClass('badge-secondary')
       .addClass('badge-primary');
+  } else {
+    $('#currentBillBadge')
+      .text('ຍັງບໍ່ທັນເປີດ')
+      .removeClass('badge-primary')
+      .addClass('badge-secondary');
   }
 }
 

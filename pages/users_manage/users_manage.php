@@ -5,30 +5,8 @@ session_start();
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
-require_once __DIR__ . '/../../config/db.php';
-
-// Check if logged in and has access to users management
-if (empty($_SESSION['user_id']) || (!hasPermission('users') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
-    echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
-    exit();
-}
-
-// Pagination setup
-$limit = 10;
-$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-$total_records = (int) $pdo->query("SELECT COUNT(*) FROM tbuser")->fetchColumn();
-$total_pages = max(1, ceil($total_records / $limit));
-if ($page > $total_pages) {
-    $page = $total_pages;
-}
-$offset = ($page - 1) * $limit;
-
-// Fetch paginated users
-$stmtUsers = $pdo->prepare("SELECT * FROM tbuser ORDER BY Id ASC LIMIT ? OFFSET ?");
-$stmtUsers->bindValue(1, $limit, PDO::PARAM_INT);
-$stmtUsers->bindValue(2, $offset, PDO::PARAM_INT);
-$stmtUsers->execute();
-$allUsers = $stmtUsers->fetchAll();
+// Load Centralized Backend API Logic
+require_once __DIR__ . '/../../api/users_manage_backend.php';
 
 require_once __DIR__ . '/../../layouts/header.php';
 ?>
@@ -82,6 +60,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <th class="py-3">ລະຫັດຜູ້ໃຊ້</th>
                   <th class="text-center py-3" style="width: 80px;">ຮູບພາບ</th>
                   <th class="py-3">ຊື່ຜູ້ໃຊ້ງານ</th>
+                  <th class="py-3">ປະຈຳສາຂາ</th>
                   <th class="py-3">ເບີໂທລະສັບ</th>
                   <th class="text-center py-3">ສະຖານະ / ຕຳແໜ່ງ</th>
                   <th class="text-center py-3" style="width: 140px;">ຈັດການ</th>
@@ -105,6 +84,11 @@ require_once __DIR__ . '/../../layouts/header.php';
                       </td>
                       <td class="align-middle font-weight-bold text-dark">
                         <?php echo htmlspecialchars($u['fname'] ?: ($u['username'] ?? '')); ?>
+                      </td>
+                      <td class="align-middle">
+                        <span class="badge badge-light border text-dark px-2 py-1" style="font-size: 0.82rem;">
+                          <i class="fas fa-store-alt text-primary mr-1"></i><?php echo htmlspecialchars($u['store_name'] ?? 'ສາຂາຫຼັກ'); ?>
+                        </span>
                       </td>
                       <td class="align-middle text-muted"><?php echo htmlspecialchars($u['tel'] ?: '-'); ?></td>
                       <td class="text-center align-middle">

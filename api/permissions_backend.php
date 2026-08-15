@@ -20,7 +20,7 @@ $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
 // 3. ໂຫຼດໄຟລ໌ເຊື່ອມຕໍ່ຖານຂໍ້ມູນ
-require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 // 4. ກວດເຊັກສິດການເຂົ້າເຖິງ (ສະເພາະ ຜູ້ບໍລິຫານ ຫຼື ຜູ້ທີ່ມີສິດ permissions/users ເທົ່ານັ້ນ)
 if (empty($_SESSION['user_id']) || (!hasPermission('permissions') && !hasPermission('users') && $_SESSION['status'] !== 'ຜູ້ບໍລິຫານ')) {

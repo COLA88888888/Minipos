@@ -67,25 +67,34 @@ function updateCartUI() {
 
     var rawImg = item.image || item.img_url || '';
     var imgName = rawImg ? rawImg.split('/').pop().split('\\').pop() : 'image.jpg';
-    if (!imgName) imgName = 'image.jpg';
-    var imgPath = '<?php echo $base_path; ?>assets/product_img/' + imgName;
+    if (!imgName || imgName === 'image.jpg') {
+      var imgPath = '<?php echo $base_path; ?>assets/img/image.jpg';
+    } else {
+      var imgPath = '<?php echo $base_path; ?>assets/product_img/' + imgName;
+    }
+
+    var isGift = !!item.is_free_gift;
+    var giftBadge = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.68rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
+    var priceDisplay = isGift 
+      ? `<span class="text-success font-weight-bold" style="font-size:0.80rem;">0 ₭</span>` 
+      : `${Number(item.unit_price).toLocaleString()} ₭`;
 
     var rowHtml = `
-      <div class="cart-item-row mb-2 d-flex align-items-center" style="background:#ffffff; border:1.5px solid #e2e8f0; border-radius:12px; padding:8px 10px; gap:8px; min-height:54px;">
+      <div class="cart-item-row mb-2 d-flex align-items-center" style="background:${isGift ? '#f0fdf4' : '#ffffff'}; border:1.5px solid ${isGift ? '#86efac' : '#e2e8f0'}; border-radius:12px; padding:8px 10px; gap:8px; min-height:54px;">
 
         <!-- 1. ຮູບພາບ -->
         <img src="${imgPath}" class="cart-item-img" style="width:44px; height:44px; object-fit:contain; border-radius:8px; border:1px solid #e2e8f0; background:#f8fafc; padding:3px; flex-shrink:0;" onerror="this.src='<?php echo $base_path; ?>assets/img/image.jpg';">
 
         <!-- 2. ຊື່ສິນຄ້າ + ຫົວໜ່ວຍ -->
         <div class="cart-item-name-wrap" style="flex:1.4; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:2px;">
-          <div class="font-weight-bold text-truncate" style="font-size:0.86rem; color:#1e293b; line-height:1.2;" title="${item.product_name}">${item.product_name}</div>
+          <div class="font-weight-bold text-truncate" style="font-size:0.86rem; color:#1e293b; line-height:1.2;" title="${item.product_name}">${item.product_name} ${giftBadge}</div>
           <span class="cart-item-unit-badge d-none d-lg-inline-block" style="font-size:0.70rem; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; border-radius:5px; padding:1px 7px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name}</span>
-          <span class="cart-item-unit-badge-mobile d-inline-block d-lg-none" style="font-size:0.68rem; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; border-radius:5px; padding:1px 5px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name} (${Number(item.unit_price).toLocaleString()} ₭)</span>
+          <span class="cart-item-unit-badge-mobile d-inline-block d-lg-none" style="font-size:0.68rem; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; border-radius:5px; padding:1px 5px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name} (${priceDisplay})</span>
         </div>
 
         <!-- 3. ລາຄາຕໍ່ໜ່ວຍ (Desktop Only) -->
         <div class="cart-item-unit-price d-none d-lg-block" style="flex-shrink:0; text-align:center; min-width:60px;">
-          <div style="font-size:0.84rem; font-weight:700; color:#475569;">${Number(item.unit_price).toLocaleString()} ₭</div>
+          <div style="font-size:0.84rem; font-weight:700; color:${isGift ? '#16a34a' : '#475569'};">${priceDisplay}</div>
         </div>
 
         <!-- 4. ຈຳນວນ -->
@@ -93,15 +102,15 @@ function updateCartUI() {
           <button onclick="incCartQty('${item.cartKey}', -1)" title="ຫຼຸດ" class="btn-qty-minus" style="width:28px; height:30px; border:none; background:transparent; color:#ef4444; font-size:0.78rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;">
             <i class="fas fa-minus"></i>
           </button>
-          <input type="number" min="1" value="${item.quantity}" onchange="changeCartQty('${item.cartKey}', this.value)" class="input-qty-val" style="width:34px; height:30px; border:none; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; text-align:center; font-size:0.86rem; font-weight:700; color:#1e293b; background:#ffffff; padding:0; -moz-appearance:textfield;">
-          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:28px; height:30px; border:none; background:transparent; color:#2563eb; font-size:0.78rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;">
+          <input type="number" min="1" value="${item.quantity}" onchange="changeCartQty('${item.cartKey}', this.value)" class="input-qty-val" style="width:34px; height:30px; border:none; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; text-align:center; font-size:0.86rem; font-weight:700; color:#1e293b; background:#ffffff; padding:0; -moz-appearance:textfield;" ${isGift ? 'readonly' : ''}>
+          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:28px; height:30px; border:none; background:transparent; color:#2563eb; font-size:0.78rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;" ${isGift ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
             <i class="fas fa-plus"></i>
           </button>
         </div>
 
         <!-- 5. ລວມ -->
         <div class="cart-item-total-wrap" style="flex-shrink:0; text-align:right; min-width:65px;">
-          <div style="font-size:0.92rem; font-weight:800; color:#16a34a; white-space:nowrap;">${itemTotal.toLocaleString()} ₭</div>
+          <div style="font-size:0.92rem; font-weight:800; color:${isGift ? '#16a34a' : '#16a34a'}; white-space:nowrap;">${isGift ? '0 ₭' : itemTotal.toLocaleString() + ' ₭'}</div>
         </div>
 
         <!-- 6. ປຸ່ມລົບ -->
@@ -488,8 +497,25 @@ function _doAddToCart(product, unitObj) {
   // Handle Free Gift Auto-Adding into Cart
   var giftName = '';
   var giftQty = 1;
-  var targetUnit = (product && product.target_unit_name) ? product.target_unit_name : 'all';
-  var unitMatches = (targetUnit === 'all' || targetUnit === '' || String(unitName).toLowerCase() === String(targetUnit).toLowerCase());
+  var targetUnit = (product && product.target_unit_name) ? trimStr(product.target_unit_name) : 'all';
+  
+  function trimStr(str) {
+    return String(str || '').trim().toLowerCase();
+  }
+
+  function checkUnitMatch(u1, u2) {
+    var s1 = trimStr(u1);
+    var s2 = trimStr(u2);
+    if (s2 === 'all' || s2 === '' || s1 === 'all' || s1 === '') return true;
+    if (s1 === s2) return true;
+    // Normalize Lao spelling variations for crates/cartons (ເຊັ່ນ: ເກັດ vs ເເກັດ, ເເກັດ vs ເເກັດ)
+    var norm1 = s1.replace(/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/g, 'ເກັດ');
+    var norm2 = s2.replace(/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/g, 'ເກັດ');
+    if (norm1 === norm2) return true;
+    return s1.indexOf(s2) !== -1 || s2.indexOf(s1) !== -1;
+  }
+
+  var unitMatches = checkUnitMatch(unitName, targetUnit);
 
   if (unitMatches) {
     if (product && product.gift_product_name && product.gift_product_name !== '') {

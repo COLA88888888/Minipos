@@ -89,14 +89,69 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
     <!-- Left side: Menu toggle -->
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" data-widget="pushmenu" href="#" role="button" style="color: #ffffff; font-size: 1.2rem;" title="ເມນູ">
+        <a class="nav-link" data-widget="pushmenu" id="topNavbarPushMenuBtn" href="#" role="button" style="color: #ffffff; font-size: 1.2rem;" title="ເມນູ">
           <i class="fas fa-bars"></i>
         </a>
       </li>
     </ul>
 
-    <!-- Right side: Compact Logout button in Top Navbar (Icon-only on mobile, Icon+Text on desktop) -->
-    <ul class="navbar-nav ml-auto">
+    <?php
+      // ດຶງຂໍ້ມູນແພັກເກັດການນຳໃຊ້ (Subscription License Info)
+      $license_start = '2026-01-01';
+      $license_expire = '2026-12-31';
+      try {
+        $cLic = $pdo->query("SELECT license_start_date, license_expire_date FROM tbcompanyinfo LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        if ($cLic) {
+          if (!empty($cLic['license_start_date'])) $license_start = $cLic['license_start_date'];
+          if (!empty($cLic['license_expire_date'])) $license_expire = $cLic['license_expire_date'];
+        }
+      } catch (Exception $ex) {}
+
+      $todayObj = new DateTime(date('Y-m-d'));
+      $expireObj = new DateTime($license_expire);
+      $daysRemaining = 0;
+      if ($expireObj >= $todayObj) {
+        $diff = $todayObj->diff($expireObj);
+        $daysRemaining = (int)$diff->format('%a');
+      }
+
+      $formattedStart = date('d/m/Y', strtotime($license_start));
+      $formattedExpire = date('d/m/Y', strtotime($license_expire));
+
+      // Badge style depending on remaining days
+      $badgeBg = 'background: linear-gradient(135deg, #10b981, #059669); color: #ffffff;';
+      if ($daysRemaining <= 15) {
+        $badgeBg = 'background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff;';
+      } elseif ($daysRemaining <= 30) {
+        $badgeBg = 'background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff;';
+      }
+    ?>
+
+    <!-- Right side: Subscription Info + Live Date/Time + Logout button -->
+    <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <!-- Real-Time Current Date & Time Display (Clean text without box or icon) -->
+      <li class="nav-item d-none d-sm-flex align-items-center text-white mr-1" style="font-size: 0.85rem; font-weight: 600;">
+        <span id="live_datetime_clock"><?php echo date('d/m/Y H:i:s'); ?></span>
+      </li>
+
+      <!-- Clean text subscription info on right side -->
+      <li class="nav-item d-flex align-items-center text-white" style="font-size: 0.85rem; font-weight: 600; gap: 8px;">
+        <!-- Always visible on all screens (Mobile & PC): ເຫຼືອ ... ວັນ -->
+        <span class="d-inline-flex align-items-center">
+          ເຫຼືອ <span class="mx-1 text-warning" style="font-size: 0.95rem; font-weight: 800; text-decoration: underline;"><?php echo $daysRemaining; ?></span> ວັນ
+        </span>
+        <!-- Hidden on Mobile / Tablet (Only visible on Desktop) -->
+        <span class="opacity-50 d-none d-xl-inline" style="color: rgba(255,255,255,0.6);">|</span>
+        <span class="d-none d-xl-inline opacity-90">
+          <i class="fas fa-play-circle mr-1 text-light"></i>ເລີ່ມ: <strong><?php echo $formattedStart; ?></strong>
+        </span>
+        <span class="opacity-50 d-none d-lg-inline" style="color: rgba(255,255,255,0.6);">|</span>
+        <span class="d-none d-lg-inline opacity-90">
+          <i class="fas fa-flag-checkered mr-1 text-light"></i>ສິ້ນສຸດ: <strong><?php echo $formattedExpire; ?></strong>
+        </span>
+      </li>
+
+      <!-- Logout button -->
       <li class="nav-item">
         <a class="nav-link logout-nav-btn font-weight-bold" href="javascript:void(0);" onclick="confirmLogout()" title="ອອກຈາກລະບົບ">
           <i class="fas fa-power-off"></i>
@@ -105,6 +160,24 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
       </li>
     </ul>
   </nav>
+
+  <script>
+    // Real-Time Clock Function
+    function updateLiveClock() {
+      var now = new Date();
+      var d = String(now.getDate()).padStart(2, '0');
+      var m = String(now.getMonth() + 1).padStart(2, '0');
+      var y = now.getFullYear();
+      var hh = String(now.getHours()).padStart(2, '0');
+      var mm = String(now.getMinutes()).padStart(2, '0');
+      var ss = String(now.getSeconds()).padStart(2, '0');
+      var el = document.getElementById('live_datetime_clock');
+      if (el) {
+        el.innerText = d + '/' + m + '/' + y + ' ' + hh + ':' + mm + ':' + ss;
+      }
+    }
+    setInterval(updateLiveClock, 1000);
+  </script>
   <!-- /.navbar -->
 
   <!-- ແຖບເມນູທາງຊ້າຍ (Unified Dynamic Sidebar) -->
@@ -138,8 +211,8 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
   </script>
 
   <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper" style="height: calc(100vh - 64px - 42px) !important;">
-    <iframe width="100%" height="100%" frameborder="0" name="frame" src="home.php"></iframe>
+  <div class="content-wrapper" style="height: calc(100vh - 64px - 42px) !important; background-color: #f4f6f9;">
+    <iframe width="100%" height="100%" frameborder="0" name="frame" src="home.php" style="background-color: #f4f6f9;"></iframe>
     <script>
       (function() {
         var savedSrc = sessionStorage.getItem('currentIframeSrc');
@@ -170,6 +243,27 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
 
 <script>
   $(function() {
+    // Handle manual PushMenu toggle click to keep POS sidebar state independent from Settings/Dashboard state
+    $('[data-widget="pushmenu"]').on('click', function() {
+      setTimeout(function() {
+        var frame = document.getElementsByName('frame')[0];
+        var isPos = false;
+        try {
+          var p = frame.contentWindow.location.pathname;
+          isPos = (p.indexOf('pos.php') !== -1 || p.indexOf('pos') !== -1);
+        } catch(e) {}
+
+        var isCollapsed = $('body').hasClass('sidebar-collapse');
+        var newState = isCollapsed ? 'collapse' : 'expand';
+
+        if (isPos) {
+          sessionStorage.setItem('sidebar_user_state_pos', newState);
+        } else {
+          sessionStorage.setItem('sidebar_user_state_other', newState);
+        }
+      }, 100);
+    });
+
     // Disable hover expansion on sidebar
     $('.main-sidebar').off('mouseenter mouseleave');
 
@@ -224,13 +318,17 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
 
         var isMobile = window.innerWidth <= 992;
 
-        // Auto collapse sidebar strictly on POS sales page, expand on all other pages using PushMenu (Desktop only)
-        if (page && (page.indexOf('pos.php') !== -1 || page.indexOf('pos') !== -1)) {
+        // Strict rule requested by user:
+        // ONLY collapse sidebar when on POS sales page (pos.php).
+        // On ALL other pages (Stores/Settings, Reports, Products, Users, Dashboard), ALWAYS expand sidebar completely!
+        var isPosPage = (path.indexOf('pos.php') !== -1 || path.indexOf('/pos/') !== -1);
+
+        if (isPosPage) {
           if (!isMobile && window.jQuery && $.fn.PushMenu) {
             $('[data-widget="pushmenu"]').PushMenu('collapse');
           }
           $('html, body').addClass('sidebar-collapse').removeClass('sidebar-closed sidebar-open');
-        } else if (page && page !== 'blank') {
+        } else {
           if (!isMobile && window.jQuery && $.fn.PushMenu) {
             $('[data-widget="pushmenu"]').PushMenu('expand');
           }

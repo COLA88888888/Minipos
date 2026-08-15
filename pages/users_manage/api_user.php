@@ -118,10 +118,11 @@ if ($action === 'add_user') {
             $sale = 1; $stock = 1; $edit = 1;
         }
 
+        $store_id = intval($_POST['store_id'] ?? 1);
         $profile_img = handleUserProfileUpload('profile_img', 'default.png');
 
-        $stmt = $pdo->prepare("INSERT INTO tbuser (user_code, fname, lname, gender, dob, tel, status, username, password, address, notes, profile_img, sale, stock, report, accounting, setup, users, edit, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-        $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $password, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit]);
+        $stmt = $pdo->prepare("INSERT INTO tbuser (user_code, fname, lname, gender, dob, tel, status, username, password, address, notes, profile_img, sale, stock, report, accounting, setup, users, edit, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $password, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit, $store_id]);
 
         logActivity($pdo, "ເພີ່ມຜູ້ໃຊ້", "ຊື່: $username, ຕຳແໜ່ງ: $userstatus");
         echo json_encode(['status' => 'success', 'message' => 'ເພີ່ມຜູ້ໃຊ້ງານໃໝ່ສຳເລັດແລ້ວ!']);
@@ -198,12 +199,13 @@ if ($action === 'edit_user') {
             $profile_img = handleUserProfileUpload('profile_img', $currImg);
         }
 
+        $store_id = intval($_POST['store_id'] ?? 1);
         if ($password !== '') {
-            $stmt = $pdo->prepare("UPDATE tbuser SET user_code = ?, fname = ?, lname = ?, gender = ?, dob = ?, tel = ?, status = ?, username = ?, password = ?, address = ?, notes = ?, profile_img = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, edit = ? WHERE Id = ?");
-            $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $password, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit, $user_id]);
+            $stmt = $pdo->prepare("UPDATE tbuser SET user_code = ?, fname = ?, lname = ?, gender = ?, dob = ?, tel = ?, status = ?, username = ?, password = ?, address = ?, notes = ?, profile_img = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, edit = ?, store_id = ? WHERE Id = ?");
+            $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $password, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit, $store_id, $user_id]);
         } else {
-            $stmt = $pdo->prepare("UPDATE tbuser SET user_code = ?, fname = ?, lname = ?, gender = ?, dob = ?, tel = ?, status = ?, username = ?, address = ?, notes = ?, profile_img = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, edit = ? WHERE Id = ?");
-            $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit, $user_id]);
+            $stmt = $pdo->prepare("UPDATE tbuser SET user_code = ?, fname = ?, lname = ?, gender = ?, dob = ?, tel = ?, status = ?, username = ?, address = ?, notes = ?, profile_img = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, edit = ?, store_id = ? WHERE Id = ?");
+            $stmt->execute([$user_code, $fname, $lname, $gender, $dob, $tel, $userstatus, $username, $address, $notes, $profile_img, $sale, $stock, $report, $accounting, $setup, $users_perm, $edit, $store_id, $user_id]);
         }
 
         logActivity($pdo, "ແກ້ໄຂຜູ້ໃຊ້", "ID: $user_id, ຊື່: $username");

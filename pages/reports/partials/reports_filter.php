@@ -61,6 +61,23 @@
         <input type="text" name="search" id="reportSearchInput" class="form-control form-control-sm" placeholder="ປ້ອນເລກບິນ ຫຼື ຊື່ພະນັກງານ..." value="<?php echo htmlspecialchars($search); ?>" autocomplete="off" style="border-radius: 8px; height: 38px; font-size: 0.85rem; width: 100%;">
       </div>
 
+      <!-- Branch Store Filter Dropdown -->
+      <div style="flex: 1 1 0; min-width: 140px;">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+        </label>
+        <select name="store_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #059669; color: #047857; background: #ecfdf5; width: 100%;">
+          <option value="0">-- ທຸກສາຂາ --</option>
+          <?php if (!empty($branchesList)): ?>
+            <?php foreach ($branchesList as $b): ?>
+              <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </select>
+      </div>
+
       <!-- Bank Account Filter Dropdown -->
       <div style="flex: 1 1 0; min-width: 150px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">

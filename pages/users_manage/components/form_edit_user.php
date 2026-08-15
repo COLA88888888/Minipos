@@ -80,11 +80,25 @@
                   </select>
                 </div>
 
-                <!-- ຊື່ຜູ້ໃຊ້ (ໃຊ້ເຂົ້າລະບົບ) -->
+                <!-- ຊື່ຜູ້ໃຊ້ (ໃຊ້ເຂົ້າລະບົບ) & ສາຂາ -->
                 <div class="col-md-6 form-group mb-3">
                   <label class="font-weight-bold text-muted mb-1">ຊື່ຜູ້ໃຊ້ງານ: <span class="text-danger">*</span></label>
                   <input type="text" name="fname" id="edit_fname" class="form-control"
                          placeholder="ກະລຸນາປ້ອນຊື່" required>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="font-weight-bold text-muted mb-1">ປະຈຳສາຂາ: <span class="text-danger">*</span></label>
+                  <select name="store_id" id="edit_store_id" class="form-control" required>
+                    <?php if (!empty($storesList)): ?>
+                      <?php foreach ($storesList as $st): ?>
+                        <option value="<?php echo $st['store_id']; ?>">
+                          <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+                        </option>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <option value="1">ສາຂາຫຼັກ</option>
+                    <?php endif; ?>
+                  </select>
                 </div>
 
                 <!-- ລະຫັດຜ່ານ -->
@@ -130,7 +144,7 @@
                   </div>
                 </div>
 
-                <!-- ວັນເດືອນປີເກີດ & ທີ່ຢູ່ -->
+                <!-- ວັນເດືອນປີເກີດ & ເບີໂທ -->
                 <div class="col-md-6 form-group mb-3">
                   <label class="font-weight-bold text-muted mb-1">ວັນເດືອນປີເກີດ: <span class="text-danger">*</span></label>
                   <input type="date" name="dob" id="edit_dob"
@@ -138,19 +152,19 @@
                          class="form-control" style="cursor:pointer;" required>
                 </div>
                 <div class="col-md-6 form-group mb-3">
-                  <label class="font-weight-bold text-muted mb-1">ທີ່ຢູ່: <span class="text-danger">*</span></label>
-                  <textarea name="address" id="edit_address" class="form-control" rows="2"
-                            placeholder="ບ້ານ, ເມືອງ, ແຂວງ"></textarea>
-                </div>
-
-                <!-- ເບີໂທ & ໝາຍເຫດ -->
-                <div class="col-md-6 form-group mb-3">
                   <label class="font-weight-bold text-muted mb-1">ເບີໂທ: <span class="text-danger">*</span></label>
                   <input type="text" name="tel" id="edit_tel" class="form-control"
                          placeholder="020..." required>
                 </div>
+
+                <!-- ທີ່ຢູ່ & ໝາຍເຫດ -->
                 <div class="col-md-6 form-group mb-3">
-                  <label class="font-weight-bold text-muted mb-1">ໝາຍເຫດ:</label>
+                  <label class="font-weight-bold text-muted mb-1">ທີ່ຢູ່: <span class="text-danger">*</span></label>
+                  <textarea name="address" id="edit_address" class="form-control" rows="2"
+                            placeholder="ບ້ານ, ເມືອງ, ແຂວງ"></textarea>
+                </div>
+                <div class="col-md-6 form-group mb-3">
+                  <label class="font-weight-bold text-muted mb-1">ໝາຍເຫດ (ຂວາມື):</label>
                   <textarea name="notes" id="edit_notes" class="form-control" rows="2"
                             placeholder="ໝາຍເຫດ (ບໍ່ບັງຄັບ)"></textarea>
                 </div>

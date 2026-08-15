@@ -23,7 +23,7 @@ if ($currentReportType === 'item_sales') {
 
 // 1. Get Filter Input Parameters
 $type         = trim($_GET['type'] ?? 'all_sales');
-$default_from = ($type === 'daily') ? date('Y-m-d') : date('Y-m-01');
+$default_from = date('Y-m-01');
 
 $from_date  = trim($_GET['from_date'] ?? $default_from); // default: today for daily, 1st of month for others
 $to_date    = trim($_GET['to_date'] ?? date('Y-m-d'));   // default: today
@@ -332,6 +332,25 @@ if (!empty($bank_filter)) {
 
         $where[] = "(" . implode(" OR ", $bankConds) . ")";
     }
+}
+
+// Branch Store Filter
+$filter_store_id = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : 0;
+$branchesList = [];
+try {
+    $branchesList = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+
+$hasStoreIdCol = false;
+try {
+    $saleCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+    $hasStoreIdCol = in_array('store_id', $saleCols) || in_array('branch_id', $saleCols);
+    $storeColName = in_array('store_id', $saleCols) ? 'store_id' : 'branch_id';
+} catch (Exception $e) {}
+
+if ($filter_store_id > 0 && $hasStoreIdCol) {
+    $where[] = "s.{$storeColName} = :filter_store_id";
+    $params[':filter_store_id'] = $filter_store_id;
 }
 
 $whereClause = implode(" AND ", $where);

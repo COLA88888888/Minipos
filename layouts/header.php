@@ -28,6 +28,9 @@ if (!isset($base_path)) {
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css?v=29">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
+    <!-- Select2 Searchable Dropdown -->
+    <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
     <!-- Flatpickr Lao Datepicker CSS -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/flatpickr.min.css">
 

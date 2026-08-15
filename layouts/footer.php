@@ -5,6 +5,8 @@ if (!isset($base_path)) {
 ?>
     <script src="<?php echo $base_path; ?>plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
     <script src="<?php echo $base_path; ?>dist/js/adminlte.js"></script>
+    <!-- Select2 JS -->
+    <script src="<?php echo $base_path; ?>plugins/select2/js/select2.full.min.js"></script>
     <!-- Flatpickr Lao Datepicker JS -->
     <script src="<?php echo $base_path; ?>assets/js/flatpickr.min.js"></script>
     

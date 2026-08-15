@@ -17,8 +17,23 @@ $to_date       = trim($_GET['to_date'] ?? date('Y-m-d'));
 $category_id   = trim($_GET['category_id'] ?? '');
 $search        = trim($_GET['search'] ?? '');
 $employee_name = trim($_GET['employee_name'] ?? '');
+$filter_store_id = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : 0;
 $page          = max(1, intval($_GET['page'] ?? 1));
 $per_page_raw  = trim($_GET['per_page'] ?? '10');
+
+// Fetch all active branches
+$branchesList = [];
+try {
+    $branchesList = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+
+// Check store_id column
+$hasStoreIdCol = false;
+try {
+    $saleCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+    $hasStoreIdCol = in_array('store_id', $saleCols) || in_array('branch_id', $saleCols);
+    $storeColName = in_array('store_id', $saleCols) ? 'store_id' : 'branch_id';
+} catch (Exception $e) {}
 
 if ($per_page_raw === 'all') {
     $per_page = 999999;
@@ -29,6 +44,8 @@ if ($per_page_raw === 'all') {
 // Fetch Categories for Dropdown
 $catStmt = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC");
 $all_categories = $catStmt ? $catStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+$storeWhere = ($filter_store_id > 0 && $hasStoreIdCol) ? " AND s.{$storeColName} = :filter_store_id" : "";
 
 // Query ALL categories from database, joining sales data to get total quantity sold and revenue
 $sql = "
@@ -42,6 +59,7 @@ $sql = "
     LEFT JOIN tbsale_save_detail d ON p.product_id = d.save_proid
     LEFT JOIN tbsale_save s ON d.save_bill = s.sale_save_bill 
         AND (s.sale_status IS NULL OR s.sale_status != 'CANCEL')
+        {$storeWhere}
         " . (!empty($from_date) ? " AND s.sale_date >= :from_date" : "") . "
         " . (!empty($to_date) ? " AND s.sale_date <= :to_date" : "") . "
         " . (!empty($employee_name) ? " AND s.user_receive LIKE :employee_name" : "") . "
@@ -52,6 +70,9 @@ $sql = "
 ";
 
 $params = [];
+if ($filter_store_id > 0 && $hasStoreIdCol) {
+    $params[':filter_store_id'] = $filter_store_id;
+}
 if (!empty($from_date)) {
     $params[':from_date'] = $from_date;
 }
@@ -177,6 +198,23 @@ require_once __DIR__ . '/../../layouts/header.php';
               <?php echo htmlspecialchars($c['category_name']); ?>
             </option>
           <?php endforeach; ?>
+        </select>
+      </div>
+
+      <!-- Branch Filter Dropdown (ເລືອກສາຂາ) -->
+      <div style="flex: 1 1 140px; width: 100%;">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+        </label>
+        <select name="store_id" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1; width: 100%;" onchange="this.form.submit()">
+          <option value="0">-- ທຸກສາຂາ --</option>
+          <?php if (!empty($branchesList)): ?>
+            <?php foreach ($branchesList as $b): ?>
+              <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </select>
       </div>
 

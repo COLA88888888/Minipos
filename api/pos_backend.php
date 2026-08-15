@@ -1,24 +1,18 @@
 <?php
-session_start();
-$base_path = '../../';
-require_once __DIR__ . '/../../../config/db.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (!isset($base_path)) {
+    $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+    $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
+}
+require_once __DIR__ . '/../config/db.php';
 
 // Check authorization
 if (empty($_SESSION['user_id'])) {
-    echo "<script>window.top.location.href = '../../index.php';</script>";
+    echo "<script>window.top.location.href = '../index.php';</script>";
     exit();
 }
-
-// Auto-ensure customer and IP columns exist in tbsale_save
-try {
-    $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN customer_id INT NULL AFTER user_receive");
-} catch (Exception $e) {}
-try {
-    $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN customer_name VARCHAR(255) NULL AFTER customer_id");
-} catch (Exception $e) {}
-try {
-    $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN ip_address VARCHAR(45) NULL AFTER customer_name");
-} catch (Exception $e) {}
 
 $vat_rate = floatval(getSetting($pdo, 'vat_rate', '0'));
 
@@ -364,6 +358,9 @@ function getProductPromotion($product, $activePromos) {
     foreach ($activePromos as $promo) {
         $targetType = $promo['target_type'] ?? 'all';
         $targetName = trim($promo['target_name'] ?? '');
+        $targetUnit = mb_strtolower(trim($promo['target_unit_name'] ?? 'all'));
+        $baseUnit   = mb_strtolower(trim($product['unit'] ?? ''));
+
         $isMatch = false;
         
         if ($targetType === 'all' || empty($targetName) || $targetName === 'ທຸກສິນຄ້າ') {
@@ -377,15 +374,26 @@ function getProductPromotion($product, $activePromos) {
                 $isMatch = true;
             }
         }
+
+        // Check if unit matches target_unit_name
+        $isUnitMatch = ($targetUnit === 'all' || empty($targetUnit) || $baseUnit === $targetUnit);
+        if (!$isUnitMatch && !empty($baseUnit) && !empty($targetUnit)) {
+            $n1 = preg_replace('/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/u', 'ເກັດ', $baseUnit);
+            $n2 = preg_replace('/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/u', 'ເກັດ', $targetUnit);
+            if ($n1 === $n2 || mb_stripos($baseUnit, $targetUnit) !== false || mb_stripos($targetUnit, $baseUnit) !== false) {
+                $isUnitMatch = true;
+            }
+        }
         
         if ($isMatch) {
             $discVal = floatval($promo['discount_value'] ?? 0);
             $giftName = trim($promo['gift_product_name'] ?? '');
             
-            if ($discVal > 0 && !$matchedDiscountPromo) {
+            // Apply discount if unit matches OR if target_unit_name is all
+            if ($discVal > 0 && !$matchedDiscountPromo && $isUnitMatch) {
                 $matchedDiscountPromo = $promo;
             }
-            if (!empty($giftName) && !$matchedGiftPromo) {
+            if (!empty($giftName) && !$matchedGiftPromo && $isUnitMatch) {
                 $matchedGiftPromo = $promo;
             }
             if ($matchedDiscountPromo && $matchedGiftPromo) {
@@ -413,18 +421,49 @@ function getProductPromotion($product, $activePromos) {
     $discountAmount = 0;
     $promoPrice = $origPrice;
 
+    $discountText = '';
     if ($discType === 'percentage' && $discVal > 0) {
         $discountAmount = $origPrice * ($discVal / 100);
         $promoPrice = max(0, $origPrice - $discountAmount);
-        $badge = 'ຫຼຸດ: ' . (floor($discVal) == $discVal ? intval($discVal) : number_format($discVal, 1)) . '%' . $unitSuffix;
+        $discountText = 'ຫຼຸດ: ' . (floor($discVal) == $discVal ? intval($discVal) : number_format($discVal, 1)) . '% (-' . number_format($discountAmount) . '₭)';
     } elseif ($discVal > 0) {
         $discountAmount = $discVal;
         $promoPrice = max(0, $origPrice - $discountAmount);
-        $badge = 'ຫຼຸດ: ' . number_format($discVal) . '₭' . $unitSuffix;
-    } elseif (!empty($giftName)) {
-        $badge = 'ແຖມ: ' . $giftName . ($giftQty > 1 ? ' (' . $giftQty . ')' : '') . $unitSuffix;
+        $discountText = 'ຫຼຸດ: ' . number_format($discVal) . '₭';
+    }
+
+    $baseUnit = mb_strtolower(trim($product['unit'] ?? ''));
+    $tunitLower = mb_strtolower($tunit);
+    
+    // Check if base product unit matches target unit
+    $isUnitMatch = ($tunitLower === 'all' || empty($tunitLower) || $baseUnit === $tunitLower);
+    if (!$isUnitMatch) {
+        // Normalize Lao spelling variations (ເຊັ່ນ: ເເກັດ vs ເກັດ vs ແກັດ)
+        $n1 = preg_replace('/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/u', 'ເກັດ', $baseUnit);
+        $n2 = preg_replace('/ເເກັດ|ເກັດ|ແກັດ|ແກັດ/u', 'ເກັດ', $tunitLower);
+        if ($n1 === $n2 || mb_stripos($baseUnit, $tunitLower) !== false || mb_stripos($tunitLower, $baseUnit) !== false) {
+            $isUnitMatch = true;
+        }
+    }
+
+    $giftText = '';
+    // Only show Free Gift text on the product card badge if the product's unit matches the target unit!
+    if (!empty($giftName) && $isUnitMatch) {
+        if ($tunit === 'all' || empty($tunit)) {
+            $giftText = 'ແຖມ: ' . $giftName . ($giftQty > 1 ? ' x' . $giftQty : '');
+        } else {
+            $giftText = 'ແຖມ: ' . $giftName . ($giftQty > 1 ? ' x' . $giftQty : '') . ' (ສະເພາະ ' . $tunit . ')';
+        }
+    }
+
+    if (!empty($discountText) && !empty($giftText)) {
+        $badge = $discountText . ' + ' . $giftText;
+    } elseif (!empty($discountText)) {
+        $badge = $discountText;
+    } elseif (!empty($giftText)) {
+        $badge = $giftText;
     } else {
-        $badge = $promoToUse['promo_name'] . $unitSuffix;
+        $badge = $promoToUse['promo_name'];
     }
 
     return [

@@ -7,7 +7,7 @@ var selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າ�
 var heldOrders = [];
 var activeBills = [];
 var currentBillId = '';
-var isBillOpened = true;
+var isBillOpened = false;
 
 function checkBillOpenedOrAlert() {
   if (!isBillOpened || !activeBills || activeBills.length === 0) {

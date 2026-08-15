@@ -40,6 +40,23 @@ if ($conn && isset($_SESSION['user_id'])) {
             'branches' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0)
         ];
 
+        // Enforce active branch status check (log out non-admin user if their branch is disabled/inactive)
+        if (!$isAdmin) {
+            $userBranchId = (int)($_SESSION['store_id'] ?? 1);
+            $chkBranchRes = mysqli_query($conn, "SELECT status, store_name FROM tbstore WHERE store_id = '$userBranchId' LIMIT 1");
+            if ($chkBranchRes && $bRow = mysqli_fetch_assoc($chkBranchRes)) {
+                if (($bRow['status'] ?? '') !== 'active') {
+                    // Destroy session and redirect to login
+                    session_unset();
+                    session_destroy();
+                    $bName = htmlspecialchars($bRow['store_name'] ?? 'ສາຂານີ້');
+                    $baseLoginPath = (basename($scriptDir) === 'pages') ? '../login.php' : '../../login.php';
+                    echo "<script>alert('ສາຂາ ({$bName}) ຖືກປິດໃຊ້ງານຊົ່ວຄາວ! ລະບົບຈະອອກຈາກປະຕູເຂົ້າໃຊ້ງານ.'); window.location.href = '{$baseLoginPath}';</script>";
+                    exit();
+                }
+            }
+        }
+
         // Multi-Branch Store Switcher Handler for Executive / Admin Users
         if (isset($_GET['switch_store_id'])) {
             $switchId = intval($_GET['switch_store_id']);
@@ -268,13 +285,24 @@ try {
             `com_tel` VARCHAR(50) DEFAULT NULL,
             `barcode` TEXT DEFAULT NULL,
             `img_url` VARCHAR(255) DEFAULT 'logo.png',
+            `license_start_date` DATE DEFAULT '2026-01-01',
+            `license_expire_date` DATE DEFAULT '2026-12-31',
             `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+        $hasStartCol = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'license_start_date'")->fetch();
+        if (!$hasStartCol) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `license_start_date` DATE DEFAULT '2026-01-01'");
+        }
+        $hasExpireCol = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'license_expire_date'")->fetch();
+        if (!$hasExpireCol) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `license_expire_date` DATE DEFAULT '2026-12-31'");
+        }
+
         $compCount = (int)$pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
         if ($compCount === 0) {
-            $pdo->exec("INSERT INTO tbcompanyinfo (com_name_la, com_address, com_tel, barcode, img_url, branch_id) VALUES 
-                ('', '', '', 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!', 'logo.png', 1)");
+            $pdo->exec("INSERT INTO tbcompanyinfo (com_name_la, com_address, com_tel, barcode, img_url, license_start_date, license_expire_date, branch_id) VALUES 
+                ('', '', '', 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!', 'logo.png', '2026-01-01', '2026-12-31', 1)");
         }
     } catch (Throwable $ex) {}
 

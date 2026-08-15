@@ -67,6 +67,21 @@ try {
                 ($user['Id'] ?? 0) == 1
             );
 
+            $userStoreId = intval($user['store_id'] ?? $user['branch_id'] ?? 1);
+
+            // Check if assigned branch store is active (unless Admin/Executive)
+            if (!$isAdmin) {
+                $stmtBranchCheck = $pdo->prepare("SELECT status, store_name FROM tbstore WHERE store_id = ?");
+                $stmtBranchCheck->execute([$userStoreId]);
+                $branchInfo = $stmtBranchCheck->fetch(PDO::FETCH_ASSOC);
+
+                if ($branchInfo && ($branchInfo['status'] ?? '') !== 'active') {
+                    $branchName = htmlspecialchars($branchInfo['store_name'] ?? 'ສາຂານີ້');
+                    header("Location: ../login.php?error=branch_inactive&msg=" . urlencode("ສາຂາ ({$branchName}) ຖືກປິດໃຊ້ງານຊົ່ວຄາວ! ບໍ່ສາມາດເຂົ້າໃຊ້ງານໄດ້"));
+                    exit();
+                }
+            }
+
             // ບັນທຶກຂໍ້ມູນ Session
             $_SESSION['checked'] = 1;
             $_SESSION['user_id'] = $user['Id'];

@@ -22,13 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 1. Save Store Profile Info
     if ($action === 'save_store_info') {
-        $com_name_la    = trim($_POST['com_name_la'] ?? '');
-        $com_address    = trim($_POST['com_address'] ?? '');
-        $com_tel        = trim($_POST['com_tel'] ?? '');
-        $com_email      = trim($_POST['com_email'] ?? '');
-        $receipt_footer = trim($_POST['receipt_footer'] ?? '');
-        $tax_type       = trim($_POST['tax_type'] ?? 'inclusive');
-        $vat_percent    = floatval($_POST['vat_percent'] ?? 7.00);
+        $com_name_la         = trim($_POST['com_name_la'] ?? '');
+        $com_address         = trim($_POST['com_address'] ?? '');
+        $com_tel             = trim($_POST['com_tel'] ?? '');
+        $com_email           = trim($_POST['com_email'] ?? '');
+        $receipt_footer      = trim($_POST['receipt_footer'] ?? '');
+        $tax_type            = trim($_POST['tax_type'] ?? 'inclusive');
+        $vat_percent         = floatval($_POST['vat_percent'] ?? 7.00);
+        $license_start_date  = trim($_POST['license_start_date'] ?? '2026-01-01');
+        $license_expire_date = trim($_POST['license_expire_date'] ?? '2026-12-31');
 
         if ($com_name_la !== '') {
             try {
@@ -58,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ext = strtolower(pathinfo($_FILES['qr_img']['name'], PATHINFO_EXTENSION));
                     if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
                         $newQrName = 'qr_' . time() . '.' . $ext;
-                        $targetDir = __DIR__ . '/../../../assets/img/qr/';
+                        $targetDir = __DIR__ . '/../../../assets/img/logo/';
                         if (!is_dir($targetDir)) {
                             mkdir($targetDir, 0777, true);
                         }
@@ -74,8 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Check if record exists in tbcompanyinfo
                 $cnt = $pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
                 if ($cnt > 0) {
-                    $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, barcode = ?, tax_type = ?, vat_percent = ?";
-                    $params = [$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $tax_type, $vat_percent];
+                    $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, barcode = ?, tax_type = ?, vat_percent = ?, license_start_date = ?, license_expire_date = ?";
+                    $params = [$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $tax_type, $vat_percent, $license_start_date, $license_expire_date];
 
                     if ($newLogoName) {
                         $sql .= ", img_url = ?";
@@ -85,15 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $sql .= ", qr_img = ?";
                         $params[] = $newQrName;
                     }
-                    $sql .= " WHERE Id = 1";
+                    $sql .= " WHERE Id = 1 OR com_id = 1";
 
                     $stmt = $pdo->prepare($sql);
                     $stmt->execute($params);
                 } else {
                     $logo = $newLogoName ? $newLogoName : 'logo.png';
                     $qr = $newQrName ? $newQrName : '';
-                    $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, barcode, img_url, qr_img, tax_type, vat_percent, branch_id) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-                    $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $logo, $qr, $tax_type, $vat_percent]);
+                    $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, barcode, img_url, qr_img, tax_type, vat_percent, license_start_date, license_expire_date, branch_id) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+                    $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $logo, $qr, $tax_type, $vat_percent, $license_start_date, $license_expire_date]);
                 }
 
                 // Sync with main store in tbstore if exists
@@ -343,6 +345,25 @@ require_once __DIR__ . '/../../../layouts/header.php';
                     <span class="input-group-text font-weight-bold">%</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Subscription / License Date Settings Section -->
+          <div class="form-group mb-4 p-3 bg-light rounded border" style="border-left: 4px solid #059669 !important;">
+            <label class="font-weight-bold text-dark small mb-2 d-block">
+              <i class="fas fa-history text-success mr-1"></i> ແພັກເກັດ & ອາຍຸການນຳໃຊ້ລະບົບ (Subscription Package):
+            </label>
+            <div class="row">
+              <div class="col-md-6 mb-2 mb-md-0">
+                <label class="font-weight-bold text-dark small mb-1">ວັນທີເລີ່ມນຳໃຊ້:</label>
+                <input type="date" name="license_start_date" class="form-control font-weight-bold" 
+                       value="<?php echo htmlspecialchars($company['license_start_date'] ?? '2026-01-01'); ?>">
+              </div>
+              <div class="col-md-6">
+                <label class="font-weight-bold text-dark small mb-1">ວັນທີສິ້ນສຸດການນຳໃຊ້:</label>
+                <input type="date" name="license_expire_date" class="form-control font-weight-bold text-danger" 
+                       value="<?php echo htmlspecialchars($company['license_expire_date'] ?? '2026-12-31'); ?>">
               </div>
             </div>
           </div>

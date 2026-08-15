@@ -12,9 +12,24 @@ if (!hasPermission('report')) {
     exit();
 }
 
-// Date Range Filter Inputs (Default: Today to Today)
-$from_date = trim($_GET['from_date'] ?? date('Y-m-d'));
+// Date Range & Branch Filter Inputs (Default: 1st of current month to Today)
+$from_date = trim($_GET['from_date'] ?? date('Y-m-01'));
 $to_date   = trim($_GET['to_date'] ?? date('Y-m-d'));
+$filter_store_id = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : 0;
+
+// Fetch all branches for executive/manager dropdown filter
+$branchesList = [];
+try {
+    $branchesList = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
+
+// Check if tbsale_save has store_id column
+$hasStoreIdCol = false;
+try {
+    $saleCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+    $hasStoreIdCol = in_array('store_id', $saleCols) || in_array('branch_id', $saleCols);
+    $storeColName = in_array('store_id', $saleCols) ? 'store_id' : 'branch_id';
+} catch (Exception $e) {}
 
 // Build SQL Query for Daily Report
 $where   = ["(s.sale_status IS NULL OR s.sale_status != 'CANCEL')"];
@@ -28,6 +43,11 @@ if (!empty($from_date)) {
 if (!empty($to_date)) {
     $where[] = "DATE(s.sale_date) <= :to_date";
     $params[':to_date'] = $to_date;
+}
+
+if ($filter_store_id > 0 && $hasStoreIdCol) {
+    $where[] = "s.{$storeColName} = :filter_store_id";
+    $params[':filter_store_id'] = $filter_store_id;
 }
 
 $whereClause = implode(" AND ", $where);
@@ -285,6 +305,23 @@ require_once __DIR__ . '/../../layouts/header.php';
           <i class="fas fa-calendar-check text-primary mr-1"></i> ຫາວັນທີ:
         </label>
         <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
+      </div>
+
+      <!-- Branch Filter Dropdown -->
+      <div class="report-filter-date-col" style="min-width: 170px;">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+        </label>
+        <select name="store_id" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
+          <option value="0">-- ທຸກສາຂາ --</option>
+          <?php if (!empty($branchesList)): ?>
+            <?php foreach ($branchesList as $b): ?>
+              <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </select>
       </div>
 
       <!-- Search & Refresh Buttons -->

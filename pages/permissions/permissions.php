@@ -13,7 +13,7 @@
  */
 
 // 1. ໂຫຼດສ່ວນປະມວນຜົນ Backend, Session Check ແລະ AJAX Handlers
-require_once __DIR__ . '/partials/permissions_backend.php';
+require_once __DIR__ . '/../../api/permissions_backend.php';
 
 // 2. ໂຫຼດ Layout Header ຂອງລະບົບ (Navbar & AdminLTE Shell)
 require_once __DIR__ . '/../../layouts/header.php';

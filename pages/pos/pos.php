@@ -1,6 +1,6 @@
 <?php
 // POS Master View Page - Modular & Clean Architecture
-require_once __DIR__ . '/partials/pos_backend.php';
+require_once __DIR__ . '/../../api/pos_backend.php';
 
 $pos_page = true;
 require_once __DIR__ . '/../../layouts/header.php';
