@@ -435,6 +435,41 @@ $profile_img_path = '../assets/img/users/' . $profile_img;
       }
     });
   }
+
+  // ===== Client-Side Auto Idle Inactivity Timeout (15 ນາທີ = 900,000ms) =====
+  (function() {
+    var idleTime = 0;
+    var maxIdleTime = 15 * 60 * 1000; // 15 ນາທີ
+    var lastPingTime = Date.now();
+
+    function resetIdleTimer() {
+      idleTime = 0;
+      // ຖ້າຜູ້ໃຊ້ນຳໃຊ້ຢູ່ — ສົ່ງ Heartbeat ໄປອັບເດດ Session ຢູ່ Server ເປັນໄລຍະ (ທຸກໆ 2 ນາທີ)
+      if (Date.now() - lastPingTime > 120000) {
+        lastPingTime = Date.now();
+        fetch('../config/db.php', { method: 'HEAD' }).catch(function(){});
+      }
+    }
+
+    // Reset idle timer ຢ່າງຕໍ່ເນື່ອງເມື່ອມີການເຄື່ອນໄຫວ ຫຼື ນຳໃຊ້ລະບົບ
+    window.onload = resetIdleTimer;
+    window.onmousemove = resetIdleTimer;
+    window.onmousedown = resetIdleTimer;
+    window.ontouchstart = resetIdleTimer;
+    window.onclick = resetIdleTimer;
+    window.onkeydown = resetIdleTimer;
+    window.onscroll = resetIdleTimer;
+    window.addEventListener('scroll', resetIdleTimer, true);
+    window.addEventListener('message', resetIdleTimer);
+
+    setInterval(function() {
+      idleTime += 5000; // ກວດສອບທຸກໆ 5 ວິນາທີ
+      if (idleTime >= maxIdleTime) {
+        sessionStorage.clear();
+        window.location.href = '../auth/logout.php?expired=1';
+      }
+    }, 5000);
+  })();
 </script>
 </body>
 </html>

@@ -17,6 +17,20 @@ if (session_status() === PHP_SESSION_NONE) {
     ]);
     session_start();
 }
+
+// 15 Minutes Inactivity Idle Timeout (900 seconds)
+$maxIdleTime = 900;
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $maxIdleTime)) {
+        session_unset();
+        session_destroy();
+        $isPageDir = (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/pages/') !== false || strpos($_SERVER['SCRIPT_NAME'] ?? '', '/home/') !== false);
+        $redirectLoginPath = $isPageDir ? '../auth/login.php?expired=1' : 'auth/login.php?expired=1';
+        echo "<script>if (window.top) { window.top.location.href = '{$redirectLoginPath}'; } else { window.location.href = '{$redirectLoginPath}'; }</script>";
+        exit();
+    }
+    $_SESSION['last_activity'] = time();
+}
 if ($conn && isset($_SESSION['user_id'])) {
     $session_user_id = mysqli_real_escape_string($conn, (string)$_SESSION['user_id']);
     // ອັບເດດຂໍ້ມູນສະຖານະ ແລະ ສິດການໃຊ້ງານຈາກຕາຕະລາງ tbuser ຕາມ user_id
