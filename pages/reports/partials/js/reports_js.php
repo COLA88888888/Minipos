@@ -118,8 +118,9 @@ function printBill(billNo) {
         var payHtml = '';
         payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cash.toLocaleString() + ' ₭</span></div>';
         payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qr.toLocaleString() + ' ₭</span></div>';
-        if (b.bank_name && qr > 0) {
-          payHtml += '<div class="d-flex justify-content-between" style="font-weight:700;"><span>ທະນາຄານໂອນ:</span><span>' + b.bank_name + '</span></div>';
+        if (qr > 0 || (typePay && (typePay.indexOf('ໂອນ') !== -1 || typePay.indexOf('QR') !== -1))) {
+          var repBank = b.bank_name ? b.bank_name : 'BCEL One';
+          payHtml += '<div class="d-flex justify-content-between font-weight-bold" style="font-weight:700;"><span>ໂອນຜ່ານທະນາຄານ:</span><span>' + repBank + '</span></div>';
         }
         $('#rc_rep_payment_rows').html(payHtml);
 

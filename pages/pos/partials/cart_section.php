@@ -74,30 +74,58 @@
       <span class="font-weight-bold" style="font-size: 1.45rem; color: #16a34a;" id="cartTotal">0 ₭</span>
     </div>
     
-    <!-- Hold & Clear & Checkout Action Buttons -->
-    <div class="row no-gutters mb-2" style="gap: 6px;">
-      <div class="col">
-        <button class="btn btn-info btn-block font-weight-bold py-1.5 text-white" onclick="holdCurrentOrder()" id="btnHoldOrder" style="border-radius: 8px; font-size: 0.88rem;">
-          <i class="fas fa-pause-circle mr-1"></i> ພັກບິນ
-        </button>
+    <!-- Desktop Action Buttons (2 Rows Layout - Visible ≥ 992px) -->
+    <div class="d-none d-lg-block">
+      <div class="row no-gutters mb-2" style="gap: 6px;">
+        <div class="col">
+          <button class="btn btn-info btn-block font-weight-bold py-2 text-white" onclick="holdCurrentOrder()" id="btnHoldOrder" style="border-radius: 8px; font-size: 0.88rem;">
+            <i class="fas fa-pause-circle mr-1"></i> ພັກບິນ
+          </button>
+        </div>
+        <div class="col">
+          <button class="btn btn-primary btn-block font-weight-bold py-2 text-white" onclick="openHeldOrdersModal()" id="btnHeldOrders" style="border-radius: 8px; font-size: 0.88rem;">
+            <i class="fas fa-history mr-1"></i> ບິນທີ່ພັກ <span class="badge badge-light badge-hold-count text-dark font-weight-bold ml-1" id="heldCountBadge">0</span>
+          </button>
+        </div>
       </div>
-      <div class="col">
-        <button class="btn btn-primary btn-block font-weight-bold py-1.5 text-white" onclick="openHeldOrdersModal()" id="btnHeldOrders" style="border-radius: 8px; font-size: 0.88rem;">
-          <i class="fas fa-history mr-1"></i> ບິນທີ່ພັກ <span class="badge badge-light badge-hold-count text-dark font-weight-bold" id="heldCountBadge">0</span>
-        </button>
+
+      <div class="row no-gutters" style="gap: 6px;">
+        <div class="col-4">
+          <button class="btn btn-danger btn-block font-weight-bold py-2.5" onclick="clearCart()" id="btnClearCart" style="border-radius: 8px; font-size: 0.92rem;">
+            <i class="fas fa-trash-alt mr-1"></i> ລ້າງ
+          </button>
+        </div>
+        <div class="col">
+          <button class="btn btn-warning btn-block font-weight-bold py-2.5 text-dark shadow-sm" onclick="openCheckoutModal()" id="btnCheckout" style="border-radius: 8px; font-size: 1.0rem;">
+            <i class="fas fa-money-bill-wave mr-1"></i> ຊຳລະເງິນ
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="row no-gutters" style="gap: 6px;">
-      <div class="col-4">
-        <button class="btn btn-danger btn-block font-weight-bold py-2.5" onclick="clearCart()" id="btnClearCart" style="border-radius: 8px;">
-          <i class="fas fa-trash-alt mr-1"></i> ລ້າງ
-        </button>
-      </div>
-      <div class="col">
-        <button class="btn btn-warning btn-block font-weight-bold py-2.5 text-dark shadow-sm" onclick="openCheckoutModal()" id="btnCheckout" style="border-radius: 8px;">
-          <i class="fas fa-money-bill-wave mr-1"></i> ຊຳລະເງິນ
-        </button>
+    <!-- Mobile Action Buttons (Single Row 4 Buttons Grid - Visible ≤ 991px) -->
+    <div class="d-lg-none">
+      <div class="row no-gutters" style="gap: 4px; flex-wrap: nowrap;">
+        <div class="col-3">
+          <button class="btn btn-info btn-block font-weight-bold py-2 text-white d-flex align-items-center justify-content-center" onclick="holdCurrentOrder()" id="btnHoldOrderMobile" style="border-radius: 8px; font-size: 0.78rem; padding: 6px 1px; white-space: nowrap;">
+            <i class="fas fa-pause-circle mr-1" style="font-size: 0.75rem;"></i> <span>ພັກບິນ</span>
+          </button>
+        </div>
+        <div class="col-3">
+          <button class="btn btn-primary btn-block font-weight-bold py-2 text-white d-flex align-items-center justify-content-center" onclick="openHeldOrdersModal()" id="btnHeldOrdersMobile" style="border-radius: 8px; font-size: 0.78rem; padding: 6px 1px; white-space: nowrap;">
+            <i class="fas fa-history mr-1" style="font-size: 0.75rem;"></i> <span>ບິນພັກ</span> <span class="badge badge-light badge-hold-count text-dark font-weight-bold ml-1" style="font-size: 0.68rem; padding: 2px 4px;">0</span>
+          </button>
+        </div>
+        <div class="col-2">
+          <button class="btn btn-danger btn-block font-weight-bold py-2 d-flex align-items-center justify-content-center" onclick="clearCart()" id="btnClearCartMobile" style="border-radius: 8px; font-size: 0.78rem; padding: 6px 1px; white-space: nowrap;">
+            <i class="fas fa-trash-alt mr-1" style="font-size: 0.75rem;"></i> <span>ລ້າງ</span>
+          </button>
+        </div>
+        <div class="col-4">
+          <button class="btn btn-warning btn-block font-weight-bold py-2 text-dark shadow-sm d-flex align-items-center justify-content-center" onclick="openCheckoutModal()" id="btnCheckoutMobile" style="border-radius: 8px; font-size: 0.82rem; padding: 6px 1px; white-space: nowrap; background: #eab308; border-color: #ca8a04;">
+            <i class="fas fa-money-bill-wave mr-1" style="font-size: 0.78rem;"></i> <span>ຊຳລະເງິນ</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

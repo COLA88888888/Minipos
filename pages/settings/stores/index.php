@@ -349,24 +349,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
             </div>
           </div>
 
-          <!-- System Subscription / License Date Settings Section -->
-          <div class="form-group mb-4 p-3 bg-light rounded border" style="border-left: 4px solid #059669 !important;">
-            <label class="font-weight-bold text-dark small mb-2 d-block">
-              <i class="fas fa-history text-success mr-1"></i> ແພັກເກັດ & ອາຍຸການນຳໃຊ້ລະບົບ (Subscription Package):
-            </label>
-            <div class="row">
-              <div class="col-md-6 mb-2 mb-md-0">
-                <label class="font-weight-bold text-dark small mb-1">ວັນທີເລີ່ມນຳໃຊ້:</label>
-                <input type="date" name="license_start_date" class="form-control font-weight-bold" 
-                       value="<?php echo htmlspecialchars($company['license_start_date'] ?? '2026-01-01'); ?>">
-              </div>
-              <div class="col-md-6">
-                <label class="font-weight-bold text-dark small mb-1">ວັນທີສິ້ນສຸດການນຳໃຊ້:</label>
-                <input type="date" name="license_expire_date" class="form-control font-weight-bold text-danger" 
-                       value="<?php echo htmlspecialchars($company['license_expire_date'] ?? '2026-12-31'); ?>">
-              </div>
-            </div>
-          </div>
+
 
           <!-- Receipt Footer Message -->
           <div class="form-group mb-4">

@@ -660,6 +660,36 @@
                     <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
                   </tr>
 
+                  <!-- ໂມດູນ 11: ຖານຂໍ້ມູນ (Database Management) -->
+                  <tr>
+                    <td>
+                      <div class="perm-module-info">
+                        <div class="perm-module-icon" style="background: #e0f2fe; color: #0284c7;">
+                          <i class="fas fa-database"></i>
+                        </div>
+                        <div>
+                          <div class="perm-module-title">ຈັດການຖານຂໍ້ມູນ</div>
+                          <div class="perm-module-desc">ເຂົ້າເຖິງ ແລະ ເບິ່ງສະຖິຕິ/ຈັດການຖານຂໍ້ມູນລະບົບ</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="text-center">
+                      <label class="matrix-switch">
+                        <input type="checkbox" 
+                               id="perm_database_view_<?php echo $u['Id']; ?>" 
+                               data-perm="database" 
+                               data-user-id="<?php echo $u['Id']; ?>"
+                               <?php echo (!empty($u['database']) || $isAdmin) ? 'checked' : ''; ?>
+                               <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+                               onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'database', this)">
+                        <span class="matrix-slider"></span>
+                      </label>
+                    </td>
+                    <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+                    <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+                    <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+                  </tr>
+
 </tbody>
               </table>
             </div>

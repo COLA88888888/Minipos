@@ -115,11 +115,11 @@ if (!hasPermission('dashboard')) {
 <div class="wrapper">
 
   <!-- ແຖບເມນູດ້ານເທິງ (Top Navigation Bar) -->
-  <nav class="main-header navbar navbar-expand navbar-white navbar-light justify-content-between">
+  <nav class="main-header navbar navbar-expand navbar-dark justify-content-between" style="background-color: rgb(2, 99, 255) !important; border: none !important; border-bottom: none !important; box-shadow: none !important; height: 64px;">
     <!-- Left side: Menu toggle -->
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" data-widget="pushmenu" id="topNavbarPushMenuBtn" href="#" role="button" style="color: #ffffff; font-size: 1.2rem;" title="ເມນູ">
+        <a class="nav-link" id="topNavbarPushMenuBtn" href="#" role="button" style="color: #ffffff; font-size: 1.2rem; cursor: pointer;" title="ເມນູ">
           <i class="fas fa-bars"></i>
         </a>
       </li>
@@ -213,8 +213,6 @@ if (!hasPermission('dashboard')) {
   
   <script>
     (function() {
-  <script>
-    (function() {
       var defaultSrc = '<?php echo $default_iframe_src; ?>';
       var hasDashboardPerm = <?php echo hasPermission('dashboard') ? 'true' : 'false'; ?>;
       var savedSrc = sessionStorage.getItem('currentIframeSrc');
@@ -250,8 +248,70 @@ if (!hasPermission('dashboard')) {
   </script>
 
   <!-- Content Wrapper. Contains page content -->
-  <div class="content-wrapper" style="height: calc(100vh - 64px - 42px) !important; background-color: #f4f6f9;">
+  <div class="content-wrapper" style="background-color: #f4f6f9; position: relative;">
+    <!-- Page Loading Spinner Overlay (12-Dot Pulse Circle Spinner from Screenshot) -->
+    <style>
+      .loader-dots-spinner {
+        color: #0263ff;
+        display: inline-block;
+        position: relative;
+        width: 56px;
+        height: 56px;
+      }
+      .loader-dots-spinner div {
+        transform-origin: 28px 28px;
+        animation: loader-dots-spinner-anim 1.2s linear infinite;
+      }
+      .loader-dots-spinner div:after {
+        content: " ";
+        display: block;
+        position: absolute;
+        top: 4px;
+        left: 25px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #0263ff;
+      }
+      .loader-dots-spinner div:nth-child(1) { transform: rotate(0deg); animation-delay: -1.1s; }
+      .loader-dots-spinner div:nth-child(2) { transform: rotate(30deg); animation-delay: -1s; }
+      .loader-dots-spinner div:nth-child(3) { transform: rotate(60deg); animation-delay: -0.9s; }
+      .loader-dots-spinner div:nth-child(4) { transform: rotate(90deg); animation-delay: -0.8s; }
+      .loader-dots-spinner div:nth-child(5) { transform: rotate(120deg); animation-delay: -0.7s; }
+      .loader-dots-spinner div:nth-child(6) { transform: rotate(150deg); animation-delay: -0.6s; }
+      .loader-dots-spinner div:nth-child(7) { transform: rotate(180deg); animation-delay: -0.5s; }
+      .loader-dots-spinner div:nth-child(8) { transform: rotate(210deg); animation-delay: -0.4s; }
+      .loader-dots-spinner div:nth-child(9) { transform: rotate(240deg); animation-delay: -0.3s; }
+      .loader-dots-spinner div:nth-child(10) { transform: rotate(270deg); animation-delay: -0.2s; }
+      .loader-dots-spinner div:nth-child(11) { transform: rotate(300deg); animation-delay: -0.1s; }
+      .loader-dots-spinner div:nth-child(12) { transform: rotate(330deg); animation-delay: 0s; }
+      @keyframes loader-dots-spinner-anim {
+        0% { opacity: 1; }
+        100% { opacity: 0.15; }
+      }
+    </style>
+    <div id="iframeLoaderOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.94); z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+      <div class="loader-dots-spinner">
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div>
+      </div>
+      <div style="margin-top: 18px; font-weight: 700; color: #1e293b; font-size: 1.05rem; letter-spacing: 0.5px;">
+        ກຳລັງໂຫຼດຂໍ້ມູນ...
+      </div>
+    </div>
+
     <iframe width="100%" height="100%" frameborder="0" name="frame" src="<?php echo $default_iframe_src; ?>" style="background-color: #f4f6f9;"></iframe>
+    <style>
+      .content-wrapper {
+        height: calc(100vh - 64px - 42px) !important;
+      }
+      @media (max-width: 991.98px) {
+        .content-wrapper {
+          height: calc(100vh - 56px - 42px) !important;
+        }
+      }
+    </style>
     <script>
       (function() {
         var defaultSrc = '<?php echo $default_iframe_src; ?>';
@@ -287,29 +347,36 @@ if (!hasPermission('dashboard')) {
 
 <script>
   $(function() {
-    // Handle manual PushMenu toggle click to keep POS sidebar state independent from Settings/Dashboard state
-    $('[data-widget="pushmenu"]').on('click', function() {
-      setTimeout(function() {
-        var frame = document.getElementsByName('frame')[0];
-        var isPos = false;
-        try {
-          var p = frame.contentWindow.location.pathname;
-          isPos = (p.indexOf('pos.php') !== -1 || p.indexOf('pos') !== -1);
-        } catch(e) {}
+    var posUserToggledManual = false;
 
-        var isCollapsed = $('body').hasClass('sidebar-collapse');
-        var newState = isCollapsed ? 'collapse' : 'expand';
+    // Handle manual Hamburger PushMenu toggle click
+    $(document).on('click', '#topNavbarPushMenuBtn, [data-widget="pushmenu"]', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
 
-        if (isPos) {
-          sessionStorage.setItem('sidebar_user_state_pos', newState);
+      posUserToggledManual = true;
+
+      var isMobile = window.innerWidth < 768;
+      var isCollapsed = $('body').hasClass('sidebar-collapse') || $('html').hasClass('sidebar-collapse');
+      
+      if (isMobile) {
+        if ($('body').hasClass('sidebar-open')) {
+          $('html, body').removeClass('sidebar-open sidebar-is-opening');
         } else {
-          sessionStorage.setItem('sidebar_user_state_other', newState);
+          $('html, body').addClass('sidebar-open').removeClass('sidebar-collapse sidebar-closed');
         }
-      }, 100);
+      } else {
+        if (isCollapsed) {
+          $('html, body').removeClass('sidebar-collapse sidebar-closed');
+        } else {
+          $('html, body').addClass('sidebar-collapse');
+        }
+      }
     });
 
-    // Disable hover expansion on sidebar
-    $('.main-sidebar').off('mouseenter mouseleave');
+    // Disable hover expansion on sidebar completely
+    $('.main-sidebar, .brand-link').off('mouseenter mouseleave mouseover mouseout');
+    $(document).off('mouseenter mouseleave mouseover mouseout', '.main-sidebar, .brand-link');
 
     // Restore sidebar scroll position if available
     var sidebarEl = document.querySelector('.sidebar');
@@ -319,6 +386,21 @@ if (!hasPermission('dashboard')) {
       if (os && savedScroll) {
         os.scroll({ y: parseInt(savedScroll, 10) }, 0);
       }
+    }
+
+    var loaderSafetyTimer = null;
+
+    function showFastLoader() {
+      clearTimeout(loaderSafetyTimer);
+      $('#iframeLoaderOverlay').stop(true, true).fadeIn(60);
+      loaderSafetyTimer = setTimeout(function() {
+        $('#iframeLoaderOverlay').stop(true, true).fadeOut(120);
+      }, 1200);
+    }
+
+    function hideFastLoader() {
+      clearTimeout(loaderSafetyTimer);
+      $('#iframeLoaderOverlay').stop(true, true).fadeOut(120);
     }
 
     // ===== Exclusive Active Menu Highlight =====
@@ -331,10 +413,20 @@ if (!hasPermission('dashboard')) {
         return;
       }
 
-      $('.nav-sidebar .nav-link').removeClass('active');
-      $(this).addClass('active');
+      // Reset manual toggle flag on new menu navigation
+      posUserToggledManual = false;
 
+      // Show high-speed 12-dot pulse loader overlay on menu click
+      showFastLoader();
+
+      $('.nav-sidebar .nav-link').removeClass('active');
       sessionStorage.setItem('currentIframeSrc', href);
+
+      if (href && (href.indexOf('pos.php') !== -1 || href.indexOf('/pos/') !== -1)) {
+        $('html, body').addClass('sidebar-collapse').removeClass('sidebar-closed sidebar-open');
+      } else {
+        $('html, body').removeClass('sidebar-collapse sidebar-closed sidebar-open');
+      }
 
       if (sidebarEl && window.jQuery && jQuery.fn.overlayScrollbars) {
         var osInstance = $(sidebarEl).overlayScrollbars();
@@ -354,28 +446,24 @@ if (!hasPermission('dashboard')) {
     });
 
     $('iframe[name="frame"]').on('load', function() {
+      // Hide high-speed 12-dot pulse loader overlay smoothly on page load
+      hideFastLoader();
       try {
         var path = this.contentWindow.location.pathname;
         var search = this.contentWindow.location.search || '';
         var fullTarget = path.substring(path.lastIndexOf('/') + 1) + search;
         var page = path.substring(path.lastIndexOf('/') + 1);
 
-        var isMobile = window.innerWidth <= 992;
-
-        // Strict rule requested by user:
-        // ONLY collapse sidebar when on POS sales page (pos.php).
-        // On ALL other pages (Stores/Settings, Reports, Products, Users, Dashboard), ALWAYS expand sidebar completely!
         var isPosPage = (path.indexOf('pos.php') !== -1 || path.indexOf('/pos/') !== -1);
 
         if (isPosPage) {
-          if (!isMobile && window.jQuery && $.fn.PushMenu) {
-            $('[data-widget="pushmenu"]').PushMenu('collapse');
+          // Auto-collapse on POS page initial load unless user manually toggled hamburger
+          if (!posUserToggledManual) {
+            $('html, body').addClass('sidebar-collapse').removeClass('sidebar-closed sidebar-open');
           }
-          $('html, body').addClass('sidebar-collapse').removeClass('sidebar-closed sidebar-open');
         } else {
-          if (!isMobile && window.jQuery && $.fn.PushMenu) {
-            $('[data-widget="pushmenu"]').PushMenu('expand');
-          }
+          // Auto-expand sidebar for ALL other pages
+          posUserToggledManual = false;
           $('html, body').removeClass('sidebar-collapse sidebar-closed sidebar-open');
         }
 
@@ -407,23 +495,35 @@ if (!hasPermission('dashboard')) {
       } catch(e) {}
     });
 
-    // ===== Collapsed Sidebar Treeview Dropdown Toggle =====
-    // ຕອນເຊື່ອງ sidebar ຖ້າກົດໄອຄອນທີ່ມີ ດັອບດາວ ໃຫ້ toggle ສະແດງໄອຄອນຍ່ອຍລົງມາເລີຍ
-    $sidebar.on('click', '.has-treeview > .nav-link', function(e) {
-      if ($('body').hasClass('sidebar-collapse')) {
-        e.preventDefault();
-        e.stopPropagation();
-        var $parent = $(this).closest('.has-treeview');
-        var $tree = $parent.children('.nav-treeview');
-        var isOpen = $parent.hasClass('menu-open');
+    // ===== Universal Accordion Dropdown Toggle (Only 1 dropdown open at a time) =====
+    $(document).on('click', '.nav-sidebar .has-treeview > .nav-link', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
 
-        if (isOpen) {
+      var $parent = $(this).closest('.has-treeview');
+      var $tree = $parent.children('.nav-treeview');
+      var isOpen = $parent.hasClass('menu-open');
+
+      // Accordion: Close ALL OTHER open dropdown menus first with balanced animation
+      $('.nav-sidebar .has-treeview').not($parent).each(function() {
+        var $otherParent = $(this);
+        var $otherTree = $otherParent.children('.nav-treeview');
+        $otherTree.stop(true, false).slideUp(300, function() {
+          $otherParent.removeClass('menu-open menu-is-opening');
+        });
+      });
+
+      // Toggle current clicked dropdown menu with balanced 350ms animation
+      if (isOpen) {
+        $tree.stop(true, false).slideUp(300, function() {
           $parent.removeClass('menu-open menu-is-opening');
-          $tree.stop(true, true).slideUp(200);
-        } else {
-          $parent.addClass('menu-open menu-is-opening');
-          $tree.stop(true, true).slideDown(200);
-        }
+        });
+      } else {
+        $parent.addClass('menu-is-opening');
+        $tree.stop(true, false).slideDown(350, function() {
+          $parent.addClass('menu-open').removeClass('menu-is-opening');
+        });
       }
     });
 

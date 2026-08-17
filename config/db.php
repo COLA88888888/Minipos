@@ -57,7 +57,8 @@ if ($conn && isset($_SESSION['user_id'])) {
             'permissions' => $isAdmin ? 1 : (int)($refresh_row['permissions'] ?? $refresh_row['users'] ?? 0),
             'edit' => $isAdmin ? 1 : (int)($refresh_row['edit'] ?? 0),
             'customers' => $isAdmin ? 1 : (int)($refresh_row['customers'] ?? $refresh_row['sale'] ?? 0),
-            'branches' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0)
+            'branches' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0),
+            'database' => $isAdmin ? 1 : (int)($refresh_row['database'] ?? $refresh_row['setup'] ?? 0)
         ];
 
         // Enforce active branch status check (log out non-admin user if their branch is disabled/inactive)
@@ -140,7 +141,7 @@ try {
     }
 
     // Ensure all permission columns exist in tbuser
-    $allPermCols = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'branches'];
+    $allPermCols = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'branches', 'database'];
     foreach ($allPermCols as $pCol) {
         try {
             $hasCol = $pdo->query("SHOW COLUMNS FROM `tbuser` LIKE '{$pCol}'")->fetch();
@@ -175,7 +176,11 @@ try {
     } catch (Throwable $ex) {}
 
     // Clean up unused/deprecated database tables
-    $unusedTables = ['tbbranch', 'tbunit', 'tbsale', 'tbsale_detail', 'category', 'tbsupplier', 'tbcurrency'];
+    $unusedTables = [
+        'tbbranch', 'tbunit', 'tbsale', 'tbsale_detail', 'category', 'tbsupplier', 'tbcurrency',
+        'customer', 'tb_expenses', 'tb_queue_daily', 'tbdeposit_beer', 'tbfinancial_report',
+        'tbreceive', 'tbreceive_detail', 'tbsale_save_data', 'stock_adjustments', 'stock_adjustment_items'
+    ];
     foreach ($unusedTables as $uTbl) {
         try {
             $pdo->exec("DROP TABLE IF EXISTS `{$uTbl}`");
@@ -704,6 +709,7 @@ if (!function_exists('hasPermission')) {
             'accounting' => 'accounting',
             'settings' => 'setup',
             'branches' => ['branches', 'setup'],
+            'database' => ['database', 'setup'],
             'permissions' => ['permissions', 'users'],
             'user_manage' => 'users',
             'customers' => ['customers', 'sale']

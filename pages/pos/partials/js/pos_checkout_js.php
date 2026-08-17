@@ -254,12 +254,39 @@ function processCheckout() {
   var activeBankId = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankId || $('input[name="pos_selected_bank_id"]:checked').val() || null) : null;
   var activeBankName = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankName || null) : null;
 
+  // Validate & clean cart items payload before sending to server
+  var cleanCart = cart.filter(function(item) {
+    return item && parseInt(item.product_id, 10) > 0;
+  }).map(function(item) {
+    return {
+      product_id:   parseInt(item.product_id, 10),
+      product_name: item.product_name || '',
+      unit_name:    item.unit_name || 'ອັນ',
+      unit_price:   parseFloat(item.unit_price) || 0,
+      cost_price:   parseFloat(item.cost_price) || 0,
+      multiplier:   parseInt(item.multiplier, 10) || 1,
+      quantity:     parseFloat(item.quantity) || 1,
+      is_free_gift: !!item.is_free_gift,
+      parent_product_id: item.parent_product_id ? parseInt(item.parent_product_id, 10) : null
+    };
+  });
+
+  if (cleanCart.length === 0) {
+    Swal.fire({
+      icon: 'error',
+      title: 'ຂໍ້ມູນສິນຄ້າຜິດພາດ!',
+      text: 'ບໍ່ພົບ ID ສິນຄ້າທີ່ຖືກຕ້ອງໃນກະຕ່າ ກະລຸນາລ້າງກະຕ່າແລ້ວເລືອກສິນຄ້າໃໝ່!',
+      confirmButtonColor: '#ef4444'
+    });
+    return;
+  }
+
   $.ajax({
     url: '',
     type: 'POST',
     data: {
       action:          'checkout',
-      cart:            JSON.stringify(cart),
+      cart:            JSON.stringify(cleanCart),
       cash_received:   cashReceived,
       qr_received:     qrReceived,
       payment_type:    paymentType,
@@ -323,8 +350,9 @@ function processCheckout() {
         var payRows = '';
         payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cashAmt.toLocaleString() + ' ₭</span></div>';
         payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qrAmt.toLocaleString() + ' ₭</span></div>';
-        if (bName && qrAmt > 0) {
-          payRows += '<div class="d-flex justify-content-between" style="font-weight:700;"><span>ທະນາຄານໂອນ:</span><span>' + bName + '</span></div>';
+        if (qrAmt > 0 || (paymentType && (paymentType.indexOf('ໂອນ') !== -1 || paymentType.indexOf('QR') !== -1))) {
+          var displayBank = bName ? bName : 'BCEL One';
+          payRows += '<div class="d-flex justify-content-between font-weight-bold" style="font-weight:700;"><span>ໂອນຜ່ານທະນາຄານ:</span><span>' + displayBank + '</span></div>';
         }
         $('#rc_payment_rows').html(payRows);
 
@@ -333,8 +361,9 @@ function processCheckout() {
         if (activeBankQr && (qrAmt > 0 || bName)) {
           $('#rc_bank_qr_img').attr('src', activeBankQr);
         }
-        if (bName && qrAmt > 0) {
-          $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + bName + ')');
+        if ((bName || qrAmt > 0)) {
+          var labelBank = bName ? bName : 'BCEL One';
+          $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')');
         } else {
           $('#rc_bank_name_lbl').text('ສະແກນ QR Code ເພື່ອຊຳລະເງິນ');
         }

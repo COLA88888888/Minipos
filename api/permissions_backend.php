@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
         $val     = intval($_POST['val'] ?? 0);
 
         // ລາຍຊື່ຄໍລຳສິດທີ່ອະນຸຍາດໃຫ້ປັບປ່ຽນ
-        $allowed_perms = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers'];
+        $allowed_perms = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'database'];
 
         if ($user_id <= 0 || !in_array($perm, $allowed_perms, true)) {
             echo json_encode(['success' => false, 'message' => 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ']);
@@ -69,13 +69,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             $stmt->execute([$val, $user_id]);
 
             // ດຶງຂໍ້ມູນຜູ້ໃຊ້ທີ່ຖືກອັບເດດ ເພື່ອຄຳນວນຈຳນວນສິດທີ່ເປີດຢູ່
-            $uStmt = $pdo->prepare("SELECT username, dashboard, sale, stock, report, accounting, setup, users, edit, customers FROM tbuser WHERE Id = ?");
+            $uStmt = $pdo->prepare("SELECT username, dashboard, sale, stock, report, accounting, setup, users, edit, customers, database FROM tbuser WHERE Id = ?");
             $uStmt->execute([$user_id]);
             $userData = $uStmt->fetch();
             $targetUser = $userData['username'] ?? 'User';
 
             $permCount = 0;
-            $countKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'edit', 'customers'];
+            $countKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'edit', 'customers', 'database'];
             foreach ($countKeys as $pKey) {
                 if (!empty($userData[$pKey])) {
                     $permCount++;
@@ -93,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
                 'users' => 'ສິດ ຈັດການຜູ້ນຳໃຊ້',
                 'permissions' => 'ສິດ ກຳນົດສິດ',
                 'setup' => 'ສິດ ຕັ້ງຄ່າລະບົບ & ຈັດການສາຂາ',
-                'edit' => 'ສິດ ແກ້ໄຂ & ລົບຂໍ້ມູນ'
+                'edit' => 'ສິດ ແກ້ໄຂ & ລົບຂໍ້ມູນ',
+                'database' => 'ສິດ ຈັດການຖານຂໍ້ມູນ'
             ];
             $perm_lao = $perm_names_lao[$perm] ?? $perm;
             $status_text = ($val === 1) ? 'ເປີດສິດ' : 'ປິດສິດ';
@@ -129,13 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
 
         // ແຜນຜັງຮູບແບບສິດ (Preset Template Mapping)
         $presets_map = [
-            'cashier'      => ['dashboard' => 0, 'sale' => 1, 'stock' => 0, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 1, 'role_name' => 'ພະນັກງານຂາຍ POS'],
-            'accountant'   => ['dashboard' => 1, 'sale' => 0, 'stock' => 0, 'report' => 1, 'accounting' => 1, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 0, 'role_name' => 'ຄົນຈັດການບັນຊີ'],
-            'stock_keeper' => ['dashboard' => 1, 'sale' => 0, 'stock' => 1, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 1, 'customers' => 0, 'role_name' => 'ພະນັກງານຄັງສິນຄ້າ'],
-            'auditor'      => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 1, 'role_name' => 'ຜູ້ກວດສອບບັນຊີ'],
-            'manager'      => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 1, 'users' => 1, 'edit' => 1, 'customers' => 1, 'permissions' => 1, 'role_name' => 'ຜູ້ບໍລິຫານ / ຈັດການທັງໝົດ'],
-            'all_on'       => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 1, 'users' => 1, 'edit' => 1, 'customers' => 1, 'permissions' => 1, 'role_name' => 'ເປີດທຸກສິດ'],
-            'all_off'      => ['dashboard' => 0, 'sale' => 0, 'stock' => 0, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 0, 'permissions' => 0, 'role_name' => 'ປິດທຸກສິດ']
+            'cashier'      => ['dashboard' => 0, 'sale' => 1, 'stock' => 0, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 1, 'database' => 0, 'role_name' => 'ພະນັກງານຂາຍ POS'],
+            'accountant'   => ['dashboard' => 1, 'sale' => 0, 'stock' => 0, 'report' => 1, 'accounting' => 1, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 0, 'database' => 0, 'role_name' => 'ຄົນຈັດການບັນຊີ'],
+            'stock_keeper' => ['dashboard' => 1, 'sale' => 0, 'stock' => 1, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 1, 'customers' => 0, 'database' => 0, 'role_name' => 'ພະນັກງານຄັງສິນຄ້າ'],
+            'auditor'      => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 1, 'database' => 0, 'role_name' => 'ຜູ້ກວດສອບບັນຊີ'],
+            'manager'      => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 1, 'users' => 1, 'edit' => 1, 'customers' => 1, 'permissions' => 1, 'database' => 1, 'role_name' => 'ຜູ້ບໍລິຫານ / ຈັດການທັງໝົດ'],
+            'all_on'       => ['dashboard' => 1, 'sale' => 1, 'stock' => 1, 'report' => 1, 'accounting' => 1, 'setup' => 1, 'users' => 1, 'edit' => 1, 'customers' => 1, 'permissions' => 1, 'database' => 1, 'role_name' => 'ເປີດທຸກສິດ'],
+            'all_off'      => ['dashboard' => 0, 'sale' => 0, 'stock' => 0, 'report' => 0, 'accounting' => 0, 'setup' => 0, 'users' => 0, 'edit' => 0, 'customers' => 0, 'permissions' => 0, 'database' => 0, 'role_name' => 'ປິດທຸກສິດ']
         ];
 
         if (!isset($presets_map[$preset])) {
@@ -151,15 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
 
         $p = $presets_map[$preset];
         try {
-            $stmt = $pdo->prepare("UPDATE tbuser SET dashboard = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, permissions = ?, edit = ?, customers = ? WHERE Id = ?");
-            $stmt->execute([$p['dashboard'] ?? 0, $p['sale'] ?? 0, $p['stock'] ?? 0, $p['report'] ?? 0, $p['accounting'] ?? 0, $p['setup'] ?? 0, $p['users'] ?? 0, $p['permissions'] ?? 0, $p['edit'] ?? 0, $p['customers'] ?? 0, $user_id]);
+            $stmt = $pdo->prepare("UPDATE tbuser SET dashboard = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, permissions = ?, edit = ?, customers = ?, database = ? WHERE Id = ?");
+            $stmt->execute([$p['dashboard'] ?? 0, $p['sale'] ?? 0, $p['stock'] ?? 0, $p['report'] ?? 0, $p['accounting'] ?? 0, $p['setup'] ?? 0, $p['users'] ?? 0, $p['permissions'] ?? 0, $p['edit'] ?? 0, $p['customers'] ?? 0, $p['database'] ?? 0, $user_id]);
 
             $uStmt = $pdo->prepare("SELECT username FROM tbuser WHERE Id = ?");
             $uStmt->execute([$user_id]);
             $targetUser = $uStmt->fetchColumn();
 
             $permCount = 0;
-            $allKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers'];
+            $allKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'database'];
             foreach ($allKeys as $pk) {
                 if (!empty($p[$pk])) {
                     $permCount++;
@@ -183,7 +184,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
                     'users' => $p['users'] ?? 0,
                     'permissions' => $p['permissions'] ?? 0,
                     'edit' => $p['edit'] ?? 0,
-                    'customers' => $p['customers'] ?? 0
+                    'customers' => $p['customers'] ?? 0,
+                    'database' => $p['database'] ?? 0
                 ]
             ]);
         } catch (Exception $e) {

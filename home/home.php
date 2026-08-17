@@ -409,7 +409,7 @@ require_once __DIR__ . '/../layouts/header.php';
           <span class="badge badge-light border text-danger font-weight-bold px-2.5 py-1">Top 10</span>
         </div>
         <div class="card-body p-3">
-          <div style="position: relative; height: 300px; width: 100%;">
+          <div style="position: relative; min-height: 360px; height: 360px; width: 100%;">
             <canvas id="topSellersChart"></canvas>
           </div>
         </div>
@@ -469,6 +469,37 @@ $(document).ready(function() {
     Chart.defaults.font = Chart.defaults.font || {};
     Chart.defaults.font.family = "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif";
   } catch(e) {}
+
+  // Function to format long labels into multi-line arrays
+  function formatChartLabel(str, maxLen) {
+    maxLen = maxLen || 16;
+    if (!str) return '';
+    if (typeof str !== 'string') return str;
+    if (str.length <= maxLen) return str;
+    
+    if (str.indexOf(' ') !== -1) {
+      var words = str.split(' ');
+      var lines = [];
+      var currentLine = '';
+      for (var i = 0; i < words.length; i++) {
+        var w = words[i];
+        if ((currentLine ? currentLine + ' ' + w : w).length <= maxLen) {
+          currentLine = currentLine ? currentLine + ' ' + w : w;
+        } else {
+          if (currentLine) lines.push(currentLine);
+          currentLine = w;
+        }
+      }
+      if (currentLine) lines.push(currentLine);
+      if (lines.length > 1) return lines;
+    }
+    
+    var chunks = [];
+    for (var i = 0; i < str.length; i += maxLen) {
+      chunks.push(str.substring(i, i + maxLen));
+    }
+    return chunks;
+  }
 
   // Data variables from PHP
   var monthLabels   = ['ມ.ກ', 'ກ.ພ', 'ມີ.ນາ', 'ເມ.ສາ', 'ພຶ.ພາ', 'ມິ.ຖຸ', 'ກໍ.ກົດ', 'ສ.ຫ', 'ກ.ຍ', 'ຕ.ລ', 'ພ.ຈ', 'ທ.ວ'];
@@ -621,10 +652,14 @@ $(document).ready(function() {
   // ===== 4. Top 10 Best Sellers Chart =====
   var ctxTop = document.getElementById('topSellersChart');
   if (ctxTop) {
+    var formattedTop10Names = top10Names.map(function(name) {
+      return formatChartLabel(name, 16);
+    });
+
     new Chart(ctxTop, {
       type: 'bar',
       data: {
-        labels: top10Names,
+        labels: formattedTop10Names,
         datasets: [{
           label: 'ຈຳນວນຂາຍ',
           backgroundColor: '#dc2626',
@@ -637,12 +672,43 @@ $(document).ready(function() {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 5,
+            right: 15,
+            top: 5,
+            bottom: 5
+          }
+        },
         plugins: {
-          legend: { display: false }
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: function(tooltipItems) {
+                if (!tooltipItems.length) return '';
+                var idx = tooltipItems[0].dataIndex;
+                return top10Names[idx] || '';
+              }
+            }
+          }
         },
         scales: {
           x: {
-            beginAtZero: true
+            beginAtZero: true,
+            ticks: {
+              font: {
+                family: "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif"
+              }
+            }
+          },
+          y: {
+            ticks: {
+              autoSkip: false,
+              font: {
+                family: "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif",
+                size: 11
+              }
+            }
           }
         }
       }

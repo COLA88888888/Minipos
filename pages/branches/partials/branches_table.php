@@ -12,43 +12,43 @@ if (!defined('MINIPOS_APP')) {
   <div class="card-body p-0 table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="bg-light">
-        <tr>
+        <tr style="white-space: nowrap;">
           <th class="text-center" style="width: 60px;">ID</th>
-          <th>ລະຫັດສາຂາ</th>
-          <th>ຊື່ສາຂາ</th>
-          <th>ປະເພດ</th>
-          <th>ເບີໂທ</th>
-          <th>ທີ່ຢູ່</th>
-          <th class="text-center">ສະຖານະ</th>
-          <th class="text-center" style="width: 140px;">ຈັດການ</th>
+          <th style="white-space: nowrap;">ລະຫັດສາຂາ</th>
+          <th style="white-space: nowrap;">ຊື່ສາຂາ</th>
+          <th style="white-space: nowrap;">ປະເພດ</th>
+          <th style="white-space: nowrap;">ເບີໂທ</th>
+          <th style="white-space: nowrap;">ທີ່ຢູ່</th>
+          <th class="text-center" style="white-space: nowrap;">ສະຖານະ</th>
+          <th class="text-center" style="width: 140px; white-space: nowrap;">ຈັດການ</th>
         </tr>
       </thead>
       <tbody>
         <?php if (!empty($all_branches)): ?>
           <?php foreach ($all_branches as $b): ?>
-            <tr>
-              <td class="text-center font-weight-bold"><?php echo $b['store_id']; ?></td>
-              <td><span class="badge badge-secondary px-2 py-1"><?php echo htmlspecialchars($b['store_code']); ?></span></td>
-              <td class="font-weight-bold text-dark">
+            <tr style="white-space: nowrap;">
+              <td class="text-center font-weight-bold" style="white-space: nowrap;"><?php echo $b['store_id']; ?></td>
+              <td style="white-space: nowrap;"><span class="badge badge-secondary px-2 py-1"><?php echo htmlspecialchars($b['store_code']); ?></span></td>
+              <td class="font-weight-bold text-dark" style="white-space: nowrap;">
                 <?php echo htmlspecialchars($b['store_name']); ?>
               </td>
-              <td>
+              <td style="white-space: nowrap;">
                 <?php if (!empty($b['is_main'])): ?>
                   <span class="badge badge-primary px-2 py-1">ສາຂາໃຫຍ່</span>
                 <?php else: ?>
                   <span class="badge badge-info px-2 py-1">ສາຂາຍ່ອຍ</span>
                 <?php endif; ?>
               </td>
-              <td><?php echo htmlspecialchars($b['tel'] ?? '-'); ?></td>
-              <td><small class="text-muted"><?php echo htmlspecialchars($b['address'] ?? '-'); ?></small></td>
-              <td class="text-center">
+              <td style="white-space: nowrap;"><?php echo htmlspecialchars($b['tel'] ?? '-'); ?></td>
+              <td style="white-space: nowrap;"><small class="text-muted"><?php echo htmlspecialchars($b['address'] ?? '-'); ?></small></td>
+              <td class="text-center" style="white-space: nowrap;">
                 <?php if ($b['status'] === 'active'): ?>
                   <span class="badge badge-success px-2 py-1">ເປີດໃຊ້ງານ</span>
                 <?php else: ?>
                   <span class="badge badge-danger px-2 py-1">ປິດໃຊ້ງານ</span>
                 <?php endif; ?>
               </td>
-              <td class="text-center">
+              <td class="text-center" style="white-space: nowrap;">
                 <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold rounded-circle mr-1" 
                         onclick='openEditBranchModal(<?php echo json_encode($b); ?>)' title="ແກ້ໄຂ">
                   <i class="fas fa-edit"></i>

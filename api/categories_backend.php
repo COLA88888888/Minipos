@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../config/db.php';
 
 // Check permissions
 if (empty($_SESSION['user_id']) || (!hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {

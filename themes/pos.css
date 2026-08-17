@@ -98,8 +98,9 @@ html, body {
         overflow-y: auto !important;
         height: auto !important;
         min-height: 100% !important;
-        max-width: 100% !important;
         width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
         -webkit-overflow-scrolling: touch !important;
     }
 
@@ -109,11 +110,22 @@ html, body {
         min-height: 100% !important;
         overflow-x: hidden !important;
         overflow-y: visible !important;
-        padding: 8px !important;
-        gap: 12px !important;
+        padding: 6px !important;
+        gap: 8px !important;
         max-width: 100% !important;
         width: 100% !important;
         box-sizing: border-box !important;
+    }
+
+    .pos-mobile-nav {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1040 !important;
+        background: #ffffff !important;
+        margin: -6px -6px 6px -6px !important;
+        padding: 8px 10px !important;
+        border-radius: 0 0 10px 10px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     }
 
     .pos-products {
@@ -128,27 +140,10 @@ html, body {
 
     /* ບໍ່ສະແດງ Scrollbar ຈົນກວ່າສິນຄ້າຈະມີ 3 ແຖວກ້າວໄປ (3 Rows / 6+ items) */
     #productGrid {
-        max-height: 520px !important;
-        overflow-y: auto !important;
+        max-height: none !important;
+        overflow-y: visible !important;
         overflow-x: hidden !important;
         padding-right: 4px !important;
-        -webkit-overflow-scrolling: touch !important;
-        scrollbar-width: thin !important;
-        scrollbar-color: #cbd5e1 transparent !important;
-    }
-
-    #productGrid::-webkit-scrollbar {
-        width: 5px !important;
-        display: block !important;
-    }
-
-    #productGrid::-webkit-scrollbar-track {
-        background: transparent !important;
-    }
-
-    #productGrid::-webkit-scrollbar-thumb {
-        background: #cbd5e1 !important;
-        border-radius: 10px !important;
     }
 
     .pos-cart {
@@ -157,7 +152,7 @@ html, body {
         max-width: 100% !important;
         height: auto !important;
         overflow: visible !important;
-        margin-top: 10px !important;
+        margin-top: 0 !important;
         box-sizing: border-box !important;
         display: none !important;
         flex-direction: column !important;
@@ -165,6 +160,8 @@ html, body {
 
     .pos-cart.mobile-active {
         display: flex !important;
+        height: auto !important;
+        margin-top: 0 !important;
     }
 
     .pos-products.mobile-hidden {
@@ -173,17 +170,14 @@ html, body {
 
     /* cart-items scroll ໄດ້ສະເພາະລາຍການສິນຄ້າໃນ mobile (Headers & Footer Fixed) */
     .cart-items {
-        flex: 1 1 auto !important;
         height: auto !important;
-        max-height: 380px !important;
-        min-height: 120px !important;
+        max-height: calc(100vh - 360px) !important;
+        min-height: 100px !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
-        padding: 8px 6px !important;
+        padding: 6px 4px !important;
         -webkit-overflow-scrolling: touch !important;
         touch-action: pan-y !important;
-        scrollbar-width: thin !important;
-        scrollbar-color: #2563eb #eff6ff !important;
         width: 100% !important;
         box-sizing: border-box !important;
     }
@@ -330,17 +324,48 @@ html, body {
         font-size: 0.92rem !important;
     }
 
-    .pos-cart .bg-primary h5 {
-        font-size: 0.96rem !important;
+    .pos-customer-bar {
+        padding: 6px 8px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .pos-cart .bg-primary {
+        padding: 8px 10px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .pos-active-bills-bar {
+        padding: 4px 8px !important;
+        flex-shrink: 0 !important;
     }
 
     .cart-footer {
-        padding: 10px !important;
+        padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 10px)) 6px !important;
+        flex-shrink: 0 !important;
+        background: #ffffff !important;
+        border-top: 1.5px solid #cbd5e1 !important;
+        position: relative !important;
+        z-index: 100 !important;
+        margin-bottom: 0 !important;
     }
 
     .cart-footer .btn {
-        font-size: 0.82rem !important;
-        padding: 8px 4px !important;
+        font-size: 0.78rem !important;
+        padding: 6px 1px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    
+    .cart-footer .btn span,
+    .cart-footer .btn i {
+        white-space: nowrap !important;
+    }
+    
+    .cart-footer .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        flex-wrap: nowrap !important;
     }
 }
 

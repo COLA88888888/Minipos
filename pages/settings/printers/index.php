@@ -113,13 +113,13 @@ require_once __DIR__ . '/../../../layouts/header.php';
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead style="background: #f8fafc; color: #475569; font-size: 0.82rem;" class="font-weight-bold">
-          <tr>
-            <th class="text-center" style="width: 70px;">ລ/ດ</th>
-            <th>ຊື່ເຄື່ອງພິມ</th>
-            <th>ປະເພດການເຊື່ອມຕໍ່</th>
-            <th>IP Address</th>
-            <th class="text-center">ສະຖານະ</th>
-            <th class="text-center" style="width: 140px;">ຈັດການ</th>
+          <tr style="white-space: nowrap;">
+            <th class="text-center" style="width: 70px; white-space: nowrap;">ລ/ດ</th>
+            <th style="white-space: nowrap;">ຊື່ເຄື່ອງພິມ</th>
+            <th style="white-space: nowrap;">ປະເພດການເຊື່ອມຕໍ່</th>
+            <th style="white-space: nowrap;">IP Address</th>
+            <th class="text-center" style="white-space: nowrap;">ສະຖານະ</th>
+            <th class="text-center" style="width: 140px; white-space: nowrap;">ຈັດການ</th>
           </tr>
         </thead>
         <tbody>
@@ -127,15 +127,15 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-print fa-2x mb-2 d-block text-secondary opacity-50"></i>ບໍ່ມີລາຍການເຄື່ອງພິມ</td></tr>
           <?php else: ?>
             <?php $i = 1; foreach ($printers as $pr): ?>
-              <tr>
-                <td class="text-center font-weight-bold text-muted"><?php echo $i++; ?></td>
-                <td class="font-weight-bold text-dark"><?php echo htmlspecialchars($pr['name']); ?></td>
-                <td>
-                  <span class="badge <?php echo $pr['type'] === 'ip' ? 'badge-primary' : 'badge-secondary'; ?> px-2.5 py-1" style="font-size: 0.78rem;">
+              <tr style="white-space: nowrap;">
+                <td class="text-center font-weight-bold text-muted" style="white-space: nowrap;"><?php echo $i++; ?></td>
+                <td class="font-weight-bold text-dark text-nowrap" style="white-space: nowrap;"><?php echo htmlspecialchars($pr['name']); ?></td>
+                <td style="white-space: nowrap;">
+                  <span class="badge <?php echo $pr['type'] === 'ip' ? 'badge-primary' : 'badge-secondary'; ?> px-2.5 py-1" style="font-size: 0.78rem; white-space: nowrap;">
                     <?php echo $pr['type'] === 'ip' ? '<i class="fas fa-network-wired mr-1"></i> Network IP' : '<i class="fas fa-desktop mr-1"></i> Browser / USB'; ?>
                   </span>
                 </td>
-                <td class="font-weight-bold" style="font-family: monospace; color: #2563eb; font-size: 0.9rem;">
+                <td class="font-weight-bold" style="font-family: monospace; color: #2563eb; font-size: 0.9rem; white-space: nowrap;">
                   <?php echo !empty($pr['ip_address']) ? htmlspecialchars($pr['ip_address']) : '<span class="text-muted font-weight-normal">-</span>'; ?>
                 </td>
                 <td class="text-center" style="white-space: nowrap;">
@@ -150,7 +150,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
                     </button>
                   </form>
                 </td>
-                <td class="text-center">
+                <td class="text-center" style="white-space: nowrap;">
                   <div class="btn-group btn-group-sm" role="group">
                     <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ"
                             onclick="editPrinter(<?php echo $pr['id']; ?>, '<?php echo htmlspecialchars(addslashes($pr['name'])); ?>', '<?php echo htmlspecialchars(addslashes($pr['type'])); ?>', '<?php echo htmlspecialchars(addslashes($pr['ip_address'] ?? '')); ?>')">
@@ -248,7 +248,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
           <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4">ບັນທຶກການແກ້ໄຂ</button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4">ອັບເດດ</button>
         </div>
       </form>
     </div>

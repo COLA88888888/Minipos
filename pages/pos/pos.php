@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
 <div class="pos-wrapper">
   <!-- Mobile Navigation / Tab Switcher (Visible ONLY on Mobile ≤ 991px) -->
-  <div class="pos-mobile-nav border-bottom bg-white shadow-sm mb-2 p-1.5 d-lg-none" style="position: sticky; top: 0; z-index: 1000; border-radius: 10px;">
+  <div class="pos-mobile-nav border-bottom bg-white d-lg-none">
     <div class="d-flex" style="gap: 6px;">
       <button type="button" class="btn btn-sm flex-fill font-weight-bold py-2 btn-primary active" id="mobileTabProductsBtn" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.88rem; transition: all 0.2s;">
         <i class="fas fa-boxes mr-1.5"></i> ເລືອກສິນຄ້າ

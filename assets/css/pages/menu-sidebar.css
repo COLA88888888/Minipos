@@ -105,14 +105,17 @@ html, body { overflow: hidden !important; height: 100% !important; }
     overflow: auto;
 }
 
-/* === Navbar (Spacious Blue Gradient Header) === */
+/* === Navbar (Spacious Blue Header) === */
 .main-header.navbar {
-    background: linear-gradient(135deg, rgb(2, 99, 255) 0%, rgb(2, 99, 255) 100%) !important;
+    background: rgb(2, 99, 255) !important;
+    background-color: rgb(2, 99, 255) !important;
     min-height: 64px !important;
     height: 64px !important;
     padding: 0 20px !important;
-    box-shadow: 0 4px 14px rgba(2, 99, 255, 0.18) !important;
+    box-shadow: none !important;
+    border: none !important;
     border-bottom: none !important;
+    border-right: none !important;
     display: flex !important;
     align-items: center !important;
 }
@@ -187,18 +190,24 @@ html, body { overflow: hidden !important; height: 100% !important; }
         font-size: 0.7rem !important;
         padding: 0.25em 0.5em !important;
     }
-    .brand-text { font-size: 0.9rem !important; font-weight: 700; }
-    .nav-sidebar .nav-link p { font-size: 0.85rem !important; }
-    .user-panel .info a { font-size: 0.8rem !important; }
+    .brand-text { font-size: 1.15rem !important; font-weight: 700; }
+    .nav-sidebar .nav-link p { font-size: 1.02rem !important; }
+    .user-panel .info span, .user-panel .info a { font-size: 0.98rem !important; }
 }
 
-/* === Sidebar (Blue Gradient) === */
+/* === Sidebar (Seamless Blue Header with Vertical Divider) === */
 .main-sidebar {
     background: rgb(2, 99, 255) !important;
+    background-color: rgb(2, 99, 255) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: none !important;
 }
 .main-sidebar .brand-link {
     background: rgb(2, 99, 255) !important;
-    border-bottom: 1px solid rgba(255,255,255,0.12) !important;
+    background-color: rgb(2, 99, 255) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: none !important;
     height: 64px !important;
     min-height: 64px !important;
     max-height: 64px !important;
@@ -227,12 +236,15 @@ html, body { overflow: hidden !important; height: 100% !important; }
     color: #ffffff !important;
     box-shadow: 0 3px 8px rgba(93,173,226,0.4) !important;
 }
+
 .nav-sidebar .has-treeview > .nav-link {
     background: transparent !important;
     box-shadow: none !important;
 }
-.nav-sidebar .has-treeview > .nav-link:hover {
+.nav-sidebar .has-treeview > .nav-link:hover,
+.nav-sidebar .has-treeview.menu-open > .nav-link {
     background-color: rgba(255,255,255,0.15) !important;
+    color: #ffffff !important;
 }
 .main-sidebar .nav-icon { color: rgba(255,255,255,0.7) !important; }
 .main-sidebar .nav-link:hover .nav-icon,
@@ -433,7 +445,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
         transform: none !important;
     }
 
-    /* 4. ດັອບດາວເມນູ (Dropdown Treeview) ຕອນເຊື່ອງ Sidebar */
+    /* 4. ດັອບດາວເມນູ (Dropdown Treeview) ຕອນເຊື່ອງ Sidebar - Handled smoothly by JS */
     .sidebar-collapse .main-sidebar .nav-sidebar .has-treeview > .nav-treeview {
         display: none;
         background: rgba(0, 0, 0, 0.16) !important;
@@ -443,11 +455,6 @@ html, body { overflow: hidden !important; height: 100% !important; }
         padding: 6px 0 !important;
         border: none !important;
         box-shadow: inset 0 1px 3px rgba(0,0,0,0.15) !important;
-    }
-
-    .sidebar-collapse .main-sidebar .nav-sidebar .has-treeview.menu-open > .nav-treeview,
-    .sidebar-collapse .main-sidebar .nav-sidebar .has-treeview.menu-is-opening > .nav-treeview {
-        display: block;
     }
 
     .sidebar-collapse .main-sidebar .nav-sidebar .nav-treeview .nav-item {
@@ -539,9 +546,26 @@ html, body { overflow: hidden !important; height: 100% !important; }
     }
 
     .sidebar-open .main-sidebar .nav-sidebar > .nav-item > .nav-link .nav-icon,
-    .sidebar-open.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link .nav-icon {
-        margin-right: 10px !important;
-        font-size: 1.1rem !important;
+    .sidebar-open.sidebar-collapse .main-sidebar .nav-sidebar > .nav-item > .nav-link .nav-icon,
+    .main-sidebar .nav-sidebar .nav-link .nav-icon {
+        margin-right: 12px !important;
+        font-size: 1.25rem !important;
+    }
+
+    .main-sidebar .nav-sidebar .nav-link p {
+        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+    }
+    .main-sidebar .brand-text {
+        font-size: 1.18rem !important;
+        font-weight: 700 !important;
+    }
+    .main-sidebar .user-panel .info span,
+    .main-sidebar .user-panel .info a {
+        font-size: 1.02rem !important;
+    }
+    .main-sidebar .nav-header {
+        font-size: 0.85rem !important;
     }
 }
 
@@ -596,12 +620,13 @@ html, body { overflow: hidden !important; height: 100% !important; }
         z-index: 999;
         pointer-events: none;
         will-change: width;
-        transition: width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     body.sidebar-collapse .wrapper::before,
     html.sidebar-collapse .wrapper::before {
         width: 4.6rem !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     /* Disable transitions during page load refresh */
@@ -612,17 +637,17 @@ html, body { overflow: hidden !important; height: 100% !important; }
         transition: none !important;
     }
 
-    /* Synchronized Smooth 0.25s GPU Transition */
+    /* Synchronized Fast Smooth 0.35s GPU Transition */
     .main-sidebar {
         will-change: width;
-        transition: width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .main-header,
     .content-wrapper,
     .main-footer {
         will-change: margin-left, width;
-        transition: margin-left 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), width 0.25s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     /* When Collapsed (Mini Sidebar) - Hard-lock 4.6rem even on :hover */
@@ -643,6 +668,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
     html.sidebar-collapse .main-footer {
         margin-left: 4.6rem !important;
         width: calc(100% - 4.6rem) !important;
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     .sidebar-collapse .main-sidebar,
@@ -659,6 +685,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
         width: 4.6rem !important;
         min-width: 4.6rem !important;
         max-width: 4.6rem !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     /* When Expanded (Default Full Sidebar) */
@@ -670,16 +697,18 @@ html, body { overflow: hidden !important; height: 100% !important; }
     html:not(.sidebar-collapse) .main-footer {
         margin-left: 250px !important;
         width: calc(100% - 250px) !important;
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     body:not(.sidebar-collapse) .main-sidebar,
     html:not(.sidebar-collapse) .main-sidebar {
         width: 250px !important;
         max-width: 250px !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 }
 
-/* ===== TEXT STABILITY LOCKDOWN (ໜັງສືຫ້າມຂະຫຍັບ / ຫ້າມເດັ້ງ ຕອນ ຫຍໍ້/ຂະຫຍາຍ) ===== */
+/* ===== TEXT STABILITY LOCKDOWN & FAST FADE FOR BOTH EXPAND AND COLLAPSE ===== */
 .main-sidebar .brand-text,
 .main-sidebar .user-panel .info,
 .main-sidebar .nav-sidebar p,
@@ -687,7 +716,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: clip !important;
-    transition: opacity 0.15s ease-in-out !important;
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 @media (min-width: 768px) {
@@ -698,7 +727,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
         opacity: 0 !important;
         visibility: hidden !important;
         pointer-events: none !important;
-        transition: opacity 0.12s ease-in-out !important;
+        transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
     body:not(.sidebar-collapse) .main-sidebar .brand-text,
@@ -707,7 +736,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
     body:not(.sidebar-collapse) .main-sidebar .nav-sidebar .nav-header {
         opacity: 1 !important;
         visibility: visible !important;
-        transition: opacity 0.2s ease-in-out 0.1s !important;
+        transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 }
 
@@ -749,23 +778,69 @@ html, body { overflow: hidden !important; height: 100% !important; }
     }
 }
 
-/* Keep the compact sidebar fixed when the pointer enters it. */
+/* ===== COMPLETE HOVER LOCKDOWN FOR COLLAPSED SIDEBAR (DISABLED HOVER EXPANSION) ===== */
 @media (min-width: 768px) {
+    .sidebar-collapse .main-sidebar,
+    .sidebar-collapse .main-sidebar:hover,
+    .sidebar-collapse .main-sidebar:focus,
     body.sidebar-collapse .main-sidebar,
     body.sidebar-collapse .main-sidebar:hover,
-    body.sidebar-collapse .main-sidebar:focus,
+    body.sidebar-collapse.sidebar-mini .main-sidebar,
+    body.sidebar-collapse.sidebar-mini .main-sidebar:hover,
+    body.sidebar-collapse.sidebar-mini-md .main-sidebar,
+    body.sidebar-collapse.sidebar-mini-md .main-sidebar:hover,
     html.sidebar-collapse .main-sidebar,
-    html.sidebar-collapse .main-sidebar:hover,
-    html.sidebar-collapse .main-sidebar:focus {
+    html.sidebar-collapse .main-sidebar:hover {
         width: 4.6rem !important;
         min-width: 4.6rem !important;
         max-width: 4.6rem !important;
-        transition: none !important;
         transform: none !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    body.sidebar-collapse .main-sidebar .nav-link:hover,
-    body.sidebar-collapse .main-sidebar .nav-icon:hover {
-        transform: none !important;
+    .sidebar-collapse .main-sidebar .brand-link,
+    .sidebar-collapse .main-sidebar:hover .brand-link,
+    body.sidebar-collapse .main-sidebar .brand-link,
+    body.sidebar-collapse .main-sidebar:hover .brand-link {
+        width: 4.6rem !important;
+        min-width: 4.6rem !important;
+        max-width: 4.6rem !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .sidebar-collapse .main-sidebar:hover .brand-text,
+    .sidebar-collapse .main-sidebar:hover .user-panel .info,
+    .sidebar-collapse .main-sidebar:hover .nav-sidebar p,
+    .sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-header,
+    body.sidebar-collapse .main-sidebar:hover .brand-text,
+    body.sidebar-collapse .main-sidebar:hover .user-panel .info,
+    body.sidebar-collapse .main-sidebar:hover .nav-sidebar p,
+    body.sidebar-collapse .main-sidebar:hover .nav-sidebar .nav-header {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        pointer-events: none !important;
+    }
+
+    .sidebar-collapse .main-header,
+    .sidebar-collapse .main-header:hover,
+    .sidebar-collapse .content-wrapper,
+    .sidebar-collapse .content-wrapper:hover,
+    body.sidebar-collapse .main-header,
+    body.sidebar-collapse .main-header:hover,
+    body.sidebar-collapse .content-wrapper,
+    body.sidebar-collapse .content-wrapper:hover {
+        margin-left: 4.6rem !important;
+        width: calc(100% - 4.6rem) !important;
+        transition: margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    body.sidebar-collapse .main-sidebar .brand-link .brand-logo-wrap,
+    .sidebar-collapse .main-sidebar .brand-link .brand-logo-wrap {
+        margin: 0 auto !important;
     }
 }

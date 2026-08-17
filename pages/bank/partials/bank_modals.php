@@ -58,7 +58,7 @@ if (!defined('MINIPOS_APP')) {
             <label class="font-weight-bold">ສະຖານະ:</label>
             <select name="is_active" id="form_is_active" class="form-control" style="border-radius: 8px;">
               <option value="1">ເປີດໃຊ້ງານ</option>
-              <option value="0">ປິດຕິດ</option>
+              <option value="0">ປິດໃຊ້ງານ</option>
             </select>
           </div>
 

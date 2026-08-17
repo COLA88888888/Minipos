@@ -23,7 +23,7 @@
           </div>
           <div class="col-12 mt-1 border-top pt-1 text-muted d-flex justify-content-between flex-wrap" style="gap: 4px;">
             <div>ລູກຄ້າ: <strong id="modal_customer" class="text-dark"></strong></div>
-            <div id="modal_bank_wrapper" style="display:none;"><i class="fas fa-university text-info mr-1"></i> ທະນາຄານ: <strong id="modal_bank_name" class="text-primary font-weight-bold"></strong></div>
+            <div id="modal_bank_wrapper" style="display:none;"><i class="fas fa-university text-info mr-1"></i> ໂອນຜ່ານທະນາຄານ: <strong id="modal_bank_name" class="text-primary font-weight-bold"></strong></div>
           </div>
         </div>
 

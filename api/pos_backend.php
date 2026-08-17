@@ -274,6 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             'pay_mode'       => $pay_mode,
             'change'         => $change,
             'payment_type'   => $payment_type,
+            'bank_account_id'=> $bank_account_id,
+            'bank_name'      => $bank_name,
             'details'        => $details_summary,
             'updated_stocks' => $updated_stocks
         ]);

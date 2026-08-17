@@ -164,16 +164,16 @@ require_once __DIR__ . '/../../../layouts/header.php';
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead style="background: #f8fafc; color: #475569; font-size: 0.82rem;" class="font-weight-bold">
-          <tr>
-            <th class="text-center" style="width: 55px;">ລຳດັບ</th>
-            <th>ຊື່ໂປຣ</th>
-            <th>ປະເພດ</th>
-            <th class="text-right">ສ່ວນຫຼຸດ</th>
-            <th class="text-center">ວັນທີ</th>
-            <th class="text-center">ເງື່ອນໄຂ</th>
-            <th>ສິນຄ້າ/ປະເພດ</th>
-            <th class="text-center" style="width: 80px;">ສະຖານະ</th>
-            <th class="text-center" style="width: 100px;">ຈັດການ</th>
+          <tr style="white-space: nowrap;">
+            <th class="text-center" style="width: 55px; white-space: nowrap;">ລຳດັບ</th>
+            <th style="white-space: nowrap;">ຊື່ໂປຣ</th>
+            <th style="white-space: nowrap;">ປະເພດ</th>
+            <th class="text-right" style="white-space: nowrap;">ສ່ວນຫຼຸດ</th>
+            <th class="text-center" style="white-space: nowrap;">ວັນທີ</th>
+            <th class="text-center" style="white-space: nowrap;">ເງື່ອນໄຂ</th>
+            <th style="white-space: nowrap;">ສິນຄ້າ/ປະເພດ</th>
+            <th class="text-center" style="width: 80px; white-space: nowrap;">ສະຖານະ</th>
+            <th class="text-center" style="width: 100px; white-space: nowrap;">ຈັດການ</th>
           </tr>
         </thead>
         <tbody>
@@ -181,16 +181,16 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-tags fa-2x mb-2 d-block text-secondary opacity-50"></i>ບໍ່ມີລາຍການໂປຣໂມຊັ່ນ</td></tr>
           <?php else: ?>
             <?php $i = 1; foreach ($promos as $p): ?>
-              <tr>
+              <tr style="white-space: nowrap;">
                 <!-- 1. ລຳດັບ -->
-                <td class="text-center font-weight-bold text-muted"><?php echo $i++; ?></td>
+                <td class="text-center font-weight-bold text-muted" style="white-space: nowrap;"><?php echo $i++; ?></td>
                 
                 <!-- 2. ຊື່ໂປຣ -->
-                <td class="font-weight-bold text-dark"><?php echo htmlspecialchars($p['promo_name']); ?></td>
+                <td class="font-weight-bold text-dark text-nowrap" style="white-space: nowrap;"><?php echo htmlspecialchars($p['promo_name']); ?></td>
                 
                 <!-- 3. ປະເພດ -->
-                <td>
-                  <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 0.76rem;">
+                <td style="white-space: nowrap;">
+                  <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 0.76rem; white-space: nowrap;">
                     <?php 
                       switch ($p['promo_type'] ?? 'discount') {
                         case 'qty_discount': echo 'ສ່ວນຫຼຸດຕາມຈຳນວນ'; break;
@@ -302,21 +302,21 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <div class="col-md-5 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ປະເພດ:</label>
               <select name="promo_type" id="add_promo_type" class="form-control" style="height: 42px;" onchange="togglePromoType(this.value, 'add')">
-                <option value="discount">ສ່ວນຫຼຸດທົ່ວໄປ (Discount)</option>
-                <option value="qty_discount">ສ່ວນຫຼຸດຕາມຈຳນວນຊື້ (Quantity)</option>
-                <option value="amount_discount">ສ່ວນຫຼຸດຕາມຍອດຊື້ (Amount)</option>
-                <option value="buy_x_get_y">ຊື້ X ແຖມ Y / ແຖມສິນຄ້າ (Free Gift)</option>
+                <option value="discount">ສ່ວນຫຼຸດທົ່ວໄປ</option>
+                <option value="qty_discount">ສ່ວນຫຼຸດຕາມຈຳນວນຊື້</option>
+                <option value="amount_discount">ສ່ວນຫຼຸດຕາມຍອດຊື້</option>
+                <option value="buy_x_get_y">ຊື້ X ແຖມ Y / ແຖມສິນຄ້າ</option>
               </select>
             </div>
           </div>
 
           <div class="row" id="add_gift_section" style="display: none;">
             <div class="col-md-8 mb-3">
-              <label class="font-weight-bold text-success small mb-1"><i class="fas fa-gift mr-1"></i> ຊື່ສິນຄ້າທີ່ແຖມ (Free Gift Item):</label>
+              <label class="font-weight-bold text-success small mb-1"><i class="fas fa-gift mr-1"></i> ຊື່ສິນຄ້າທີ່ແຖມ:</label>
               <input type="text" name="gift_product_name" id="add_gift_product_name" class="form-control border-success" list="product_datalist" placeholder="ເຊັ່ນ: ນ້ຳກ້ອນ, ເຄື່ອງດື່ມ..." style="height: 42px;">
             </div>
             <div class="col-md-4 mb-3">
-              <label class="font-weight-bold text-success small mb-1">ຈຳນວນແຖມ (ຊິ້ນ):</label>
+              <label class="font-weight-bold text-success small mb-1">ຈຳນວນແຖມ:</label>
               <input type="number" name="gift_qty" id="add_gift_qty" class="form-control text-right border-success" value="1" min="1" style="height: 42px;">
             </div>
           </div>
@@ -348,11 +348,11 @@ require_once __DIR__ . '/../../../layouts/header.php';
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ຈຳນວນ ຂັ້ນຕ່ຳ (ຊິ້ນ):</label>
+              <label class="font-weight-bold text-dark small mb-1">ຈຳນວນ ຂັ້ນຕ່ຳ:</label>
               <input type="text" inputmode="numeric" name="min_qty" class="form-control text-right" placeholder="0" value="0" style="height: 42px;" oninput="formatNumberInput(this)">
             </div>
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ຍອດເງິນຂັ້ນຕ່ຳ (₭):</label>
+              <label class="font-weight-bold text-dark small mb-1">ຍອດເງິນຂັ້ນຕ່ຳ:</label>
               <input type="text" inputmode="decimal" name="min_amount" class="form-control text-right" placeholder="0" value="0" style="height: 42px;" oninput="formatNumberInput(this)">
             </div>
           </div>
@@ -361,7 +361,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <div class="col-md-4 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ເປົ້າໝາຍໂປຣ:</label>
               <select name="target_type" id="add_target_type" class="form-control" style="height: 42px;" onchange="toggleTargetInput(this.value, 'add')">
-                <option value="all">ທຸກສິນຄ້າ (All Products)</option>
+                <option value="all">ທຸກສິນຄ້າ</option>
                 <option value="category">ສະເພາະ ໝວດໝູ່ສິນຄ້າ</option>
                 <option value="product">ສະເພາະ ສິນຄ້າ</option>
               </select>
@@ -379,14 +379,14 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <div class="form-group mb-0">
             <label class="font-weight-bold text-dark small mb-1">ສະຖານະ:</label>
             <select name="status" class="form-control" style="height: 42px;">
-              <option value="1">ເປີດໃຊ້ງານ (Active)</option>
-              <option value="0">ປິດໃຊ້ງານ (Inactive)</option>
+              <option value="1">ເປີດໃຊ້ງານ</option>
+              <option value="0">ປິດໃຊ້ງານ</option>
             </select>
           </div>
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
           <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4">ບັນທຶກໂປຣໂມຊັ່ນ</button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4">ບັນທຶກ</button>
         </div>
       </form>
     </div>
@@ -415,10 +415,10 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <div class="col-md-5 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ປະເພດ:</label>
               <select name="promo_type" id="edit_promo_type" class="form-control" style="height: 42px;" onchange="togglePromoType(this.value, 'edit')">
-                <option value="discount">ສ່ວນຫຼຸດທົ່ວໄປ (Discount)</option>
-                <option value="qty_discount">ສ່ວນຫຼຸດຕາມຈຳນວນຊື້ (Quantity)</option>
-                <option value="amount_discount">ສ່ວນຫຼຸດຕາມຍອດຊື້ (Amount)</option>
-                <option value="buy_x_get_y">ຊື້ X ແຖມ Y / ແຖມສິນຄ້າ (Free Gift)</option>
+                <option value="discount">ສ່ວນຫຼຸດທົ່ວໄປ</option>
+                <option value="qty_discount">ສ່ວນຫຼຸດຕາມຈຳນວນຊື້</option>
+                <option value="amount_discount">ສ່ວນຫຼຸດຕາມຍອດຊື້</option>
+                <option value="buy_x_get_y">ຊື້ X ແຖມ Y / ແຖມສິນຄ້າ</option>
               </select>
             </div>
           </div>

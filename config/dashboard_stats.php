@@ -51,11 +51,11 @@ function getDashboardQuickStats($conn)
     // 5. Total categories from categories table
     $stats['total_categories'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM categories');
     
-    // 6. Total imports count from tbreceive
-    $stats['total_imports'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM tbreceive');
+    // 6. Total imports count from imports
+    $stats['total_imports'] = (int) dashboardScalar($conn, 'SELECT COUNT(*) FROM imports');
     
-    // 7. Total imported value from tbreceive
-    $stats['import_value'] = (float) dashboardScalar($conn, 'SELECT SUM(receive_sumamount) FROM tbreceive');
+    // 7. Total imported value from imports
+    $stats['import_value'] = (float) dashboardScalar($conn, 'SELECT SUM(total_cost) FROM imports');
     
     // 8. VAT Collected
     $stats['vat_collected'] = 0.00;

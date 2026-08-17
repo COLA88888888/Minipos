@@ -119,11 +119,32 @@ button.btn-quick-cash:hover {
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15) !important;
 }
 
-/* ===== SIDEBAR SCROLLABLE - ເຊື່ອງ scrollbar ເມື່ອ content ຟິດ, ສະແດງເມື່ອ content ຍາວ ===== */
+/* ===== SIDEBAR SCROLLABLE (Vertical only, no horizontal scroll) ===== */
+@media (max-width: 991.98px) {
+    .main-sidebar {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+    }
+
+    .main-sidebar .sidebar {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        max-height: calc(100vh - 64px) !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+    }
+}
+
+.main-sidebar,
 .main-sidebar .sidebar {
-    overflow-y: auto !important;
     overflow-x: hidden !important;
-    height: calc(100vh - 70px) !important; /* ລົບຄວາມສູງ header/logo */
+}
+
+.main-sidebar .sidebar {
+    overflow-y: auto;
+    height: calc(100vh - 64px);
     scrollbar-width: thin;                  /* Firefox: ສະແດງ scrollbar ຜອມ */
     scrollbar-color: rgba(255,255,255,0.25) transparent;  /* Firefox: ສີ scrollbar */
 }

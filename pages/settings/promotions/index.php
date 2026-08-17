@@ -164,16 +164,16 @@ require_once __DIR__ . '/../../../layouts/header.php';
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead style="background: #f8fafc; color: #475569; font-size: 0.82rem;" class="font-weight-bold">
-          <tr>
-            <th class="text-center" style="width: 55px;">ລຳດັບ</th>
-            <th>ຊື່ໂປຣ</th>
-            <th>ປະເພດ</th>
-            <th class="text-right">ສ່ວນຫຼຸດ</th>
-            <th class="text-center">ວັນທີ</th>
-            <th class="text-center">ເງື່ອນໄຂ</th>
-            <th>ສິນຄ້າ/ປະເພດ</th>
-            <th class="text-center" style="width: 80px;">ສະຖານະ</th>
-            <th class="text-center" style="width: 100px;">ຈັດການ</th>
+          <tr style="white-space: nowrap;">
+            <th class="text-center" style="width: 55px; white-space: nowrap;">ລຳດັບ</th>
+            <th style="white-space: nowrap;">ຊື່ໂປຣ</th>
+            <th style="white-space: nowrap;">ປະເພດ</th>
+            <th class="text-right" style="white-space: nowrap;">ສ່ວນຫຼຸດ</th>
+            <th class="text-center" style="white-space: nowrap;">ວັນທີ</th>
+            <th class="text-center" style="white-space: nowrap;">ເງື່ອນໄຂ</th>
+            <th style="white-space: nowrap;">ສິນຄ້າ/ປະເພດ</th>
+            <th class="text-center" style="width: 80px; white-space: nowrap;">ສະຖານະ</th>
+            <th class="text-center" style="width: 100px; white-space: nowrap;">ຈັດການ</th>
           </tr>
         </thead>
         <tbody>
@@ -181,16 +181,16 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <tr><td colspan="9" class="text-center py-5 text-muted"><i class="fas fa-tags fa-2x mb-2 d-block text-secondary opacity-50"></i>ບໍ່ມີລາຍການໂປຣໂມຊັ່ນ</td></tr>
           <?php else: ?>
             <?php $i = 1; foreach ($promos as $p): ?>
-              <tr>
+              <tr style="white-space: nowrap;">
                 <!-- 1. ລຳດັບ -->
-                <td class="text-center font-weight-bold text-muted"><?php echo $i++; ?></td>
+                <td class="text-center font-weight-bold text-muted" style="white-space: nowrap;"><?php echo $i++; ?></td>
                 
                 <!-- 2. ຊື່ໂປຣ -->
-                <td class="font-weight-bold text-dark"><?php echo htmlspecialchars($p['promo_name']); ?></td>
+                <td class="font-weight-bold text-dark text-nowrap" style="white-space: nowrap;"><?php echo htmlspecialchars($p['promo_name']); ?></td>
                 
                 <!-- 3. ປະເພດ -->
-                <td>
-                  <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 0.76rem;">
+                <td style="white-space: nowrap;">
+                  <span class="badge badge-light border text-dark font-weight-bold px-2 py-1" style="font-size: 0.76rem; white-space: nowrap;">
                     <?php 
                       switch ($p['promo_type'] ?? 'discount') {
                         case 'qty_discount': echo 'ສ່ວນຫຼຸດຕາມຈຳນວນ'; break;

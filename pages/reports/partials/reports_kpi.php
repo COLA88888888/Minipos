@@ -51,12 +51,9 @@
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" 
          style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="kpi-card-title text-nowrap" style="white-space: nowrap !important;"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ <?php if (($daily_promo_gifts_count ?? 0) > 0): ?><span class="text-warning font-weight-normal ml-1" style="font-size: 0.75rem;">(ແຖມ: <?php echo number_format($daily_promo_gifts_count); ?>)</span><?php endif; ?></div>
+        <div class="font-weight-bold mt-1 text-white kpi-card-val text-nowrap" style="white-space: nowrap !important; font-family: 'Noto Sans Lao Looped', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)($daily_promo_discounts ?? 0); ?>" data-suffix=" ₭">0 ₭</span>
-        </div>
-        <div class="mt-1 text-white-50" style="font-size: 0.76rem; font-weight: 600;">
-          <i class="fas fa-gift mr-1 text-warning"></i> ແຖມ: <?php echo number_format($daily_promo_gifts_count ?? 0); ?> ຊິ້ນ
         </div>
       </div>
       <div class="kpi-card-icon">
