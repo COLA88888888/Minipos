@@ -68,14 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $pdo->beginTransaction();
 
+                $activeStoreId = getActiveStoreId($pdo);
                 // ດຶງລາຍການສິນຄ້າທີ່ຈະປັບ
                 if ($target_mode === 'product') {
-                    $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE product_id = ?");
-                    $stmt->execute([$product_id]);
+                    $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE product_id = ? AND store_id = ?");
+                    $stmt->execute([$product_id, $activeStoreId]);
                     $targetProducts = $stmt->fetchAll();
                 } else {
-                    $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE category_id = ?");
-                    $stmt->execute([$category_id]);
+                    $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE category_id = ? AND store_id = ?");
+                    $stmt->execute([$category_id, $activeStoreId]);
                     $targetProducts = $stmt->fetchAll();
                 }
 
@@ -85,8 +86,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $message_type = 'warning';
                 } else {
                     $count = 0;
-                    $updStmt = $pdo->prepare("UPDATE products SET bprice = ?, price = ? WHERE product_id = ?");
-                    $logStmt = $pdo->prepare("INSERT INTO price_adjustments (adjust_date, adjust_time, target_mode, category_id, product_id, product_name, target_price_type, calc_type, adjust_value, old_bprice, old_price, new_bprice, new_price, diff_amount, remark, username, user_id, branch_id) VALUES (CURDATE(), CURTIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+                    $updStmt = $pdo->prepare("UPDATE products SET bprice = ?, price = ? WHERE product_id = ? AND store_id = ?");
+                    $logStmt = $pdo->prepare("INSERT INTO price_adjustments (adjust_date, adjust_time, target_mode, category_id, product_id, product_name, target_price_type, calc_type, adjust_value, old_bprice, old_price, new_bprice, new_price, diff_amount, remark, username, user_id, branch_id) VALUES (CURDATE(), CURTIME(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
                     foreach ($targetProducts as $prod) {
                         $pid       = $prod['product_id'];
@@ -122,8 +123,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         // ຜົນຕ່າງ (Diff amount relative to sales price or bprice)
                         $diffAmount = ($target_price_type === 'bprice') ? ($newBprice - $oldBprice) : ($newPrice - $oldPrice);
 
-                        // ອັບເດດລາຄາໃນຕາຕະລາງ products
-                        $updStmt->execute([$newBprice, $newPrice, $pid]);
+                        // ອັບເດດລາຄາໃນຕາຕະລາງ products (ຕອງຕາມ store_id)
+                        $updStmt->execute([$newBprice, $newPrice, $pid, $activeStoreId]);
 
                         // ບັນທຶກປະຫວັດລາຍລະອຽດ
                         $logStmt->execute([
@@ -141,7 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             $diffAmount,
                             $remark,
                             $username,
-                            $user_id
+                            $user_id,
+                            $activeStoreId
                         ]);
 
                         $count++;
@@ -162,8 +164,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $adjust_id = intval($_POST['adjust_id'] ?? 0);
         if ($adjust_id > 0) {
             try {
-                $stmt = $pdo->prepare("DELETE FROM price_adjustments WHERE adjust_id = ?");
-                $stmt->execute([$adjust_id]);
+                $userStoreId = intval($_SESSION['store_id'] ?? 1);
+                $isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+                $isMain = isMainBranch($pdo, $userStoreId);
+                $stmt = ($isAdmin || $isMain)
+                    ? $pdo->prepare("DELETE FROM price_adjustments WHERE adjust_id = ?")
+                    : $pdo->prepare("DELETE FROM price_adjustments WHERE adjust_id = ? AND branch_id = ?");
+                if ($isAdmin || $isMain) {
+                    $stmt->execute([$adjust_id]);
+                } else {
+                    $stmt->execute([$adjust_id, $userStoreId]);
+                }
                 $message = 'ລຶບປະຫວັດການປັບລາຄາສຳເລັດ!';
                 $message_type = 'success';
             } catch (Exception $e) {
@@ -175,14 +186,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch categories, products, and price adjustments history
-$categoriesList = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
-$productsList   = $pdo->query("SELECT p.product_id, p.product_name, p.barcode, p.category_id, p.bprice, p.price, p.unit, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id ORDER BY p.product_name ASC")->fetchAll();
+$activeStoreId = getActiveStoreId($pdo);
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
 
-$adjustments = $pdo->query("
-    SELECT pa.*, p.barcode as prod_barcode, c.category_name 
-    FROM price_adjustments pa
-    LEFT JOIN products p ON pa.product_id = p.product_id
-    LEFT JOIN categories c ON pa.category_id = c.category_id
-    ORDER BY pa.adjust_id DESC 
-    LIMIT 100
-")->fetchAll();
+$categoriesList = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+
+$prodStmt = $pdo->prepare("SELECT p.product_id, p.product_name, p.barcode, p.category_id, p.bprice, p.price, p.unit, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.store_id = ? ORDER BY p.product_name ASC");
+$prodStmt->execute([$activeStoreId]);
+$productsList = $prodStmt->fetchAll();
+
+if ($isAdmin || $isMain) {
+    $adjustments = $pdo->query("
+        SELECT pa.*, p.barcode as prod_barcode, c.category_name 
+        FROM price_adjustments pa
+        LEFT JOIN products p ON pa.product_id = p.product_id AND p.store_id = pa.branch_id
+        LEFT JOIN categories c ON pa.category_id = c.category_id
+        ORDER BY pa.adjust_id DESC 
+        LIMIT 100
+    ")->fetchAll();
+} else {
+    $adjStmt = $pdo->prepare("
+        SELECT pa.*, p.barcode as prod_barcode, c.category_name 
+        FROM price_adjustments pa
+        LEFT JOIN products p ON pa.product_id = p.product_id AND p.store_id = pa.branch_id
+        LEFT JOIN categories c ON pa.category_id = c.category_id
+        WHERE pa.branch_id = ?
+        ORDER BY pa.adjust_id DESC 
+        LIMIT 100
+    ");
+    $adjStmt->execute([$activeStoreId]);
+    $adjustments = $adjStmt->fetchAll();
+}

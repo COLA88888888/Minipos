@@ -4,7 +4,7 @@ $base_path = '../../';
 require_once __DIR__ . '/../../config/db.php';
 
 // Check if logged in and has access to stock
-if (empty($_SESSION['user_id']) || (!hasPermission('stock') && $_SESSION['status'] !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('products') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '../../index.php';</script>";
     exit();
 }
@@ -15,7 +15,6 @@ $message_type = '';
 $isAdmin = (
     ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' ||
     strtolower($_SESSION['status'] ?? '') === 'admin' ||
-    strtolower($_SESSION['username'] ?? '') === 'admin' ||
     ($_SESSION['user_id'] ?? 0) == 1
 );
 
@@ -149,13 +148,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $message = 'ລະຫັດບາໂຄ້ດ "' . htmlspecialchars($barcode) . '" ບໍ່ຖືກຕ້ອງ! ຮອງຮັບສະເພາະຕົວເລກ (0-9) ເທົ່ານັ້ນ!';
                     $message_type = 'warning';
                 } else {
+                    $store_id = getActiveStoreId($pdo);
                     $chkStmt = $pdo->prepare("
-                        SELECT p.product_name, p.product_id FROM products p WHERE p.barcode = ?
+                        SELECT p.product_name, p.product_id FROM products p WHERE p.barcode = ? AND p.store_id = ?
                         UNION ALL
-                        SELECT p.product_name, u.product_id FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ?
+                        SELECT p.product_name, u.product_id FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ? AND p.store_id = ?
                         LIMIT 1
                     ");
-                    $chkStmt->execute([$barcode, $barcode]);
+                    $chkStmt->execute([$barcode, $store_id, $barcode, $store_id]);
                     $dup = $chkStmt->fetch();
                     if ($dup) {
                         $message = 'ລະຫັດບາໂຄ້ດ "' . htmlspecialchars($barcode) . '" ນີ້ຖືກໃຊ້ແລ້ວນຳສິນຄ້າ: "' . htmlspecialchars($dup['product_name']) . '" (ID: ' . $dup['product_id'] . ')';
@@ -164,17 +164,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 }
 
                 if (empty($message_type) || $message_type !== 'warning') {
-                    // ສ້າງ ລະຫັດສິນຄ້າອໍໂຕ້ (Category ID + Sequence ຕາມຈຳນວນທີ່ປ້ອນ: 10001, 80002, 120003, 20004...)
+                    // ສ້າງ ລະຫັດສິນຄ້າອໍໂຕ້ (Category ID + Sequence)
                     $product_id = intval($_POST['product_id'] ?? 0);
                     if ($product_id <= 0) {
                         $totalCount = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-                        $seqFormatted = str_pad($totalCount + 1, 4, '0', STR_PAD_LEFT);
+                        $seq = $totalCount + 1;
+                        $seqFormatted = str_pad($seq, 4, '0', STR_PAD_LEFT);
                         $product_id = intval($category_id . $seqFormatted);
+                        while ((int)$pdo->query("SELECT COUNT(*) FROM products WHERE product_id = {$product_id}")->fetchColumn() > 0) {
+                            $seq++;
+                            $seqFormatted = str_pad($seq, 4, '0', STR_PAD_LEFT);
+                            $product_id = intval($category_id . $seqFormatted);
+                        }
                     }
 
                     $qty = $isAdmin ? max(0, intval($_POST['qty'] ?? 0)) : 0;
-                    $stmt = $pdo->prepare("INSERT INTO products (product_id, product_name, barcode, category_id, bprice, price, unit, img_url, qty) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$product_id, $name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty]);
+                    $store_id = getActiveStoreId($pdo);
+                    $stmt = $pdo->prepare("INSERT INTO products (product_id, product_name, barcode, category_id, bprice, price, unit, img_url, qty, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$product_id, $name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $store_id]);
 
                     // ບັນທຶກຫຼາຍລາຄາ/ຫຼາຍຫົວໜ່ວຍ (product_units) ຖ້າມີ
                     if (isset($_POST['extra_unit_name']) && is_array($_POST['extra_unit_name'])) {
@@ -226,13 +233,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $message = 'ລະຫັດບາໂຄ້ດ "' . htmlspecialchars($barcode) . '" ບໍ່ຖືກຕ້ອງ! ຮອງຮັບສະເພາະຕົວເລກ (0-9) ເທົ່ານັ້ນ!';
                     $message_type = 'warning';
                 } else {
+                    $store_id = getActiveStoreId($pdo);
                     $chkStmt = $pdo->prepare("
-                        SELECT p.product_name, p.product_id FROM products p WHERE p.barcode = ? AND p.product_id != ?
+                        SELECT p.product_name, p.product_id FROM products p WHERE p.barcode = ? AND p.product_id != ? AND p.store_id = ?
                         UNION ALL
-                        SELECT p.product_name, u.product_id FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ? AND u.product_id != ?
+                        SELECT p.product_name, u.product_id FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ? AND u.product_id != ? AND p.store_id = ?
                         LIMIT 1
                     ");
-                    $chkStmt->execute([$barcode, $product_id, $barcode, $product_id]);
+                    $chkStmt->execute([$barcode, $product_id, $store_id, $barcode, $product_id, $store_id]);
                     $dup = $chkStmt->fetch();
                     if ($dup) {
                         $message = 'ລະຫັດບາໂຄ້ດ "' . htmlspecialchars($barcode) . '" ນີ້ຖືກໃຊ້ແລ້ວນຳສິນຄ້າ: "' . htmlspecialchars($dup['product_name']) . '" (ID: ' . $dup['product_id'] . ')';
@@ -267,13 +275,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $img_name = $uploadedImg;
                     }
 
+                    $userStoreId = intval($_SESSION['store_id'] ?? 1);
+                    $isMain = isMainBranch($pdo, $userStoreId);
                     if ($isAdmin && isset($_POST['qty'])) {
                         $qty = max(0, intval($_POST['qty']));
-                        $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=?, qty=? WHERE product_id=?");
-                        $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $product_id]);
+                        if ($isAdmin || $isMain) {
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=?, qty=? WHERE product_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $product_id]);
+                        } else {
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=?, qty=? WHERE product_id=? AND store_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $product_id, $userStoreId]);
+                        }
                     } else {
-                        $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=? WHERE product_id=?");
-                        $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $product_id]);
+                        if ($isAdmin || $isMain) {
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=? WHERE product_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $product_id]);
+                        } else {
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=? WHERE product_id=? AND store_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $product_id, $userStoreId]);
+                        }
                     }
 
                     // ອັບເດດຫຼາຍລາຄາ/ຫຼາຍຫົວໜ່ວຍ (product_units)
@@ -299,9 +319,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     logActivity($pdo, "ແກ້ໄຂສິນຄ້າ", "ID: $product_id, ຊື່: $name");
                 }
             } catch (Exception $e) {
-                $message_type = 'success';
-                logActivity($pdo, "ແກ້ໄຂສິນຄ້າ", "ID: $product_id, ຊື່ໃໝ່: $name");
-            } catch (Exception $e) {
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';
             }
@@ -313,18 +330,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $id = intval($_POST['product_id'] ?? 0);
         if ($id > 0) {
             try {
+                $userStoreId = intval($_SESSION['store_id'] ?? 1);
+                $isMain = isMainBranch($pdo, $userStoreId);
+
                 // Delete associated image file
-                $curStmt = $pdo->prepare("SELECT img_url FROM products WHERE product_id = ?");
-                $curStmt->execute([$id]);
+                $curStmt = ($isAdmin || $isMain)
+                    ? $pdo->prepare("SELECT img_url FROM products WHERE product_id = ?")
+                    : $pdo->prepare("SELECT img_url FROM products WHERE product_id = ? AND store_id = ?");
+                if ($isAdmin || $isMain) {
+                    $curStmt->execute([$id]);
+                } else {
+                    $curStmt->execute([$id, $userStoreId]);
+                }
                 $currentImg = $curStmt->fetchColumn();
-                deleteProductImageFile($currentImg);
+                if ($currentImg) {
+                    deleteProductImageFile($currentImg);
+                }
 
                 // Delete associated units in product_units
                 $delUnitsStmt = $pdo->prepare("DELETE FROM product_units WHERE product_id = ?");
                 $delUnitsStmt->execute([$id]);
 
-                $stmt = $pdo->prepare("DELETE FROM products WHERE product_id = ?");
-                $stmt->execute([$id]);
+                $stmt = ($isAdmin || $isMain)
+                    ? $pdo->prepare("DELETE FROM products WHERE product_id = ?")
+                    : $pdo->prepare("DELETE FROM products WHERE product_id = ? AND store_id = ?");
+                if ($isAdmin || $isMain) {
+                    $stmt->execute([$id]);
+                } else {
+                    $stmt->execute([$id, $userStoreId]);
+                }
                 $message = 'ລົບສິນຄ້າສຳເລັດ!';
                 $message_type = 'success';
                 logActivity($pdo, "ລົບສິນຄ້າ", "ID: $id");
@@ -338,14 +372,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // ====== Fetch data ======
 $categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
+$stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-$products_query = "
-    SELECT p.*, c.category_name
+$currentStoreId = getActiveStoreId($pdo);
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isMain = isMainBranch($pdo, $userStoreId);
+
+// Sub-branch users are strictly restricted to their own branch
+if (!$isAdmin && !$isMain) {
+    $selectedStoreId = $currentStoreId;
+} else {
+    $selectedStoreId = isset($_GET['store_id']) ? intval($_GET['store_id']) : $currentStoreId;
+}
+
+$products_stmt = $pdo->prepare("
+    SELECT p.*, c.category_name, s.store_name
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.category_id
-    ORDER BY p.product_id DESC
-";
-$products = $pdo->query($products_query)->fetchAll();
+    LEFT JOIN tbstore s ON p.store_id = s.store_id
+    WHERE p.store_id = ?
+    ORDER BY p.code1 DESC, p.product_id DESC
+");
+$products_stmt->execute([$selectedStoreId]);
+$products = $products_stmt->fetchAll();
 
 // ດຶງຂໍ້ມູນ product_units ທັງໝົດມາ map
 $allUnitsStmt = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC, id ASC");
@@ -374,12 +423,11 @@ require_once __DIR__ . '/../../layouts/header.php';
       </h5>
     </div>
     <div class="col-sm-6 text-right">
-      <button type="button" class="btn btn-info px-3 font-weight-bold mr-2 text-white" onclick="openPrintBarcodeModal()" style="border-radius: 6px; font-weight: 600;">
-        <i class="fas fa-barcode mr-1"></i> ປິ່ນບາໂຄ້ດ
-      </button>
-      <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600;">
-        <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
-      </button>
+      <?php if ($isAdmin || !empty($_SESSION['permissions']['products']) || !empty($_SESSION['permissions']['edit'])): ?>
+        <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600;">
+          <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
+        </button>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -418,8 +466,19 @@ require_once __DIR__ . '/../../layouts/header.php';
         </div>
       </div>
 
-      <!-- Right Controls: Category Filter + Search (ຂວາ) -->
+      <!-- Right Controls: Store Filter + Category Filter + Search (ຂວາ) -->
       <div class="d-flex align-items-center" style="gap: 10px; flex-wrap: wrap;">
+        <!-- Dropdown: ເລືອກສາຂາ (ເລືອກເບິ່ງສະຕັອກສາຂາ) -->
+        <div class="prod-filter-wrap" style="width: 200px;">
+          <select id="storeFilter" class="form-control font-weight-bold" onchange="switchStoreFilter(this.value)">
+            <?php foreach ($stores as $st): ?>
+              <option value="<?php echo $st['store_id']; ?>" <?php echo ($selectedStoreId == $st['store_id']) ? 'selected' : ''; ?>>
+                <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : '(ສາຂາຍ່ອຍ)'; ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
         <!-- Dropdown: ເລືອກປະເພດ (ທາງໜ້າບັອກຄົ້ນຫາ) -->
         <div class="prod-filter-wrap" style="width: 200px;">
           <select id="categoryFilter" class="form-control" onchange="filterProducts()">
@@ -563,15 +622,17 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                 <!-- ຈັດການ (ໄອຄອນແກ້ໄຂ, ລົບ ສະເພາະ) -->
                 <td class="text-center" style="white-space: nowrap;">
-                  <button type="button" class="icon-btn icon-btn-edit mr-1" title="ແກ້ໄຂ"
-                    onclick='editProduct(<?php echo json_encode($p); ?>)'>
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <?php if (hasPermission('edit')): ?>
+                  <?php if ($isAdmin || !empty($_SESSION['permissions']['edit'])): ?>
+                    <button type="button" class="icon-btn icon-btn-edit mr-1" title="ແກ້ໄຂ"
+                      onclick='editProduct(<?php echo json_encode($p); ?>)'>
+                      <i class="fas fa-edit"></i>
+                    </button>
                     <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
                       onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
                       <i class="fas fa-trash-alt"></i>
                     </button>
+                  <?php else: ?>
+                    <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
                   <?php endif; ?>
                 </td>
 
@@ -998,6 +1059,10 @@ require_once __DIR__ . '/../../layouts/header.php';
         form.submit();
       }
     });
+  }
+
+  function switchStoreFilter(storeId) {
+    window.location.href = 'products.php?store_id=' + storeId;
   }
 </script>
 

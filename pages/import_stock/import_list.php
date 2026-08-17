@@ -6,7 +6,7 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 require_once __DIR__ . '/../../config/db.php';
 
 // Check authorization
-if (empty($_SESSION['user_id']) || (!hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('import_list') && !hasPermission('import_stock') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -270,8 +270,14 @@ foreach ($allBillItems as $bi) {
 }
 
 // ====== FETCH IMPORT RECORDS BASED ON VIEW TYPE & DATE RANGE ======
+$activeStoreId = getActiveStoreId($pdo);
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
+
 $importList = [];
 if ($view_type === 'bill') {
+    $storeCond = (!$isAdmin && !$isMain) ? " AND p.store_id = ? " : "";
     $billQuery = "
         SELECT 
             i.import_id,
@@ -297,14 +303,19 @@ if ($view_type === 'bill') {
         LEFT JOIN products p ON id.product_id = p.product_id
         LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
         LEFT JOIN tbuser u ON i.created_by = u.Id
-        WHERE DATE(i.import_date) BETWEEN ? AND ?
+        WHERE DATE(i.import_date) BETWEEN ? AND ? {$storeCond}
         GROUP BY i.import_id
         ORDER BY i.import_date DESC, i.import_id DESC
     ";
     $stmt = $pdo->prepare($billQuery);
-    $stmt->execute([$from_date, $to_date]);
+    if (!$isAdmin && !$isMain) {
+        $stmt->execute([$from_date, $to_date, $activeStoreId]);
+    } else {
+        $stmt->execute([$from_date, $to_date]);
+    }
     $importList = $stmt->fetchAll();
 } else {
+    $storeCond = (!$isAdmin && !$isMain) ? " AND p.store_id = ? " : "";
     $detailQuery = "
         SELECT 
             id.import_detail_id,
@@ -333,11 +344,15 @@ if ($view_type === 'bill') {
         JOIN products p ON id.product_id = p.product_id
         LEFT JOIN tbuser u ON i.created_by = u.Id
         LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
-        WHERE DATE(i.import_date) BETWEEN ? AND ?
+        WHERE DATE(i.import_date) BETWEEN ? AND ? {$storeCond}
         ORDER BY i.import_date DESC, id.import_detail_id DESC
     ";
     $stmt = $pdo->prepare($detailQuery);
-    $stmt->execute([$from_date, $to_date]);
+    if (!$isAdmin && !$isMain) {
+        $stmt->execute([$from_date, $to_date, $activeStoreId]);
+    } else {
+        $stmt->execute([$from_date, $to_date]);
+    }
     $importList = $stmt->fetchAll();
 }
 
@@ -447,7 +462,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
           <!-- TABLE RENDER: VIEW TYPE == 'bill' OR 'detail' -->
           <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
+            <table class="table table-hover mb-0 align-middle text-nowrap">
               
               <?php if ($view_type === 'bill'): ?>
                 <!-- HEADER FOR MODE 1: ຕາມບິນ (Blue Header) -->
@@ -529,14 +544,16 @@ require_once __DIR__ . '/../../layouts/header.php';
                               <i class="fas fa-print"></i>
                             </a>
 
-                            <?php if (!$hasMov): ?>
-                              <button type="button" class="btn btn-outline-danger btn-delete-master-bill" title="ລົບບິນນີ້" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>">
-                                <i class="fas fa-trash-alt"></i>
-                              </button>
-                            <?php else: ?>
-                              <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດລົບໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
-                                <i class="fas fa-lock"></i>
-                              </button>
+                            <?php if ($isAdmin || !empty($_SESSION['permissions']['edit'])): ?>
+                              <?php if (!$hasMov): ?>
+                                <button type="button" class="btn btn-outline-danger btn-delete-master-bill" title="ລົບບິນນີ້" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>">
+                                  <i class="fas fa-trash-alt"></i>
+                                </button>
+                              <?php else: ?>
+                                <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດລົບໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
+                                  <i class="fas fa-lock"></i>
+                                </button>
+                              <?php endif; ?>
                             <?php endif; ?>
                           </div>
                         </td>
@@ -649,20 +666,24 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                         <td class="text-center align-middle">
                           <?php $rowJson = htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8'); ?>
-                          <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-outline-warning btn-edit-import" title="ແກ້ໄຂ" data-id="<?php echo $row['import_detail_id']; ?>" data-json="<?php echo $rowJson; ?>">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <?php if (!$hasMovement): ?>
-                              <button type="button" class="btn btn-outline-danger btn-delete-import" title="ຍົກເລີກ/ລົບບິນນີ້" data-id="<?php echo $row['import_detail_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-name="<?php echo htmlspecialchars($row['product_name']); ?>">
-                                <i class="fas fa-trash-alt"></i>
+                          <?php if ($isAdmin || !empty($_SESSION['permissions']['edit'])): ?>
+                            <div class="btn-group btn-group-sm">
+                              <button type="button" class="btn btn-outline-warning btn-edit-import" title="ແກ້ໄຂ" data-id="<?php echo $row['import_detail_id']; ?>" data-json="<?php echo $rowJson; ?>">
+                                <i class="fas fa-edit"></i>
                               </button>
-                            <?php else: ?>
-                              <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດຍົກເລີກໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
-                                <i class="fas fa-lock"></i>
-                              </button>
-                            <?php endif; ?>
-                          </div>
+                              <?php if (!$hasMovement): ?>
+                                <button type="button" class="btn btn-outline-danger btn-delete-import" title="ຍົກເລີກ/ລົບບິນນີ້" data-id="<?php echo $row['import_detail_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-name="<?php echo htmlspecialchars($row['product_name']); ?>">
+                                  <i class="fas fa-trash-alt"></i>
+                                </button>
+                              <?php else: ?>
+                                <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດຍົກເລີກໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
+                                  <i class="fas fa-lock"></i>
+                                </button>
+                              <?php endif; ?>
+                            </div>
+                          <?php else: ?>
+                            <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                          <?php endif; ?>
                         </td>
                       </tr>
                     <?php endforeach; ?>
@@ -801,7 +822,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         </div>
 
         <div class="table-responsive border rounded" style="max-height: 350px; overflow-y: auto;">
-          <table class="table table-hover mb-0 align-middle">
+          <table class="table table-hover mb-0 align-middle text-nowrap">
             <thead class="bg-light text-dark font-weight-bold" style="position: sticky; top: 0; z-index: 5;">
               <tr>
                 <th class="text-center" style="width: 50px;">ລຳດັບ</th>

@@ -7,7 +7,7 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
 require_once dirname(__DIR__, 2) . '/config/db.php';
 
-if (!hasPermission('report')) {
+if (!hasPermission('financial') && !hasPermission('report') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }

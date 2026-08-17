@@ -98,6 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $nextSeq = $todayCount + 1;
 
         $invoice_no = $todayStr . '-' . str_pad($nextSeq, 4, '0', STR_PAD_LEFT);
+        $activeStoreId = getActiveStoreId($pdo);
         
         $bank_account_id = isset($_POST['bank_account_id']) && intval($_POST['bank_account_id']) > 0 ? intval($_POST['bank_account_id']) : null;
         $bank_name = isset($_POST['bank_name']) && trim($_POST['bank_name']) !== '' ? trim($_POST['bank_name']) : null;
@@ -123,8 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         // Insert into tbsale_save
         $stmtSave = $pdo->prepare("
-            INSERT INTO tbsale_save (sale_save_bill, sale_date, sale_time, user_receive, customer_id, customer_name, ip_address, sale_qty, sale_amount, sale_discount_bill, sale_barlance, sale_pay, sale_return, type_pay, bank_account_id, bank_name, sale_status)
-            VALUES (:invoice_no, CURDATE(), CURTIME(), :user_id, :customer_id, :customer_name, :ip_address, :sale_qty, :sale_amount, :discount_bill, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS')
+            INSERT INTO tbsale_save (sale_save_bill, sale_date, sale_time, user_receive, customer_id, customer_name, ip_address, sale_qty, sale_amount, sale_discount_bill, sale_barlance, sale_pay, sale_return, type_pay, bank_account_id, bank_name, sale_status, store_id)
+            VALUES (:invoice_no, CURDATE(), CURTIME(), :user_id, :customer_id, :customer_name, :ip_address, :sale_qty, :sale_amount, :discount_bill, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS', :store_id)
         ");
         $stmtSave->execute([
             ':invoice_no'      => $invoice_no,
@@ -140,15 +141,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ':change'          => $change,
             ':payment_type'    => $payment_type,
             ':bank_account_id' => $bank_account_id,
-            ':bank_name'       => $bank_name
+            ':bank_name'       => $bank_name,
+            ':store_id'        => $activeStoreId
         ]);
 
         // Insert into physical sales table with tax details
         try {
             $stmtSalesTable = $pdo->prepare("
-                INSERT INTO sales (invoice_number, sold_by, customer_id, customer_name, subtotal, discount_amount, vat_amount, tax_type, vat_rate, total_amount, cash_received, change_amount, payment_type, bank_account_id, bank_name, status, created_at)
-                VALUES (:invoice_no, :user_id, :customer_id, :customer_name, :subtotal, :discount_bill, :vat_amount, :tax_type, :vat_rate, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS', NOW())
-                ON DUPLICATE KEY UPDATE subtotal = :subtotal, discount_amount = :discount_bill, vat_amount = :vat_amount, tax_type = :tax_type, vat_rate = :vat_rate, total_amount = :net_total, bank_account_id = :bank_account_id, bank_name = :bank_name
+                INSERT INTO sales (invoice_number, sold_by, customer_id, customer_name, subtotal, discount_amount, vat_amount, tax_type, vat_rate, total_amount, cash_received, change_amount, payment_type, bank_account_id, bank_name, status, store_id, created_at)
+                VALUES (:invoice_no, :user_id, :customer_id, :customer_name, :subtotal, :discount_bill, :vat_amount, :tax_type, :vat_rate, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS', :store_id, NOW())
+                ON DUPLICATE KEY UPDATE subtotal = :subtotal, discount_amount = :discount_bill, vat_amount = :vat_amount, tax_type = :tax_type, vat_rate = :vat_rate, total_amount = :net_total, bank_account_id = :bank_account_id, bank_name = :bank_name, store_id = :store_id
             ");
             $stmtSalesTable->execute([
                 ':invoice_no'      => $invoice_no,
@@ -165,7 +167,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':change'          => $change,
                 ':payment_type'    => $payment_type,
                 ':bank_account_id' => $bank_account_id,
-                ':bank_name'       => $bank_name
+                ':bank_name'       => $bank_name,
+                ':store_id'        => $activeStoreId
             ]);
         } catch (Throwable $ex) {}
         
@@ -176,11 +179,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ");
         
         $stmtUpdateStock = $pdo->prepare("
-            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id
+            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id AND store_id = :store_id
         ");
 
         $stmtCheckStock = $pdo->prepare("
-            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid FOR UPDATE
+            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid AND store_id = :store_id FOR UPDATE
         ");
         
         $details_summary = [];
@@ -197,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $deduct_stock_qty = $qty * $multiplier;
 
             // ກວດສອບຍອດເຫຼືອໃນຖານຂໍ້ມູນ
-            $stmtCheckStock->execute([':pid' => $pid]);
+            $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
             $pData = $stmtCheckStock->fetch();
             if (!$pData) {
                 $pdo->rollBack();
@@ -239,7 +242,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             if ($shouldCutQty) {
                 $stmtUpdateStock->execute([
                     ':deduct_qty' => $deduct_stock_qty,
-                    ':product_id' => $pid
+                    ':product_id' => $pid,
+                    ':store_id'   => $activeStoreId
                 ]);
                 $newStock = max(0, $currentDbStock - $deduct_stock_qty);
             }
@@ -268,6 +272,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             'customer_name'  => $customer_name,
             'subtotal'       => $subtotal,
             'discount_amount'=> $discount_bill,
+            'tax_type'       => $tax_type,
+            'vat_rate'       => $vat_percent,
+            'vat_amount'     => $vat_amount,
             'total_amount'   => $net_total,
             'cash_received'  => $cash_received,
             'qr_received'    => $qr_received,
@@ -486,12 +493,16 @@ function getProductPromotion($product, $activePromos) {
 
 // Fetch categories, products, and customers list
 $categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
-$productsRaw = $pdo->query("
+$activeStoreId = getActiveStoreId($pdo);
+$productsStmt = $pdo->prepare("
     SELECT p.*, c.category_name 
     FROM products p 
     LEFT JOIN categories c ON p.category_id = c.category_id 
-    ORDER BY p.product_name ASC
-")->fetchAll();
+    WHERE p.store_id = ?
+    ORDER BY p.code1 DESC, p.product_name ASC
+");
+$productsStmt->execute([$activeStoreId]);
+$productsRaw = $productsStmt->fetchAll();
 
 $customersList = $pdo->query("SELECT customer_id, customer_code, customer_name, phone, member_card, notes, created_at FROM customers ORDER BY customer_id DESC")->fetchAll();
 

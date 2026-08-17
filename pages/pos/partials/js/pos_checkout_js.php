@@ -330,6 +330,23 @@ function processCheckout() {
         $('#rc_customer').text(res.customer_name || 'ລູກຄ້າທົ່ວໄປ');
         $('#rc_subtotal').text(res.subtotal.toLocaleString() + ' ₭');
         $('#rc_discount').text(res.discount_amount.toLocaleString() + ' ₭');
+
+        var rTaxType = res.tax_type || 'none';
+        var rVatRate = parseFloat(res.vat_rate) || 0;
+        var rVatAmt  = parseFloat(res.vat_amount) || 0;
+
+        if (rTaxType === 'exclusive' && rVatAmt > 0) {
+          $('#rc_vat_label').text('ພາສີ (VAT ' + rVatRate + '%):');
+          $('#rc_vat').text('+' + rVatAmt.toLocaleString() + ' ₭');
+          $('#rc_vat_row').show();
+        } else if (rTaxType === 'inclusive' && rVatAmt > 0) {
+          $('#rc_vat_label').text('ລວມ ພາສີ (VAT ' + rVatRate + '%):');
+          $('#rc_vat').text(rVatAmt.toLocaleString() + ' ₭');
+          $('#rc_vat_row').show();
+        } else {
+          $('#rc_vat_row').hide();
+        }
+
         $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
         $('#rc_change').text(res.change.toLocaleString() + ' ₭');
 

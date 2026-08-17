@@ -34,18 +34,28 @@ if (!hasPermission('dashboard')) {
         $default_iframe_src = '../pages/pos/pos.php';
     } elseif (hasPermission('customers')) {
         $default_iframe_src = '../pages/customers/customers.php';
-    } elseif (hasPermission('stock')) {
+    } elseif (hasPermission('categories')) {
+        $default_iframe_src = '../pages/categories/categories.php';
+    } elseif (hasPermission('products') || hasPermission('stock')) {
         $default_iframe_src = '../pages/products/products.php';
+    } elseif (hasPermission('import_stock')) {
+        $default_iframe_src = '../pages/import_stock/import_stock.php';
+    } elseif (hasPermission('import_list')) {
+        $default_iframe_src = '../pages/import_stock/import_list.php';
+    } elseif (hasPermission('stock_transfer')) {
+        $default_iframe_src = '../pages/import_stock/stock_transfer.php';
+    } elseif (hasPermission('transfer_history')) {
+        $default_iframe_src = '../pages/import_stock/transfer_history.php';
     } elseif (hasPermission('accounting')) {
         $default_iframe_src = '../pages/bank/bank.php';
-    } elseif (hasPermission('report')) {
+    } elseif (hasPermission('report') || hasPermission('daily_report') || hasPermission('all_sales') || hasPermission('best_seller') || hasPermission('profit_cost') || hasPermission('financial') || hasPermission('category_sales') || hasPermission('delete_bills')) {
         $default_iframe_src = '../pages/reports/daily_report.php';
     } elseif (hasPermission('users')) {
         $default_iframe_src = '../pages/users_manage/users_manage.php';
     } elseif (hasPermission('permissions')) {
         $default_iframe_src = '../pages/permissions/permissions.php';
-    } elseif (hasPermission('setup')) {
-        $default_iframe_src = '../pages/settings/stores/';
+    } elseif (hasPermission('setup') || hasPermission('branches')) {
+        $default_iframe_src = '../pages/branches/branches.php';
     }
 }
 ?>
@@ -116,13 +126,28 @@ if (!hasPermission('dashboard')) {
 
   <!-- ແຖບເມນູດ້ານເທິງ (Top Navigation Bar) -->
   <nav class="main-header navbar navbar-expand navbar-dark justify-content-between" style="background-color: rgb(2, 99, 255) !important; border: none !important; border-bottom: none !important; box-shadow: none !important; height: 64px;">
-    <!-- Left side: Menu toggle -->
-    <ul class="navbar-nav">
+    <!-- Left side: Menu toggle & Branch Switcher -->
+    <ul class="navbar-nav align-items-center">
       <li class="nav-item">
         <a class="nav-link" id="topNavbarPushMenuBtn" href="#" role="button" style="color: #ffffff; font-size: 1.2rem; cursor: pointer;" title="ເມນູ">
           <i class="fas fa-bars"></i>
         </a>
       </li>
+      <?php
+        $userStoreId = intval($_SESSION['store_id'] ?? 1);
+        $userIsAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+        $userIsMain = isMainBranch($pdo, $userStoreId);
+        $allStores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+        $activeStoreId = getActiveStoreId($pdo);
+        $currentStoreName = '';
+        foreach ($allStores as $s) {
+            if ($s['store_id'] == $activeStoreId) {
+                $currentStoreName = $s['store_name'];
+                break;
+            }
+        }
+      ?>
+      <!-- Branch Switcher Removed -->
     </ul>
 
     <?php
@@ -148,23 +173,72 @@ if (!hasPermission('dashboard')) {
       $formattedStart = date('d/m/Y', strtotime($license_start));
       $formattedExpire = date('d/m/Y', strtotime($license_expire));
 
-      // Badge style depending on remaining days
-      $badgeBg = 'background: linear-gradient(135deg, #10b981, #059669); color: #ffffff;';
-      if ($daysRemaining <= 15) {
-        $badgeBg = 'background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff;';
-      } elseif ($daysRemaining <= 30) {
-        $badgeBg = 'background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff;';
-      }
+      // Low Stock Alerts for Main Branch
+      $lowStockList = getLowStockAlerts($pdo);
+      $lowStockCount = count($lowStockList);
     ?>
 
-    <!-- Right side: Live Date/Time + Logout button -->
+    <!-- Right side: Notifications Bell + Live Clock + Logout -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
-      <!-- Real-Time Current Date & Time Display (Clean text without box or icon) -->
+      
+      <!-- Notifications Dropdown (Low Stock Warning for Main Branch) -->
+      <?php if ($userIsMain || $userIsAdmin): ?>
+        <li class="nav-item dropdown">
+          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສືເບິດ" style="font-size: 1.15rem;">
+            <i class="fas fa-bell <?php echo ($lowStockCount > 0) ? 'text-warning fa-bounce' : ''; ?>"></i>
+            <?php if ($lowStockCount > 0): ?>
+              <span class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.65rem; border-radius: 10px; padding: 2px 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                <?php echo $lowStockCount; ?>
+              </span>
+            <?php endif; ?>
+          </a>
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 330px; padding: 0; overflow: hidden;">
+            <div class="dropdown-header font-weight-bold d-flex justify-content-between align-items-center py-2.5 px-3" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #ffffff;">
+              <span><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ (<?php echo $lowStockCount; ?>)</span>
+            </div>
+            <div class="dropdown-divider m-0"></div>
+            
+            <div style="max-height: 280px; overflow-y: auto;">
+              <?php if ($lowStockCount > 0): ?>
+                <?php foreach ($lowStockList as $alert): ?>
+                  <a href="#" onclick="openStockTransferModal(<?php echo $alert['store_id']; ?>, '<?php echo addslashes($alert['product_name']); ?>')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom text-wrap" style="transition: background 0.15s;">
+                    <div>
+                      <strong class="d-block text-dark" style="font-size: 0.84rem;"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
+                      <span class="badge badge-light border text-muted" style="font-size: 0.72rem;">
+                        <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($alert['store_name']); ?>
+                      </span>
+                    </div>
+                    <div class="text-right">
+                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.78rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
+                      <span class="d-block text-primary font-weight-bold mt-1" style="font-size: 0.75rem;"><i class="fas fa-shipping-fast mr-1"></i>ໂອນໃຫ້</span>
+                    </div>
+                  </a>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div class="text-center py-4 text-muted">
+                  <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
+                  <span style="font-size: 0.85rem;">ບໍ່ມີສິນຄ້າໃກ້ສິນສຸດໃນສາຂາ</span>
+                </div>
+              <?php endif; ?>
+            </div>
+
+            <?php if ($lowStockCount > 0): ?>
+              <div class="dropdown-footer p-2 text-center bg-light">
+                <a href="<?php echo $base_path; ?>pages/import_stock/stock_transfer.php" target="frame" class="btn btn-sm btn-primary font-weight-bold btn-block" style="border-radius: 8px;">
+                  <i class="fas fa-exchange-alt mr-1"></i> ໜ້າຈັດການໂອນສິນຄ້າທັງໝົດ
+                </a>
+              </div>
+            <?php endif; ?>
+          </div>
+        </li>
+      <?php endif; ?>
+
+      <!-- Real-Time Current Date & Time Display -->
       <li class="nav-item d-none d-sm-flex align-items-center text-white mr-1" style="font-size: 0.85rem; font-weight: 600;">
         <span id="live_datetime_clock"><?php echo date('d/m/Y H:i:s'); ?></span>
       </li>
 
-      <!-- Subscription info (Visible on Desktop, hidden on Mobile) -->
+      <!-- Subscription info -->
       <li class="nav-item d-none d-md-flex align-items-center text-white" style="font-size: 0.85rem; font-weight: 600; gap: 8px;">
         <span class="d-inline-flex align-items-center">
           ເຫຼືອ <span class="mx-1 text-warning" style="font-size: 0.95rem; font-weight: 800; text-decoration: underline;"><?php echo $daysRemaining; ?></span> ວັນ
@@ -188,6 +262,29 @@ if (!hasPermission('dashboard')) {
       </li>
     </ul>
   </nav>
+
+  <script>
+    function switchDashboardBranch(storeId) {
+      $.ajax({
+        url: '../api/branches_backend.php',
+        type: 'POST',
+        data: { action: 'switch_branch', store_id: storeId },
+        success: function(res) {
+          window.location.reload();
+        }
+      });
+    }
+
+    function openStockTransferModal(targetStoreId, productName) {
+      var iframe = document.getElementById('mainContentFrame');
+      var transferUrl = '../pages/import_stock/stock_transfer.php?target_store=' + targetStoreId + '&search=' + encodeURIComponent(productName);
+      if (iframe) {
+        iframe.src = transferUrl;
+      } else {
+        window.location.href = transferUrl;
+      }
+    }
+  </script>
 
   <script>
     // Real-Time Clock Function
@@ -313,16 +410,34 @@ if (!hasPermission('dashboard')) {
       }
     </style>
     <script>
+      function hideFastLoader() {
+        var loader = document.getElementById('iframeLoaderOverlay');
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.transition = 'opacity 0.25s ease';
+          setTimeout(function() { loader.style.display = 'none'; }, 250);
+        }
+      }
+      function showFastLoader() {
+        var loader = document.getElementById('iframeLoaderOverlay');
+        if (loader) {
+          loader.style.display = 'flex';
+          loader.style.opacity = '1';
+        }
+      }
       (function() {
         var defaultSrc = '<?php echo $default_iframe_src; ?>';
         var hasDashboardPerm = <?php echo hasPermission('dashboard') ? 'true' : 'false'; ?>;
         var savedSrc = sessionStorage.getItem('currentIframeSrc');
-        if (!hasDashboardPerm && (!savedSrc || savedSrc === 'home.php')) {
+        if (!hasDashboardPerm && (!savedSrc || savedSrc === 'home.php' || savedSrc.endsWith('/home.php'))) {
           savedSrc = defaultSrc;
+          sessionStorage.setItem('currentIframeSrc', defaultSrc);
         }
         if (savedSrc) {
           document.getElementsByName('frame')[0].src = savedSrc;
         }
+        // Safety timeout: automatically hide loading spinner after 600ms
+        setTimeout(hideFastLoader, 600);
       })();
     </script>
   </div>
@@ -448,6 +563,25 @@ if (!hasPermission('dashboard')) {
     $('iframe[name="frame"]').on('load', function() {
       // Hide high-speed 12-dot pulse loader overlay smoothly on page load
       hideFastLoader();
+
+      // Bind click/touchstart event inside iframe to close sidebar
+      try {
+        var iframeWin = this.contentWindow;
+        var iframeDoc = this.contentDocument || iframeWin.document;
+        if (iframeDoc && window.jQuery) {
+          $(iframeDoc).off('click.sidebarClose touchstart.sidebarClose').on('click.sidebarClose touchstart.sidebarClose', function() {
+            if (window.innerWidth <= 992) {
+              var isSidebarOpen = $('body').hasClass('sidebar-open') || $('html').hasClass('sidebar-open');
+              if (isSidebarOpen) {
+                $('#topNavbarPushMenuBtn').click();
+              }
+            }
+          });
+        }
+      } catch(e) {
+        // Suppress cross-origin warnings if any
+      }
+
       try {
         var path = this.contentWindow.location.pathname;
         var search = this.contentWindow.location.search || '';
@@ -547,6 +681,24 @@ if (!hasPermission('dashboard')) {
         if (window.jQuery && $.fn.PushMenu) {
           try { $('[data-widget="pushmenu"]').PushMenu('collapse'); } catch(err) {}
           try { $('[data-widget="pushmenu"]').PushMenu('close'); } catch(err) {}
+        }
+      }
+    });
+
+    // ===== Close Sidebar on Mobile when clicking/tapping on blank area outside sidebar =====
+    // ກົດ ຫຼື ແຕະບ່ອນຫວ່າງເປົ່າ (Outside Sidebar) ເພື່ອເຊື່ອງ sidebar ໃນໜ້າຈໍ mobile (≤992px)
+    $(document).on('click touchstart', function(e) {
+      if (window.innerWidth <= 992) {
+        var $target = $(e.target);
+        var isSidebarOpen = $('body').hasClass('sidebar-open') || $('html').hasClass('sidebar-open');
+        
+        if (isSidebarOpen) {
+          var isInsideSidebar = $target.closest('.main-sidebar').length > 0;
+          var isPushMenuBtn = $target.closest('#topNavbarPushMenuBtn').length > 0 || $target.closest('[data-widget="pushmenu"]').length > 0;
+          
+          if (!isInsideSidebar && !isPushMenuBtn) {
+            $('#topNavbarPushMenuBtn').click();
+          }
         }
       }
     });

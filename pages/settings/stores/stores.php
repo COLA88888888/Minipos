@@ -85,7 +85,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $sql .= ", qr_img = ?";
                         $params[] = $newQrName;
                     }
-                    $sql .= " WHERE Id = 1";
+                    $hasIdCol = $pdo->query("SHOW COLUMNS FROM tbcompanyinfo LIKE 'Id'")->fetch();
+                    $pkCol = $hasIdCol ? 'Id' : ($pdo->query("SHOW COLUMNS FROM tbcompanyinfo LIKE 'com_id'")->fetch() ? 'com_id' : '1');
+                    $sql .= " WHERE {$pkCol} = 1";
 
                     $stmt = $pdo->prepare($sql);
                     $stmt->execute($params);

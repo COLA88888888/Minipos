@@ -1,0 +1,252 @@
+<?php
+session_start();
+$scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+$base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
+
+require_once __DIR__ . '/../../config/db.php';
+
+// Authorization check
+if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
+    echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+    exit();
+}
+
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
+
+$message = '';
+$message_type = '';
+
+// Handle POST Transfer Execution
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'execute_transfer') {
+    $from_store_id = intval($_POST['from_store_id'] ?? 1);
+    if (!$isAdmin && !$isMain) {
+        $from_store_id = $userStoreId;
+    }
+    $to_store_id   = intval($_POST['to_store_id'] ?? 0);
+    $notes         = trim($_POST['notes'] ?? '');
+    $items_json    = $_POST['items_json'] ?? '[]';
+    $items         = json_decode($items_json, true);
+    
+    $transfer_date = trim($_POST['transfer_date'] ?? date('Y-m-d'));
+    if (empty($transfer_date)) {
+        $transfer_date = date('Y-m-d');
+    }
+    $full_transfer_date = $transfer_date . ' ' . date('H:i:s');
+
+    if ($from_store_id <= 0 || $to_store_id <= 0) {
+        $message = 'ກະລຸນາເລືອກສາຂາຕົ້ນທາງ ແລະ ສາຂາປາຍທາງ!';
+        $message_type = 'danger';
+    } elseif ($from_store_id === $to_store_id) {
+        $message = 'ສາຂາຕົ້ນທາງ ແລະ ປາຍທາງ ຕ້ອງບໍ່ແມ່ນສາຂາດຽວກັນ!';
+        $message_type = 'danger';
+    } elseif (empty($items) || !is_array($items)) {
+        $message = 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການໂອນຢ່າງນ້ອຍ 1 ລາຍການ!';
+        $message_type = 'danger';
+    } else {
+        try {
+            $pdo->beginTransaction();
+
+            // Auto-generate transfer code (TRF-YYYYMMDD-001)
+            $todayStr = date('Ymd');
+            $countToday = (int)$pdo->query("SELECT COUNT(*) FROM stock_transfers WHERE DATE(transfer_date) = CURDATE()")->fetchColumn();
+            $transfer_code = 'TRF-' . $todayStr . '-' . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+
+            // Insert into stock_transfers
+            $insTrf = $pdo->prepare("INSERT INTO stock_transfers (transfer_code, from_store_id, to_store_id, transfer_date, status, notes, created_by) VALUES (?, ?, ?, ?, 'completed', ?, ?)");
+            $insTrf->execute([$transfer_code, $from_store_id, $to_store_id, $full_transfer_date, $notes, $_SESSION['user_id']]);
+            $transfer_id = $pdo->lastInsertId();
+
+            $transferredCount = 0;
+            foreach ($items as $item) {
+                $product_id = intval($item['product_id'] ?? 0);
+                $qty        = intval($item['quantity'] ?? $item['qty'] ?? 0);
+
+                if ($product_id <= 0 || $qty <= 0) continue;
+
+                // Fetch source product in $from_store_id
+                $stmtSrc = $pdo->prepare("SELECT * FROM products WHERE product_id = ? AND store_id = ? FOR UPDATE");
+                $stmtSrc->execute([$product_id, $from_store_id]);
+                $srcProd = $stmtSrc->fetch();
+
+                if (!$srcProd) {
+                    throw new Exception("ບໍ່ພົບສິນຄ້າ ID {$product_id} ໃນສາຂາຕົ້ນທາງ!");
+                }
+
+                if ($srcProd['qty'] < $qty) {
+                    throw new Exception("ສິນຄ້າ \"{$srcProd['product_name']}\" ໃນສາຂາຕົ້ນທາງ ມີພຽງ {$srcProd['qty']} (ບໍ່ພໍໂອນ {$qty})!");
+                }
+
+                // Deduct from source branch
+                $stmtDeduct = $pdo->prepare("UPDATE products SET qty = qty - ? WHERE product_id = ? AND store_id = ?");
+                $stmtDeduct->execute([$qty, $product_id, $from_store_id]);
+
+                // Add / Update target product in $to_store_id
+                $stmtDst = $pdo->prepare("SELECT * FROM products WHERE product_id = ? AND store_id = ? FOR UPDATE");
+                $stmtDst->execute([$product_id, $to_store_id]);
+                $dstProd = $stmtDst->fetch();
+
+                if ($dstProd) {
+                    $stmtAddDst = $pdo->prepare("UPDATE products SET qty = qty + ? WHERE product_id = ? AND store_id = ?");
+                    $stmtAddDst->execute([$qty, $product_id, $to_store_id]);
+                } else {
+                    $stmtInsDst = $pdo->prepare("INSERT INTO products (product_id, barcode, product_name, category_id, bprice, price, qty, unit, img_url, cook, cut_qty, min_qty, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmtInsDst->execute([
+                        $srcProd['product_id'],
+                        $srcProd['barcode'],
+                        $srcProd['product_name'],
+                        $srcProd['category_id'],
+                        $srcProd['bprice'],
+                        $srcProd['price'],
+                        $qty,
+                        $srcProd['unit'],
+                        $srcProd['img_url'],
+                        $srcProd['cook'] ?? 0,
+                        $srcProd['cut_qty'] ?? 1,
+                        $srcProd['min_qty'] ?? 5,
+                        $to_store_id
+                    ]);
+                }
+
+                // Save detail line
+                $stmtDet = $pdo->prepare("INSERT INTO stock_transfer_details (transfer_id, product_id, product_name, barcode, qty, unit, bprice, price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmtDet->execute([
+                    $transfer_id,
+                    $product_id,
+                    $srcProd['product_name'],
+                    $srcProd['barcode'],
+                    $qty,
+                    $srcProd['unit'],
+                    $srcProd['bprice'],
+                    $srcProd['price']
+                ]);
+
+                $transferredCount++;
+            }
+
+            $pdo->commit();
+            $message = "ບັນທຶກການໂອນສິນຄ້າເລກທີ $transfer_code ສຳເລັດ (ລວມ $transferredCount ລາຍການ)!";
+            $message_type = 'success';
+            logActivity($pdo, "ໂອນສິນຄ້າລະຫວ່າງສາຂາ", "Code: {$transfer_code}, From: Store #{$from_store_id} -> To: Store #{$to_store_id}");
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            $message = 'ຜິດພາດ: ' . $e->getMessage();
+            $message_type = 'danger';
+        }
+    }
+}
+
+// Fetch all stores
+$stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+// Target store pre-selected from GET
+$preSelectedTarget = intval($_GET['target_store'] ?? 0);
+$preSearch = trim($_GET['search'] ?? '');
+
+$sourceStoreId = 1;
+if (!$isMain && !$isAdmin) {
+    $sourceStoreId = $userStoreId;
+}
+
+// Fetch categories for modal filter
+$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+
+// Fetch products of source store with categories & units
+$sourceProductsStmt = $pdo->prepare("
+    SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
+    FROM products p 
+    LEFT JOIN categories c ON p.category_id = c.category_id 
+    WHERE p.store_id = ?
+    ORDER BY p.code1 DESC, p.product_name ASC
+");
+$sourceProductsStmt->execute([$sourceStoreId]);
+$products = $sourceProductsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$product_units_map = [];
+$uRows = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC")->fetchAll();
+foreach ($uRows as $u) {
+    $product_units_map[$u['product_id']][] = $u;
+}
+
+// Auto-generate transfer invoice code
+$todayStr = date('Ymd');
+$countToday = (int)$pdo->query("SELECT COUNT(*) FROM stock_transfers WHERE DATE(transfer_date) = CURDATE()")->fetchColumn();
+$next_transfer_code = 'TRF-' . $todayStr . '-' . str_pad($countToday + 1, 3, '0', STR_PAD_LEFT);
+
+// Receiver / Transferrer Name
+$receiverName = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
+if (empty($receiverName)) $receiverName = $_SESSION['username'] ?? 'Admin';
+
+require_once __DIR__ . '/../../layouts/header.php';
+?>
+
+<link rel="stylesheet" href="../../themes/import_stock.css?v=<?php echo filemtime(__DIR__ . '/../../themes/import_stock.css'); ?>">
+<link rel="stylesheet" href="../../themes/stock_transfer.css?v=<?php echo filemtime(__DIR__ . '/../../themes/stock_transfer.css'); ?>">
+
+<div class="content-wrapper bg-light" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+  
+  <!-- Page Header -->
+  <section class="content-header py-3">
+    <div class="container-fluid">
+      <div class="row align-items-center">
+        <div class="col-sm-6">
+          <h4 class="m-0 font-weight-bold text-dark">
+            <i class="fas fa-exchange-alt text-primary mr-2"></i> ໂອນສິນຄ້າລະຫວ່າງສາຂາ
+          </h4>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <section class="content pb-5">
+    <div class="container-fluid">
+
+      <!-- Alert Notification -->
+      <?php if (!empty($message)): ?>
+        <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show shadow-sm mb-4" role="alert" style="border-radius: 10px;">
+          <i class="fas <?php echo ($message_type === 'success') ? 'fa-check-circle' : 'fa-exclamation-circle'; ?> mr-2"></i>
+          <?php echo htmlspecialchars($message); ?>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <?php if ($message_type === 'success'): ?>
+          <script>
+            $(document).ready(function() {
+              Swal.fire({
+                title: 'ບັນທຶກສຳເລັດ!',
+                text: '<?php echo addslashes($message); ?>',
+                icon: 'success',
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'ຕົກລົງ',
+                timer: 3500,
+                timerProgressBar: true
+              });
+            });
+          </script>
+        <?php endif; ?>
+      <?php endif; ?>
+
+      <!-- 1. DIRECT ENTRY FORM CARD -->
+      <div class="card shadow-sm border-0 mb-4" style="border-radius: 16px;">
+        <div class="card-body p-4">
+          <?php require_once __DIR__ . '/components/transfer_form_component.php'; ?>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- Modal: Select Product Popup -->
+<?php require_once __DIR__ . '/components/modal_select_product.php'; ?>
+
+<?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
+
+<!-- JavaScript Logic Component -->
+<?php require_once __DIR__ . '/components/transfer_js_component.php'; ?>

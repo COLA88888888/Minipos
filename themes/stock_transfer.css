@@ -1,0 +1,35 @@
+/* Themes stylesheet for Stock Transfer operations */
+.content-wrapper {
+  background-color: #f8fafc !important;
+}
+
+.card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.table th {
+  background-color: #f1f5f9;
+  border-bottom: 2px solid #e2e8f0 !important;
+  color: #334155;
+  font-weight: 700;
+}
+
+.form-control:focus {
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+#direct_matched_banner {
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

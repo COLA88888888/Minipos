@@ -1,0 +1,147 @@
+<?php
+// Component: Stock Transfer Form Layout
+?>
+<form id="directTransferForm" action="" method="POST">
+  <input type="hidden" name="action" value="execute_transfer">
+  <input type="hidden" id="cart_json_input" name="items_json" value="[]">
+
+  <!-- Top Header Details Row: Code, Date, From Store, To Store -->
+  <div class="row bg-light p-3 rounded mb-3 border" style="border-color: #cbd5e1 !important;">
+    <!-- 1. Transfer Code -->
+    <div class="col-md-3 mb-2 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
+        ເລກທີໃບໂອນສິນຄ້າ
+      </label>
+      <input type="text" class="form-control font-weight-bold bg-white text-primary border-primary" value="<?php echo $next_transfer_code; ?>" readonly style="height: 42px; border-radius: 8px; cursor: not-allowed; font-size: 1.05rem;">
+    </div>
+
+    <!-- 2. Transfer Date -->
+    <div class="col-md-3 mb-2 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
+        ວັນທີໂອນ <span class="text-danger">*</span>
+      </label>
+      <input type="date" name="transfer_date" class="form-control font-weight-bold" value="<?php echo date('Y-m-d'); ?>" required style="height: 42px; border-radius: 8px;">
+    </div>
+
+    <!-- 3. From Store -->
+    <div class="col-md-3 mb-2 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
+        ສາຂາຕົ້ນທາງ <span class="text-danger">*</span>
+      </label>
+      <select name="from_store_id" id="from_store_id" class="form-control font-weight-bold" style="height: 42px; border-radius: 8px;">
+        <?php foreach ($stores as $st): ?>
+          <option value="<?php echo $st['store_id']; ?>" <?php echo ($sourceStoreId == $st['store_id']) ? 'selected' : ''; ?>>
+            <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : ''; ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
+    <!-- 4. To Store -->
+    <div class="col-md-3">
+      <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
+        ສາຂາປາຍທາງ (To) <span class="text-danger">*</span>
+      </label>
+      <select name="to_store_id" id="to_store_id" class="form-control font-weight-bold border-success" style="height: 42px; border-radius: 8px; background: #ecfdf5; color: #047857;" required>
+        <option value="">-- ເລືອກສາຂາປາຍທາງ --</option>
+        <?php foreach ($stores as $st): ?>
+          <?php if ($st['store_id'] != $sourceStoreId): ?>
+            <option value="<?php echo $st['store_id']; ?>" <?php echo ($preSelectedTarget == $st['store_id']) ? 'selected' : ''; ?>>
+              <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : ''; ?>
+            </option>
+          <?php endif; ?>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
+
+  <!-- Barcode Scanning & Item Entry Row -->
+  <div class="row align-items-end mb-3">
+    <!-- Barcode / Search Box -->
+    <div class="col-md-5 mb-3 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1">
+        ສະແກນບາໂຄ້ດ / ລະຫັດສິນຄ້າຕົ້ນທາງ <span class="text-danger">*</span>
+      </label>
+      <div class="input-group">
+        <input type="text" id="direct_barcode_input" class="form-control" placeholder="ສະແກນບາໂຄ້ດ ຫຼື ປ້ອນລະຫັດ..." value="<?php echo htmlspecialchars($preSearch); ?>" autocomplete="off" style="height: 42px; border-radius: 8px 0 0 8px;" oninput="onDirectBarcodeChange()" onkeydown="onDirectBarcodeKeyDown(event)">
+        <div class="input-group-append">
+          <button type="button" class="btn btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#productSelectModal" title="ເປີດປັອບອັບເລືອກສິນຄ້າ">
+            <i class="fas fa-search-plus mr-1"></i> ເລືອກສິນຄ້າ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quantity Input -->
+    <div class="col-md-3 mb-3 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1">
+        ຈຳນວນໂອນ <span class="text-danger">*</span>
+      </label>
+      <input type="number" id="direct_qty" class="form-control font-weight-bold border-primary text-center" min="1" value="1" style="height: 42px; border-radius: 8px; font-size: 1.1rem;" onkeydown="onQtyKeyDown(event)">
+    </div>
+
+    <!-- Unit Select -->
+    <div class="col-md-2 mb-3 mb-md-0">
+      <label class="font-weight-bold text-dark mb-1">ຫົວໜ່ວຍ</label>
+      <select id="direct_unit_key" class="form-control" style="height: 42px; border-radius: 8px;">
+        <option value="base">ຫົວໜ່ວຍ</option>
+      </select>
+    </div>
+
+    <!-- Add Item Button -->
+    <div class="col-md-2">
+      <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="addCurrentItemToCart()">
+        <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
+      </button>
+    </div>
+  </div>
+
+  <!-- Active Product Selected Banner -->
+  <div id="direct_matched_banner" class="p-2.5 px-3 rounded border d-none align-items-center justify-content-between mb-3" style="border-color: #93c5fd !important; background-color: #eff6ff !important;">
+    <div>
+      <span class="font-weight-bold text-dark d-block" id="direct_matched_name" style="font-size: 1rem;">-</span>
+      <small class="text-muted">
+         ບາໂຄ້ດ: <span id="direct_matched_barcode" class="font-weight-bold text-primary mr-2">-</span>
+         ສະຕັອກຕົ້ນທາງ: <span id="direct_matched_stock" class="font-weight-bold text-success">0</span>
+      </small>
+    </div>
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetDirectSelection()"><i class="fas fa-times"></i></button>
+  </div>
+
+  <!-- LIVE TRANSFER ITEMS TABLE -->
+  <div class="table-responsive border rounded mb-3 shadow-sm" style="border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+    <table class="table table-hover mb-0 align-middle">
+      <thead class="font-weight-bold bg-light">
+        <tr>
+          <th class="text-center" style="width: 50px;">ລຳດັບ</th>
+          <th>ຊື່ສິນຄ້າ</th>
+          <th class="text-center" style="width: 140px;">ສະຕັອກຕົ້ນທາງ</th>
+          <th class="text-center" style="width: 180px;">ຈຳນວນໂອນ</th>
+          <th class="text-center" style="width: 100px;">ຈັດການ</th>
+        </tr>
+      </thead>
+      <tbody id="cart_table_body">
+        <tr id="empty_cart_row">
+          <td colspan="5" class="text-center text-muted py-5">
+            <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
+            <span class="font-weight-bold">ຍັງບໍ່ມີລາຍການສິນຄ້າໃນໃບໂອນ</span><br>
+            <small>ກະລຸນາສະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າທີ່ຈະໂອນ</small>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Notes & Submit Bar -->
+    <div class="card-footer bg-light border-top p-3 d-flex flex-wrap align-items-center justify-content-between" style="border-color: #e2e8f0 !important; gap: 10px;">
+      <div style="flex: 1 1 300px;">
+        <input type="text" name="notes" class="form-control form-control-sm" placeholder="ໝາຍເຫດການໂອນສິນຄ້າ (ຖ້າມີ)..." style="border-radius: 6px; height: 38px;">
+      </div>
+      <div>
+        <button type="button" class="btn btn-success font-weight-bold px-4 shadow-sm" style="height: 38px; border-radius: 6px; background: linear-gradient(135deg, #10b981, #059669); border: none;" onclick="submitDirectTransferBill()">
+          <i class="fas fa-paper-plane mr-1.5" style="font-size: 1rem;"></i> ຢືນຢັນການໂອນສິນຄ້າ
+        </button>
+      </div>
+    </div>
+  </div>
+
+</form>

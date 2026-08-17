@@ -112,6 +112,23 @@ function printBill(billNo) {
 
         $('#rc_rep_subtotal').text(subtotal.toLocaleString() + ' ₭');
         $('#rc_rep_discount').text(discount.toLocaleString() + ' ₭');
+
+        var bTaxType = b.tax_type || 'none';
+        var bVatRate = parseFloat(b.vat_rate) || 0;
+        var bVatAmt  = parseFloat(b.vat_amount) || 0;
+
+        if (bTaxType === 'exclusive' && bVatAmt > 0) {
+          $('#rc_rep_vat_label').text('ພາສີ (VAT ' + bVatRate + '%):');
+          $('#rc_rep_vat').text('+' + bVatAmt.toLocaleString() + ' ₭');
+          $('#rc_rep_vat_row').show();
+        } else if (bTaxType === 'inclusive' && bVatAmt > 0) {
+          $('#rc_rep_vat_label').text('ລວມ ພາສີ (VAT ' + bVatRate + '%):');
+          $('#rc_rep_vat').text(bVatAmt.toLocaleString() + ' ₭');
+          $('#rc_rep_vat_row').show();
+        } else {
+          $('#rc_rep_vat_row').hide();
+        }
+
         $('#rc_rep_total').text(net.toLocaleString() + ' ₭');
         $('#rc_rep_change').text(change.toLocaleString() + ' ₭');
 

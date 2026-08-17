@@ -24,9 +24,11 @@ require_once __DIR__ . '/../../layouts/header.php';
           </h5>
         </div>
         <div class="col-sm-6 text-right">
+          <?php if (hasPermission('categories')): ?>
           <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCategoryModal" style="border-radius: 6px;">
             <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມປະເພດສິນຄ້າ
           </button>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -110,18 +112,29 @@ require_once __DIR__ . '/../../layouts/header.php';
                       </td>
 
                       <td class="text-center align-middle">
-                        <div class="btn-group btn-group-sm">
-                          <!-- Edit Button -->
-                          <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $catJson; ?>)'>
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <?php if (hasPermission('edit')): ?>
+                        <?php 
+                          $isUserAdmin = (($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || ($_SESSION['user_id'] ?? 0) == 1);
+                          $canEditCat = $isUserAdmin || !empty($_SESSION['permissions']['edit']);
+                          $canDeleteCat = $isUserAdmin || !empty($_SESSION['permissions']['edit']);
+                        ?>
+                        <?php if ($canEditCat || $canDeleteCat): ?>
+                          <div class="btn-group btn-group-sm">
+                            <?php if ($canEditCat): ?>
+                            <!-- Edit Button -->
+                            <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $catJson; ?>)'>
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <?php endif; ?>
+                            <?php if ($canDeleteCat): ?>
                             <!-- Delete Button -->
                             <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCat(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['category_name'])); ?>', <?php echo $productCount; ?>)">
                               <i class="fas fa-trash-alt"></i>
                             </button>
-                          <?php endif; ?>
-                        </div>
+                            <?php endif; ?>
+                          </div>
+                        <?php else: ?>
+                          <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                        <?php endif; ?>
                       </td>
 
                     </tr>

@@ -35,6 +35,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
     header('Content-Type: application/json');
     $action = $_POST['ajax_action'];
 
+    $pdo->exec("CREATE TABLE IF NOT EXISTS user_permission_switch_states (
+        user_id INT NOT NULL,
+        switch_key VARCHAR(120) NOT NULL,
+        is_enabled TINYINT(1) NOT NULL DEFAULT 0,
+        PRIMARY KEY (user_id, switch_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    if ($action === 'get_switch_states') {
+        $stateStmt = $pdo->query('SELECT switch_key, is_enabled FROM user_permission_switch_states');
+        $states = [];
+        foreach ($stateStmt->fetchAll() as $state) {
+            $states[$state['switch_key']] = (int)$state['is_enabled'];
+        }
+
+        echo json_encode(['success' => true, 'states' => $states]);
+        exit();
+    }
+
     // ---------------------------------------------------------------------
     // Action 1: ປ່ຽນສິດເອກະລາດ single toggle (toggle_perm)
     // ---------------------------------------------------------------------
@@ -42,19 +60,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
         $user_id = intval($_POST['user_id'] ?? 0);
         $perm    = trim($_POST['perm'] ?? '');
         $val     = intval($_POST['val'] ?? 0);
+        $switchKey = trim($_POST['switch_key'] ?? '');
+        $switchStates = json_decode($_POST['switch_states'] ?? '{}', true);
 
-        // ລາຍຊື່ຄໍລຳສິດທີ່ອະນຸຍາດໃຫ້ປັບປ່ຽນ
-        $allowed_perms = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'database'];
+        // ລາຍຊື່ຄໍລຳສິດທີ່ອະນຸຍາດໃຫ້ປັບປ່ຽນ (ລວມທັງເມນູຍ່ອຍລາຍງານ)
+        $allowed_perms = [
+            'dashboard', 'sale', 'item_sales', 'stock', 'categories', 'products', 'import_stock', 'import_list',
+            'stock_transfer', 'transfer_history',
+            'report', 'daily_report', 'all_sales', 'best_seller', 'profit_cost', 'financial', 'category_sales', 'delete_bills',
+            'accounting', 'setup', 'stores', 'print_barcode', 'exchange_rate', 'promotions', 'price_adjustment', 'printers',
+            'users', 'permissions', 'branches', 'edit', 'customers', 'database'
+        ];
 
-        if ($user_id <= 0 || !in_array($perm, $allowed_perms, true)) {
+        $switchKeyPattern = '/^perm_[a-z0-9_]+_' . preg_quote((string)$user_id, '/') . '$/i';
+        if ($user_id <= 0 || !in_array($perm, $allowed_perms, true) || !preg_match($switchKeyPattern, $switchKey) || !is_array($switchStates)) {
             echo json_encode(['success' => false, 'message' => 'ຂໍ້ມູນບໍ່ຖືກຕ້ອງ']);
             exit();
         }
 
-        // ປ້ອງກັນບໍ່ໃຫ້ປິດສິດຂອງຜູ້ບໍລິຫານ (Admin / Executive / Super Admin ID: 1)
-        $uRole = $pdo->query("SELECT status FROM tbuser WHERE Id = {$user_id}")->fetchColumn();
-        if ($user_id === 1 || strtolower($uRole) === 'admin' || $uRole === 'ຜູ້ບໍລິຫານ') {
-            echo json_encode(['success' => false, 'message' => 'ຜູ້ບໍລິຫານ (Admin) ມີສິດເຕັມ 100% ບໍ່ສາມາດປັບປ່ຽນສິດໄດ້!']);
+        // ປ້ອງກັນບໍ່ໃຫ້ປິດສິດຂອງຜູ້ບໍລິຫານ (Admin / ຜູ້ບໍລິຫານ / Super Admin ID: 1)
+        $uRoleStmt = $pdo->prepare("SELECT status FROM tbuser WHERE Id = ?");
+        $uRoleStmt->execute([$user_id]);
+        $uRole = $uRoleStmt->fetchColumn();
+        if ($user_id === 1 || strtolower(strval($uRole)) === 'admin' || strtolower(strval($uRole)) === 'super admin' || $uRole === 'ຜູ້ບໍລິຫານ') {
+            echo json_encode(['success' => false, 'message' => 'ຜູ້ບໍລິຫານ ມີສິດເຕັມ 100% ໃນລະບົບຢູ່ແລ້ວ ບໍ່ສາມາດປັບປ່ຽນສິດໄດ້!']);
             exit();
         }
 
@@ -68,14 +97,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             $stmt = $pdo->prepare("UPDATE tbuser SET `{$perm}` = ? WHERE Id = ?");
             $stmt->execute([$val, $user_id]);
 
+            $switchStmt = $pdo->prepare(
+                'INSERT INTO user_permission_switch_states (user_id, switch_key, is_enabled)
+                 VALUES (?, ?, ?)
+                 ON DUPLICATE KEY UPDATE is_enabled = VALUES(is_enabled)'
+            );
+            foreach ($switchStates as $stateKey => $stateValue) {
+                if (preg_match($switchKeyPattern, $stateKey)) {
+                    $switchStmt->execute([$user_id, $stateKey, (int)!empty($stateValue)]);
+                }
+            }
+            $switchStmt->execute([$user_id, $switchKey, $val]);
+
+            // ອັບເດດ Session permissions ທັນທີ ຖ້າແມ່ນຜູ້ໃຊ້ທີ່ກຳລັງ Login ຢູ່
+            if ($user_id == ($_SESSION['user_id'] ?? 0)) {
+                $_SESSION['permissions'][$perm] = $val;
+            }
+
             // ດຶງຂໍ້ມູນຜູ້ໃຊ້ທີ່ຖືກອັບເດດ ເພື່ອຄຳນວນຈຳນວນສິດທີ່ເປີດຢູ່
-            $uStmt = $pdo->prepare("SELECT username, dashboard, sale, stock, report, accounting, setup, users, edit, customers, database FROM tbuser WHERE Id = ?");
+            $uStmt = $pdo->prepare("SELECT * FROM tbuser WHERE Id = ?");
             $uStmt->execute([$user_id]);
             $userData = $uStmt->fetch();
             $targetUser = $userData['username'] ?? 'User';
 
             $permCount = 0;
-            $countKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'edit', 'customers', 'database'];
+            $countKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'branches', 'edit', 'customers', 'database'];
             foreach ($countKeys as $pKey) {
                 if (!empty($userData[$pKey])) {
                     $permCount++;
@@ -86,13 +132,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             $perm_names_lao = [
                 'dashboard' => 'ສິດ ດາດຊ໌ບອດ',
                 'sale' => 'ສິດ ຂາຍສິນຄ້າ POS',
+                'item_sales' => 'ສິດ ເບິ່ງລາຍການຂາຍສິນຄ້າ',
                 'customers' => 'ສິດ ຈັດການລູກຄ້າ',
                 'stock' => 'ສິດ ຂໍ້ມູນສິນຄ້າ & ຄັງສິນຄ້າ',
                 'accounting' => 'ສິດ ຈັດການບັນຊີ',
-                'report' => 'ສິດ ລາຍງານ & ການເງິນ',
+                'report' => 'ສິດ ເບິ່ງລາຍງານ',
+                'daily_report' => 'ສິດ ລາຍງານປະຈຳວັນ',
+                'all_sales' => 'ສິດ ລາຍງານການຂາຍທັງໝົດ',
+                'best_seller' => 'ສິດ ລາຍງານສິນຄ້າຂາຍດີ',
+                'profit_cost' => 'ສິດ ລາຍງານກຳໄລ-ຕົ້ນທຶນ',
+                'financial' => 'ສິດ ລາຍງານການເງິນ',
+                'category_sales' => 'ສິດ ລາຍງານຕາມປະເພດສິນຄ້າ',
+                'delete_bills' => 'ສິດ ປະຫວັດການລົບບິນຂາຍ',
                 'users' => 'ສິດ ຈັດການຜູ້ນຳໃຊ້',
                 'permissions' => 'ສິດ ກຳນົດສິດ',
-                'setup' => 'ສິດ ຕັ້ງຄ່າລະບົບ & ຈັດການສາຂາ',
+                'branches' => 'ສິດ ຈັດການສາຂາ',
+                'setup' => 'ສິດ ຕັ້ງຄ່າລະບົບ',
                 'edit' => 'ສິດ ແກ້ໄຂ & ລົບຂໍ້ມູນ',
                 'database' => 'ສິດ ຈັດການຖານຂໍ້ມູນ'
             ];
@@ -107,10 +162,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
                 'message' => "{$status_text} \"{$perm_lao}\" ໃຫ້ {$targetUser} ສຳເລັດ!",
                 'user_id' => $user_id,
                 'perm' => $perm,
-                'val' => $val,
+                'val' => (int)($userData[$perm] ?? $val),
                 'perm_count' => $permCount
             ]);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             echo json_encode(['success' => false, 'message' => 'ຜິດພາດ: ' . $e->getMessage()]);
         }
         exit();
@@ -144,23 +199,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             exit();
         }
 
-        $uRole = $pdo->query("SELECT status FROM tbuser WHERE Id = {$user_id}")->fetchColumn();
-        if ($user_id === 1 || strtolower($uRole) === 'admin' || $uRole === 'ຜູ້ບໍລິຫານ') {
+        $uRoleStmt = $pdo->prepare("SELECT status FROM tbuser WHERE Id = ?");
+        $uRoleStmt->execute([$user_id]);
+        $uRole = $uRoleStmt->fetchColumn();
+        if ($user_id === 1 || strtolower(strval($uRole)) === 'admin' || $uRole === 'ຜູ້ບໍລິຫານ') {
             echo json_encode(['success' => false, 'message' => 'ຜູ້ບໍລິຫານ (Admin) ບໍ່ສາມາດປັບປ່ຽນສິດໄດ້!']);
             exit();
         }
 
         $p = $presets_map[$preset];
         try {
-            $stmt = $pdo->prepare("UPDATE tbuser SET dashboard = ?, sale = ?, stock = ?, report = ?, accounting = ?, setup = ?, users = ?, permissions = ?, edit = ?, customers = ?, database = ? WHERE Id = ?");
-            $stmt->execute([$p['dashboard'] ?? 0, $p['sale'] ?? 0, $p['stock'] ?? 0, $p['report'] ?? 0, $p['accounting'] ?? 0, $p['setup'] ?? 0, $p['users'] ?? 0, $p['permissions'] ?? 0, $p['edit'] ?? 0, $p['customers'] ?? 0, $p['database'] ?? 0, $user_id]);
+            $stmt = $pdo->prepare("UPDATE tbuser SET `dashboard` = ?, `sale` = ?, `stock` = ?, `report` = ?, `accounting` = ?, `setup` = ?, `users` = ?, `permissions` = ?, `branches` = ?, `edit` = ?, `customers` = ?, `database` = ? WHERE Id = ?");
+            $stmt->execute([$p['dashboard'] ?? 0, $p['sale'] ?? 0, $p['stock'] ?? 0, $p['report'] ?? 0, $p['accounting'] ?? 0, $p['setup'] ?? 0, $p['users'] ?? 0, $p['permissions'] ?? 0, $p['branches'] ?? ($p['setup'] ?? 0), $p['edit'] ?? 0, $p['customers'] ?? 0, $p['database'] ?? 0, $user_id]);
 
             $uStmt = $pdo->prepare("SELECT username FROM tbuser WHERE Id = ?");
             $uStmt->execute([$user_id]);
             $targetUser = $uStmt->fetchColumn();
 
             $permCount = 0;
-            $allKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'edit', 'customers', 'database'];
+            $allKeys = ['dashboard', 'sale', 'stock', 'report', 'accounting', 'setup', 'users', 'permissions', 'branches', 'edit', 'customers', 'database'];
             foreach ($allKeys as $pk) {
                 if (!empty($p[$pk])) {
                     $permCount++;

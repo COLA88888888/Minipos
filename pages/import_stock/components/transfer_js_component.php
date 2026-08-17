@@ -1,0 +1,238 @@
+<?php
+// Component: Stock Transfer JavaScript Logic
+?>
+<script>
+  var PRODUCTS_LIST = <?php echo json_encode($products); ?>;
+  var PRODUCTS_UNITS = <?php echo json_encode($product_units_map); ?>;
+  var selectedProduct = null;
+  var cartItems = [];
+
+  $(document).ready(function() {
+    $('#direct_barcode_input').focus();
+    if ("<?php echo addslashes($preSearch); ?>" !== '') {
+      onDirectBarcodeChange();
+    }
+  });
+
+  function onDirectBarcodeChange() {
+    var query = $('#direct_barcode_input').val().trim().toLowerCase();
+    if (query === '') {
+      resetDirectSelection();
+      return;
+    }
+
+    var found = PRODUCTS_LIST.find(function(p) {
+      if (String(p.product_id) === query) return true;
+      if (p.barcode && String(p.barcode).toLowerCase() === query) return true;
+      if (PRODUCTS_UNITS[p.product_id]) {
+        var uMatch = PRODUCTS_UNITS[p.product_id].find(function(u) {
+          return u.barcode && String(u.barcode).toLowerCase() === query;
+        });
+        if (uMatch) return true;
+      }
+      return false;
+    });
+
+    if (!found) {
+      found = PRODUCTS_LIST.find(function(p) {
+        return (p.product_name && p.product_name.toLowerCase().indexOf(query) !== -1);
+      });
+    }
+
+    if (found) {
+      setDirectSelectedProduct(found);
+    } else {
+      resetDirectSelection();
+    }
+  }
+
+  function onDirectBarcodeKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedProduct) {
+        $('#direct_qty').focus().select();
+      } else {
+        Swal.fire({ icon: 'warning', title: 'ບໍ່ພົບສິນຄ້າ', text: 'ບໍ່ພົບສິນຄ້າທີ່ກົງກັບບາໂຄ້ດ ຫຼື ຊື່ນີ້!', confirmButtonColor: '#2563eb' });
+      }
+    }
+  }
+
+  function onQtyKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addCurrentItemToCart();
+    }
+  }
+
+  function setDirectSelectedProduct(prod) {
+    selectedProduct = prod;
+    $('#direct_matched_banner').removeClass('d-none').addClass('d-flex');
+    $('#direct_matched_name').text(prod.product_name + (prod.unit ? ' (' + prod.unit + ')' : ''));
+    $('#direct_matched_barcode').text(prod.barcode || '-');
+    $('#direct_matched_stock').text((prod.qty || 0) + ' ' + (prod.unit || 'ອັນ'));
+
+    var unitSelect = $('#direct_unit_key');
+    unitSelect.empty();
+    unitSelect.append('<option value="base">' + (prod.unit || 'ອັນ') + ' (x1)</option>');
+
+    if (PRODUCTS_UNITS[prod.product_id]) {
+      PRODUCTS_UNITS[prod.product_id].forEach(function(u) {
+        unitSelect.append('<option value="' + u.id + '">' + u.unit_name + ' (x' + u.multiplier + ')</option>');
+      });
+    }
+  }
+
+  function resetDirectSelection() {
+    selectedProduct = null;
+    $('#direct_matched_banner').addClass('d-none').removeClass('d-flex');
+    $('#direct_unit_key').html('<option value="base">ຫົວໜ່ວຍ</option>');
+  }
+
+  function selectProductFromModal(productId) {
+    var prod = PRODUCTS_LIST.find(function(p) { return p.product_id == productId; });
+    if (prod) {
+      $('#direct_barcode_input').val(prod.barcode || prod.product_id);
+      setDirectSelectedProduct(prod);
+      $('#productSelectModal').modal('hide');
+      setTimeout(function() { $('#direct_qty').focus().select(); }, 400);
+    }
+  }
+
+  function addCurrentItemToCart() {
+    if (!selectedProduct) {
+      Swal.fire({ icon: 'warning', title: 'ກະລຸນາເລືອກສິນຄ້າ', text: 'ກະລຸນາສະແກນບາໂຄ້ດ ຫຼື ເລືອກສິນຄ້າກ່ອນ!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    var qty = parseInt($('#direct_qty').val());
+    if (isNaN(qty) || qty < 1) {
+      Swal.fire({ icon: 'warning', title: 'ຈຳນວນບໍ່ຖືກຕ້ອງ', text: 'ກະລຸນາປ້ອນຈຳນວນໂອນຢ່າງນ້ອຍ 1!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    var unitKey = $('#direct_unit_key').val();
+    var unitName = selectedProduct.unit || 'ອັນ';
+    var multiplier = 1;
+
+    if (unitKey !== 'base' && PRODUCTS_UNITS[selectedProduct.product_id]) {
+      var uObj = PRODUCTS_UNITS[selectedProduct.product_id].find(function(u) { return u.id == unitKey; });
+      if (uObj) {
+        unitName = uObj.unit_name;
+        multiplier = parseInt(uObj.multiplier) || 1;
+      }
+    }
+
+    var baseQtyNeeded = qty * multiplier;
+    if (baseQtyNeeded > parseInt(selectedProduct.qty)) {
+      Swal.fire({ icon: 'warning', title: 'ສະຕັອກບໍ່ພໍ', text: 'ຈຳນວນໂອນ (' + baseQtyNeeded + ' ອັນ) ເກີນສະຕັອກຕົ້ນທາງທີ່ມີ (' + selectedProduct.qty + ' ອັນ)!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    var existingIndex = cartItems.findIndex(function(item) {
+      return item.product_id == selectedProduct.product_id && item.unit_key == unitKey;
+    });
+
+    if (existingIndex !== -1) {
+      cartItems[existingIndex].quantity += qty;
+    } else {
+      cartItems.push({
+        product_id: selectedProduct.product_id,
+        product_name: selectedProduct.product_name,
+        barcode: selectedProduct.barcode,
+        stock_qty: parseInt(selectedProduct.qty),
+        unit_key: unitKey,
+        unit_name: unitName,
+        multiplier: multiplier,
+        quantity: qty
+      });
+    }
+
+    $('#direct_barcode_input').val('');
+    $('#direct_qty').val(1);
+    resetDirectSelection();
+    renderCartTable();
+    $('#direct_barcode_input').focus();
+  }
+
+  function renderCartTable() {
+    var tbody = $('#cart_table_body');
+    if (cartItems.length === 0) {
+      tbody.html('<tr id="empty_cart_row"><td colspan="5" class="text-center text-muted py-5"><i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i><span class="font-weight-bold">ຍັງບໍ່ມີລາຍການສິນຄ້າໃນໃບໂອນ</span><br><small>ກະລຸນາສະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າທີ່ຈະໂອນ</small></td></tr>');
+      return;
+    }
+
+    var html = '';
+    cartItems.forEach(function(item, idx) {
+      html += '<tr>' +
+                '<td class="text-center align-middle font-weight-bold text-secondary">' + (idx + 1) + '</td>' +
+                '<td class="align-middle">' +
+                  '<strong class="d-block text-dark">' + escapeHtml(item.product_name) + '</strong>' +
+                  '<small class="text-muted">ບາໂຄ້ດ: ' + escapeHtml(item.barcode || '-') + '</small>' +
+                '</td>' +
+                '<td class="text-center align-middle font-weight-bold text-info">' + item.stock_qty + ' ' + escapeHtml(item.unit_name) + '</td>' +
+                '<td class="text-center align-middle">' +
+                  '<input type="number" class="form-control form-control-sm font-weight-bold text-center mx-auto" min="1" value="' + item.quantity + '" onchange="updateCartItemQty(' + idx + ', this.value)" style="width: 100px; height: 36px; border-radius: 6px;">' +
+                '</td>' +
+                '<td class="text-center align-middle">' +
+                  '<button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="removeCartItem(' + idx + ')"><i class="fas fa-trash-alt"></i></button>' +
+                '</td>' +
+              '</tr>';
+    });
+
+    tbody.html(html);
+  }
+
+  function updateCartItemQty(idx, val) {
+    var qty = parseInt(val);
+    if (isNaN(qty) || qty < 1) qty = 1;
+    if (cartItems[idx]) {
+      var needed = qty * cartItems[idx].multiplier;
+      if (needed > cartItems[idx].stock_qty) {
+        Swal.fire({ icon: 'warning', title: 'ສະຕັອກບໍ່ພໍ', text: 'ຈຳນວນໂອນ ເກີນສະຕັອກຕົ້ນທາງທີ່ມີ (' + cartItems[idx].stock_qty + ')!', confirmButtonColor: '#2563eb' });
+        qty = Math.floor(cartItems[idx].stock_qty / cartItems[idx].multiplier) || 1;
+      }
+      cartItems[idx].quantity = qty;
+    }
+    renderCartTable();
+  }
+
+  function removeCartItem(idx) {
+    cartItems.splice(idx, 1);
+    renderCartTable();
+  }
+
+  function submitDirectTransferBill() {
+    var toStore = $('#to_store_id').val();
+    if (!toStore) {
+      Swal.fire({ icon: 'warning', title: 'ກະລຸນາເລືອກສາຂາ', text: 'ກະລຸນາເລືອກສາຂາປາຍທາງທີ່ຈະໂອນສິນຄ້າໄປຫາ!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    if (cartItems.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'ບໍ່ມີລາຍການ', text: 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການໂອນຢ່າງນ້ອຍ 1 ລາຍການ!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    $('#cart_json_input').val(JSON.stringify(cartItems));
+
+    Swal.fire({
+      title: 'ຢືນຢັນການໂອນສິນຄ້າ?',
+      text: 'ລະບົບຈະຄັດລົບສະຕັອກຈາກສາຂາຕົ້ນທາງ ແລະ ເພີ່ມສະຕັອກເຂົ້າສາຂາປາຍທາງທັນທີ.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'ຢືນຢັນໂອນສະຕັອກ',
+      cancelButtonText: 'ຍົກເລີກ'
+    }).then(function(result) {
+      if (result.isConfirmed) {
+        $('#directTransferForm').submit();
+      }
+    });
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+</script>

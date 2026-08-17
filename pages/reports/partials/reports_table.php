@@ -3,11 +3,12 @@
     <table class="table table-hover table-striped align-middle report-table mb-0" style="font-size: 0.85rem; min-width: 720px;">
       <thead style="position: sticky; top: 0; z-index: 10; background: #ffffff !important; color: #1e293b;">
         <?php if ($view_mode === 'item'): ?>
-          <!-- ITEM MODE HEADERS (10 COLUMNS - WHITE) -->
+          <!-- ITEM MODE HEADERS (11 COLUMNS - WHITE) -->
           <tr style="background: #ffffff; color: #1e293b;">
             <th class="text-center" style="width: 50px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">#</th>
             <th class="text-left" style="width: 140px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ບິນ</th>
             <th class="text-left" style="width: 100px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ວັນທີ</th>
+            <th class="text-left" style="width: 120px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສາຂາ</th>
             <th class="text-left" style="width: 110px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ລະຫັດ</th>
             <th class="text-left" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຊື່ສິນຄ້າ</th>
             <th class="text-center" style="width: 90px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຈຳນວນ</th>
@@ -17,11 +18,12 @@
             <th class="text-left" style="width: 120px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ພະນັກງານ</th>
           </tr>
         <?php else: ?>
-          <!-- INVOICE MODE HEADERS (12 COLUMNS - WHITE) -->
+          <!-- INVOICE MODE HEADERS (14 COLUMNS - WHITE) -->
           <tr style="background: #ffffff; color: #1e293b;">
             <th class="text-center" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ລຳດັບ</th>
             <th class="text-left" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເລກບິນ</th>
             <th class="text-left" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ວັນທີ</th>
+            <th class="text-left" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສາຂາ</th>
             <th class="text-center" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຈຳນວນ</th>
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ລາຄາລວມ</th>
             <th class="text-right" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສ່ວນຫຼຸດ</th>
@@ -80,6 +82,11 @@
                   <!-- ວັນທີ -->
                   <td class="text-left" style="font-size: 0.84rem; color: #475569;"><?php echo htmlspecialchars($dateOnly); ?></td>
 
+                  <!-- ສາຂາ -->
+                  <td class="text-left font-weight-bold text-dark" style="font-size: 0.82rem;">
+                    <span class="badge badge-light border text-primary px-2 py-1"><i class="fas fa-store mr-1"></i><?php echo htmlspecialchars($itemRow['store_name'] ?? 'ສາຂາ'); ?></span>
+                  </td>
+
                   <!-- ລະຫັດ -->
                   <td class="text-left font-weight-bold text-secondary"><?php echo htmlspecialchars($itemRow['pro_code']); ?></td>
 
@@ -122,6 +129,9 @@
                   </a>
                 </td>
                 <td class="text-left" style="font-size: 0.84rem; color: #475569;"><?php echo htmlspecialchars($row['date_time']); ?></td>
+                <td class="text-left font-weight-bold text-dark" style="font-size: 0.82rem;">
+                  <span class="badge badge-light border text-primary px-2 py-1"><i class="fas fa-store mr-1"></i><?php echo htmlspecialchars($row['store_name'] ?? 'ສາຂາ'); ?></span>
+                </td>
                 <td class="text-center font-weight-bold text-dark"><?php echo number_format($row['qty']); ?></td>
                 <td class="text-right font-weight-bold text-secondary"><?php echo number_format($row['gross'], 0); ?> ₭</td>
                 <td class="text-right text-danger font-weight-bold"><?php echo number_format($row['discount'], 0); ?> ₭</td>
@@ -149,7 +159,10 @@
                     <button type="button" class="btn btn-sm btn-light border shadow-sm text-info" onclick="printBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ພິມໃບບິນ">
                       <i class="fas fa-print"></i>
                     </button>
-                    <?php if (($row['status'] ?? 'SUCCESS') !== 'CANCEL'): ?>
+                    <?php 
+                      $canDeleteBill = hasPermission('delete_bills') || ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ';
+                      if (($row['status'] ?? 'SUCCESS') !== 'CANCEL' && $canDeleteBill): 
+                    ?>
                       <button type="button" class="btn btn-sm btn-light border shadow-sm text-danger" onclick="deleteBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ລຶບບິນຂາຍ">
                         <i class="fas fa-trash-alt"></i>
                       </button>

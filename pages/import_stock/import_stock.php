@@ -6,7 +6,7 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 require_once __DIR__ . '/../../config/db.php';
 
 // Check authorization
-if (empty($_SESSION['user_id']) || (!hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('import_stock') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -60,8 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     if ($product_id <= 0 || $quantity <= 0) continue;
 
                     // Fetch Product
-                    $pStmt = $pdo->prepare("SELECT * FROM products WHERE product_id = ? FOR UPDATE");
-                    $pStmt->execute([$product_id]);
+                    $activeStoreId = getActiveStoreId($pdo);
+                    $pStmt = $pdo->prepare("SELECT * FROM products WHERE product_id = ? AND store_id = ? FOR UPDATE");
+                    $pStmt->execute([$product_id, $activeStoreId]);
                     $product = $pStmt->fetch();
 
                     if (!$product) continue;
@@ -95,8 +96,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $insBatch->execute([$product_id, $import_detail_id, $expiry_date, $total_base_qty, $total_base_qty]);
 
                     // Update product stock and buy price
-                    $updProd = $pdo->prepare("UPDATE products SET qty = qty + ?, bprice = ? WHERE product_id = ?");
-                    $updProd->execute([$total_base_qty, $cost_price, $product_id]);
+                    $updProd = $pdo->prepare("UPDATE products SET qty = qty + ?, bprice = ? WHERE product_id = ? AND store_id = ?");
+                    $updProd->execute([$total_base_qty, $cost_price, $product_id, $activeStoreId]);
 
                     $insertedCount++;
                 }
@@ -252,13 +253,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 // Fetch categories for modal filter
 $categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
 
-// Fetch all products with categories & multi-units
-$products = $pdo->query("
+// Fetch products for current active store with categories & multi-units
+$activeStoreId = getActiveStoreId($pdo);
+$prodStmt = $pdo->prepare("
     SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
     FROM products p 
     LEFT JOIN categories c ON p.category_id = c.category_id 
+    WHERE p.store_id = ?
     ORDER BY p.product_name ASC
-")->fetchAll();
+");
+$prodStmt->execute([$activeStoreId]);
+$products = $prodStmt->fetchAll();
 
 $product_units_map = [];
 $uRows = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC")->fetchAll();
@@ -267,6 +272,11 @@ foreach ($uRows as $u) {
 }
 
 // Fetch Import History
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
+
+$historyWhere = (!$isAdmin && !$isMain) ? " WHERE p.store_id = :store_id " : "";
 $historyQuery = "
     SELECT 
         id.import_detail_id,
@@ -295,9 +305,16 @@ $historyQuery = "
     JOIN products p ON id.product_id = p.product_id
     LEFT JOIN tbuser u ON i.created_by = u.Id
     LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
+    {$historyWhere}
     ORDER BY id.import_detail_id DESC
 ";
-$importHistory = $pdo->query($historyQuery)->fetchAll();
+$histStmt = $pdo->prepare($historyQuery);
+if (!$isAdmin && !$isMain) {
+    $histStmt->execute([':store_id' => $activeStoreId]);
+} else {
+    $histStmt->execute();
+}
+$importHistory = $histStmt->fetchAll();
 $total_imports = count($importHistory);
 
 // Next available auto invoice number (000001, 000002, 000003...)

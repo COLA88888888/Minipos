@@ -17,6 +17,15 @@ if (empty($_SESSION['user_id']) || (!hasPermission('setup') && ($_SESSION['statu
 $message = '';
 $message_type = '';
 
+// Handle POST switch_branch
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'switch_branch') {
+    $store_id = intval($_POST['store_id'] ?? 1);
+    $_SESSION['active_store_id'] = $store_id;
+    header('Content-Type: application/json');
+    echo json_encode(['success' => true, 'store_id' => $store_id]);
+    exit();
+}
+
 // Auto-generate next numeric Branch Code (1, 2, 3...)
 $max_id = (int)$pdo->query("SELECT COALESCE(MAX(store_id), 0) FROM tbstore")->fetchColumn();
 $next_store_code = (string)($max_id + 1);

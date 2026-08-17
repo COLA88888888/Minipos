@@ -4,21 +4,25 @@ require_once __DIR__ . '/../../config/db.php';
 
 header('Content-Type: application/json');
 
-if (empty($_SESSION['user_id']) || (!hasPermission('stock') && $_SESSION['status'] !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('products') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit();
 }
 
+$activeStoreId = getActiveStoreId($pdo);
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // --- GET all products ---
 if ($action === 'get_products') {
-    $products = $pdo->query("
+    $stmt = $pdo->prepare("
         SELECT p.*, c.category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
+        WHERE p.store_id = ?
         ORDER BY p.product_id DESC
-    ")->fetchAll();
+    ");
+    $stmt->execute([$activeStoreId]);
+    $products = $stmt->fetchAll();
     echo json_encode(['success' => true, 'data' => $products]);
     exit();
 }
@@ -26,8 +30,8 @@ if ($action === 'get_products') {
 // --- GET single product ---
 if ($action === 'get_product' && !empty($_GET['id'])) {
     $id   = intval($_GET['id']);
-    $stmt = $pdo->prepare("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.product_id = ?");
-    $stmt->execute([$id]);
+    $stmt = $pdo->prepare("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.product_id = ? AND p.store_id = ?");
+    $stmt->execute([$id, $activeStoreId]);
     $product = $stmt->fetch();
     echo json_encode(['success' => true, 'data' => $product]);
     exit();
@@ -37,10 +41,11 @@ if ($action === 'get_product' && !empty($_GET['id'])) {
 if ($action === 'get_by_category' && isset($_GET['category_id'])) {
     $catId = intval($_GET['category_id']);
     if ($catId > 0) {
-        $stmt = $pdo->prepare("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.category_id = ? ORDER BY p.product_id DESC");
-        $stmt->execute([$catId]);
+        $stmt = $pdo->prepare("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.category_id = ? AND p.store_id = ? ORDER BY p.product_id DESC");
+        $stmt->execute([$catId, $activeStoreId]);
     } else {
-        $stmt = $pdo->query("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id ORDER BY p.product_id DESC");
+        $stmt = $pdo->prepare("SELECT p.*, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.store_id = ? ORDER BY p.product_id DESC");
+        $stmt->execute([$activeStoreId]);
     }
     $products = $stmt->fetchAll();
     echo json_encode(['success' => true, 'data' => $products]);
@@ -54,24 +59,29 @@ if ($action === 'search' && isset($_GET['q'])) {
         SELECT p.*, c.category_name
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
-        WHERE p.product_name LIKE ? OR p.barcode LIKE ?
+        WHERE (p.product_name LIKE ? OR p.barcode LIKE ?) AND p.store_id = ?
         ORDER BY p.product_id DESC
         LIMIT 50
     ");
-    $stmt->execute([$q, $q]);
+    $stmt->execute([$q, $q, $activeStoreId]);
     $products = $stmt->fetchAll();
     echo json_encode(['success' => true, 'data' => $products]);
     exit();
 }
 
-// --- GET next product ID (Category ID + Global Total Count Sequence: e.g. 10004, 20004...) ---
+// --- GET next product ID (Category ID + Global Total Count Sequence) ---
 if ($action === 'get_next_product_id') {
     $catId = intval($_GET['category_id'] ?? 0);
     $totalCount = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
     $seq = $totalCount + 1;
     $seqFormatted = str_pad($seq, 4, '0', STR_PAD_LEFT);
     
-    $nextId = $catId > 0 ? intval($catId . $seqFormatted) : $seqFormatted;
+    $nextId = $catId > 0 ? intval($catId . $seqFormatted) : intval($seqFormatted);
+    while ((int)$pdo->query("SELECT COUNT(*) FROM products WHERE product_id = " . intval($nextId))->fetchColumn() > 0) {
+        $seq++;
+        $seqFormatted = str_pad($seq, 4, '0', STR_PAD_LEFT);
+        $nextId = $catId > 0 ? intval($catId . $seqFormatted) : intval($seqFormatted);
+    }
     
     echo json_encode([
         'success' => true,
@@ -82,7 +92,7 @@ if ($action === 'get_next_product_id') {
     exit();
 }
 
-// --- GET product units (ລາຍການຫຼາຍລາຄາ/ຫຼາຍຫົວໜ່ວຍ) ---
+// --- GET product units ---
 if ($action === 'get_product_units' && isset($_GET['product_id'])) {
     $productId = intval($_GET['product_id']);
     if ($productId > 0) {
@@ -106,9 +116,9 @@ if ($action === 'check_barcode' && isset($_GET['barcode'])) {
         exit();
     }
 
-    // Check main products table
-    $stmt = $pdo->prepare("SELECT product_id, product_name FROM products WHERE barcode = ? AND product_id != ?");
-    $stmt->execute([$barcode, $exclude_id]);
+    // Check main products table within current branch
+    $stmt = $pdo->prepare("SELECT product_id, product_name FROM products WHERE barcode = ? AND product_id != ? AND store_id = ?");
+    $stmt->execute([$barcode, $exclude_id, $activeStoreId]);
     $p = $stmt->fetch();
 
     if ($p) {
@@ -119,9 +129,9 @@ if ($action === 'check_barcode' && isset($_GET['barcode'])) {
         exit();
     }
 
-    // Check product_units table
-    $stmt2 = $pdo->prepare("SELECT u.product_id, p.product_name FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ? AND u.product_id != ?");
-    $stmt2->execute([$barcode, $exclude_id]);
+    // Check product_units table within current branch
+    $stmt2 = $pdo->prepare("SELECT u.product_id, p.product_name FROM product_units u JOIN products p ON u.product_id = p.product_id WHERE u.barcode = ? AND u.product_id != ? AND p.store_id = ?");
+    $stmt2->execute([$barcode, $exclude_id, $activeStoreId]);
     $u = $stmt2->fetch();
 
     if ($u) {

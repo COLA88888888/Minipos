@@ -9,7 +9,7 @@ if (!isset($base_path)) {
 require_once __DIR__ . '/../config/db.php';
 
 // Check permissions
-if (empty($_SESSION['user_id']) || (!hasPermission('customers') && !hasPermission('sale') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('customers') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -28,6 +28,7 @@ try {
 // Handle Customer Form Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
+        $activeStoreId = getActiveStoreId($pdo);
         if ($_POST['action'] === 'add_customer') {
             $code        = trim($_POST['customer_code'] ?? '');
             $name        = trim($_POST['customer_name'] ?? '');
@@ -38,17 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $notes       = trim($_POST['notes'] ?? '');
 
             if (empty($code)) {
-                $maxId = (int)$pdo->query("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers")->fetchColumn();
-                $code = 'CUST-' . str_pad($maxId, 3, '0', STR_PAD_LEFT);
+                $maxId = (int)$pdo->query("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers WHERE store_id = {$activeStoreId}")->fetchColumn();
+                $code = 'CUST-' . str_pad($activeStoreId, 2, '0', STR_PAD_LEFT) . '-' . str_pad($maxId, 3, '0', STR_PAD_LEFT);
             }
 
             if ($name !== '') {
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, member_card, email, address, notes) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$code, $name, $phone, $member_card, $email, $address, $notes]);
+                    $stmt = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, member_card, email, address, notes, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$code, $name, $phone, $member_card, $email, $address, $notes, $activeStoreId]);
                     $message = 'ເພີ່ມຂໍ້ມູນລູກຄ້າສຳເລັດ!';
                     $message_type = 'success';
-                    logActivity($pdo, "ເພີ່ມຂໍ້ມູນລູກຄ້າ", "ລະຫັດ: $code, ຊື່: $name");
+                    logActivity($pdo, "ເພີ່ມຂໍ້ມູນລູກຄ້າ", "ລະຫັດ: $code, ຊື່: $name (ສາຂາ #$activeStoreId)");
                 } catch (Exception $e) {
                     $message = 'ຜິດພາດ: ລະຫັດລູກຄ້ານີ້ອາດມີໃນລະບົບແລ້ວ ຫຼື ' . $e->getMessage();
                     $message_type = 'danger';
@@ -69,8 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($id > 0 && $name !== '') {
                 try {
-                    $stmt = $pdo->prepare("UPDATE customers SET customer_name = ?, phone = ?, member_card = ?, email = ?, address = ?, notes = ? WHERE customer_id = ?");
-                    $stmt->execute([$name, $phone, $member_card, $email, $address, $notes, $id]);
+                    $stmt = $pdo->prepare("UPDATE customers SET customer_name = ?, phone = ?, member_card = ?, email = ?, address = ?, notes = ? WHERE customer_id = ? AND store_id = ?");
+                    $stmt->execute([$name, $phone, $member_card, $email, $address, $notes, $id, $activeStoreId]);
                     $message = 'ແກ້ໄຂຂໍ້ມູນລູກຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ແກ້ໄຂຂໍ້ມູນລູກຄ້າ", "ID: $id, ຊື່: $name");
@@ -87,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = intval($_POST['customer_id'] ?? 0);
             if ($id > 0) {
                 try {
-                    $stmt = $pdo->prepare("DELETE FROM customers WHERE customer_id = ?");
-                    $stmt->execute([$id]);
+                    $stmt = $pdo->prepare("DELETE FROM customers WHERE customer_id = ? AND store_id = ?");
+                    $stmt->execute([$id, $activeStoreId]);
                     $message = 'ລົບຂໍ້ມູນລູກຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ລົບຂໍ້ມູນລູກຄ້າ", "ID: $id");
@@ -101,11 +102,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch All Customers
-$stmtCust = $pdo->query("SELECT * FROM customers ORDER BY customer_id DESC");
+// Fetch All Customers Scoped to Active Store
+$activeStoreId = getActiveStoreId($pdo);
+$stmtCust = $pdo->prepare("SELECT c.*, s.store_name FROM customers c LEFT JOIN tbstore s ON c.store_id = s.store_id WHERE c.store_id = ? ORDER BY c.customer_id DESC");
+$stmtCust->execute([$activeStoreId]);
 $allCustomers = $stmtCust->fetchAll();
 $total_records = count($allCustomers);
 
-// Generate Next Customer Code
-$maxId = (int)$pdo->query("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers")->fetchColumn();
-$next_cust_code = 'CUST-' . str_pad($maxId, 3, '0', STR_PAD_LEFT);
+// Generate Next Customer Code Scoped to Store
+$maxId = (int)$pdo->query("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers WHERE store_id = {$activeStoreId}")->fetchColumn();
+$next_cust_code = 'CUST-' . str_pad($activeStoreId, 2, '0', STR_PAD_LEFT) . '-' . str_pad($maxId, 3, '0', STR_PAD_LEFT);

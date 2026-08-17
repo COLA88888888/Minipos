@@ -61,10 +61,10 @@ try {
         if ($password_matches) {
             $userStatusVal = $user['status'] ?? $user['userstatus'] ?? '';
             $isAdmin = (
+                ($user['Id'] ?? 0) == 1 ||
                 strtolower($userStatusVal) === 'admin' || 
-                $userStatusVal === 'ຜູ້ບໍລິຫານ' || 
-                strtolower($user['username'] ?? '') === 'admin' || 
-                ($user['Id'] ?? 0) == 1
+                strtolower($userStatusVal) === 'super admin' ||
+                $userStatusVal === 'ຜູ້ບໍລິຫານ'
             );
 
             $userStoreId = intval($user['store_id'] ?? $user['branch_id'] ?? 1);
@@ -92,22 +92,34 @@ try {
             $_SESSION['status'] = $isAdmin ? 'ຜູ້ບໍລິຫານ' : ($userStatusVal ?: 'ພະນັກງານ');
             $_SESSION['store_id'] = $user['store_id'] ?? $user['branch_id'] ?? 1;
 
-            // ໂຫຼດສິດການໃຊ້ງານຕາມໂມດູນ (Module Permissions)
+            // ໂຫຼດສິດການໃຊ້ງານຕາມໂມດູນ (Module Permissions - Strict No Fallback)
             $_SESSION['permissions'] = [
                 'dashboard' => $isAdmin ? 1 : (int)($user['dashboard'] ?? 0),
                 'sale' => $isAdmin ? 1 : (int)($user['sale'] ?? 0),
+                'item_sales' => $isAdmin ? 1 : (int)($user['item_sales'] ?? 0),
                 'stock' => $isAdmin ? 1 : (int)($user['stock'] ?? 0),
+                'categories' => $isAdmin ? 1 : (int)($user['categories'] ?? 0),
+                'products' => $isAdmin ? 1 : (int)($user['products'] ?? 0),
+                'import_stock' => $isAdmin ? 1 : (int)($user['import_stock'] ?? 0),
+                'import_list' => $isAdmin ? 1 : (int)($user['import_list'] ?? 0),
                 'report' => $isAdmin ? 1 : (int)($user['report'] ?? 0),
+                'daily_report' => $isAdmin ? 1 : (int)($user['daily_report'] ?? 0),
+                'all_sales' => $isAdmin ? 1 : (int)($user['all_sales'] ?? 0),
+                'best_seller' => $isAdmin ? 1 : (int)($user['best_seller'] ?? 0),
+                'profit_cost' => $isAdmin ? 1 : (int)($user['profit_cost'] ?? 0),
+                'financial' => $isAdmin ? 1 : (int)($user['financial'] ?? 0),
+                'category_sales' => $isAdmin ? 1 : (int)($user['category_sales'] ?? 0),
+                'delete_bills' => $isAdmin ? 1 : (int)($user['delete_bills'] ?? 0),
                 'accounting' => $isAdmin ? 1 : (int)($user['accounting'] ?? 0),
                 'setup' => $isAdmin ? 1 : (int)($user['setup'] ?? 0),
                 'users' => $isAdmin ? 1 : (int)($user['users'] ?? 0),
-                'permissions' => $isAdmin ? 1 : (int)($user['permissions'] ?? $user['users'] ?? 0),
+                'permissions' => $isAdmin ? 1 : (int)($user['permissions'] ?? 0),
+                'branches' => $isAdmin ? 1 : (int)($user['branches'] ?? 0),
                 'edit' => $isAdmin ? 1 : (int)($user['edit'] ?? 0),
-                'customers' => $isAdmin ? 1 : (int)($user['customers'] ?? $user['sale'] ?? 0),
-                'cafe' => $isAdmin ? 1 : (int)($user['cafe'] ?? 0),
-                'order' => $isAdmin ? 1 : (int)($user['order'] ?? 0),
-                'kitchen' => $isAdmin ? 1 : (int)($user['kitchen'] ?? 0),
-                'tbl' => $isAdmin ? 1 : (int)($user['tbl'] ?? 0)
+                'customers' => $isAdmin ? 1 : (int)($user['customers'] ?? 0),
+                'database' => $isAdmin ? 1 : (int)($user['database'] ?? 0),
+                'stock_transfer' => $isAdmin ? 1 : (int)($user['stock_transfer'] ?? 0),
+                'transfer_history' => $isAdmin ? 1 : (int)($user['transfer_history'] ?? 0)
             ];
             
             $_SESSION['profile_img'] = 'default.png';

@@ -31,7 +31,7 @@ if (isset($_SESSION['user_id'])) {
     }
     $_SESSION['last_activity'] = time();
 }
-if ($conn && isset($_SESSION['user_id'])) {
+if ($conn && !empty($_SESSION['user_id'])) {
     $session_user_id = mysqli_real_escape_string($conn, (string)$_SESSION['user_id']);
     // ອັບເດດຂໍ້ມູນສະຖານະ ແລະ ສິດການໃຊ້ງານຈາກຕາຕະລາງ tbuser ຕາມ user_id
     $refresh_sql = "SELECT * FROM tbuser WHERE Id = '$session_user_id' LIMIT 1";
@@ -39,9 +39,10 @@ if ($conn && isset($_SESSION['user_id'])) {
     if ($refresh_result && $refresh_row = mysqli_fetch_assoc($refresh_result)) {
         $userStatusVal = $refresh_row['status'] ?? $refresh_row['userstatus'] ?? '';
         $isAdmin = (
+            ($refresh_row['Id'] ?? 0) == 1 ||
             strtolower($userStatusVal) === 'admin' ||
-            $userStatusVal === 'ຜູ້ບໍລິຫານ' ||
-            ($refresh_row['Id'] ?? 0) == 1
+            strtolower($userStatusVal) === 'super admin' ||
+            $userStatusVal === 'ຜູ້ບໍລິຫານ'
         );
         $_SESSION['status'] = $isAdmin ? 'ຜູ້ບໍລິຫານ' : ($userStatusVal ?: 'ພະນັກງານ');
         $_SESSION['username'] = $refresh_row['username'] ?? ($_SESSION['username'] ?? 'user');
@@ -49,16 +50,30 @@ if ($conn && isset($_SESSION['user_id'])) {
         $_SESSION['permissions'] = [
             'dashboard' => $isAdmin ? 1 : (int)($refresh_row['dashboard'] ?? 0),
             'sale' => $isAdmin ? 1 : (int)($refresh_row['sale'] ?? 0),
+            'item_sales' => $isAdmin ? 1 : (int)($refresh_row['item_sales'] ?? $refresh_row['sale'] ?? 0),
             'stock' => $isAdmin ? 1 : (int)($refresh_row['stock'] ?? 0),
+            'categories' => $isAdmin ? 1 : (int)($refresh_row['categories'] ?? 0),
+            'products' => $isAdmin ? 1 : (int)($refresh_row['products'] ?? 0),
+            'import_stock' => $isAdmin ? 1 : (int)($refresh_row['import_stock'] ?? 0),
+            'import_list' => $isAdmin ? 1 : (int)($refresh_row['import_list'] ?? 0),
             'report' => $isAdmin ? 1 : (int)($refresh_row['report'] ?? 0),
+            'daily_report' => $isAdmin ? 1 : (int)($refresh_row['daily_report'] ?? $refresh_row['report'] ?? 0),
+            'all_sales' => $isAdmin ? 1 : (int)($refresh_row['all_sales'] ?? $refresh_row['report'] ?? 0),
+            'best_seller' => $isAdmin ? 1 : (int)($refresh_row['best_seller'] ?? $refresh_row['report'] ?? 0),
+            'profit_cost' => $isAdmin ? 1 : (int)($refresh_row['profit_cost'] ?? $refresh_row['report'] ?? 0),
+            'financial' => $isAdmin ? 1 : (int)($refresh_row['financial'] ?? $refresh_row['report'] ?? 0),
+            'category_sales' => $isAdmin ? 1 : (int)($refresh_row['category_sales'] ?? $refresh_row['report'] ?? 0),
+            'delete_bills' => $isAdmin ? 1 : (int)($refresh_row['delete_bills'] ?? 0),
             'accounting' => $isAdmin ? 1 : (int)($refresh_row['accounting'] ?? 0),
             'setup' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0),
             'users' => $isAdmin ? 1 : (int)($refresh_row['users'] ?? 0),
-            'permissions' => $isAdmin ? 1 : (int)($refresh_row['permissions'] ?? $refresh_row['users'] ?? 0),
+            'permissions' => $isAdmin ? 1 : (int)($refresh_row['permissions'] ?? 0),
+            'branches' => $isAdmin ? 1 : (int)($refresh_row['branches'] ?? 0),
             'edit' => $isAdmin ? 1 : (int)($refresh_row['edit'] ?? 0),
-            'customers' => $isAdmin ? 1 : (int)($refresh_row['customers'] ?? $refresh_row['sale'] ?? 0),
-            'branches' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0),
-            'database' => $isAdmin ? 1 : (int)($refresh_row['database'] ?? $refresh_row['setup'] ?? 0)
+            'customers' => $isAdmin ? 1 : (int)($refresh_row['customers'] ?? 0),
+            'database' => $isAdmin ? 1 : (int)($refresh_row['database'] ?? 0),
+            'stock_transfer' => $isAdmin ? 1 : (int)($refresh_row['stock_transfer'] ?? 0),
+            'transfer_history' => $isAdmin ? 1 : (int)($refresh_row['transfer_history'] ?? 0)
         ];
 
         // Enforce active branch status check (log out non-admin user if their branch is disabled/inactive)
@@ -673,11 +688,18 @@ if (!function_exists('logActivity')) {
             return;
         }
         try {
-            // ຄຳສັ່ງ SQL: ບັນທຶກປະຫວັດການເຮັດວຽກຂອງຜູ້ໃຊ້ (ເຊັ່ນ: ການເຂົ້າສູ່ລະບົບ, ການເພີ່ມ/ລົບ/ແກ້ໄຂຂໍ້ມູນ) ລົງໃນຕາຕະລາງ activity_logs
+            // Ensure table exists
+            $pdo->exec("CREATE TABLE IF NOT EXISTS `activity_logs` (
+                `id` INT AUTO_INCREMENT PRIMARY KEY,
+                `action` VARCHAR(255) NOT NULL,
+                `detail` TEXT NULL,
+                `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
             $stmt = $pdo->prepare('INSERT INTO activity_logs (action, detail, created_at) VALUES (?, ?, NOW())');
             $stmt->execute([$action, $detail]);
-        } catch (Exception $e) {
-            // activity_logs table may not exist in all deployments
+        } catch (Throwable $e) {
+            // Ignore activity log failures safely
         }
     }
 }
@@ -694,25 +716,32 @@ if (!function_exists('hasPermission')) {
             return true;
         }
         
-        // 2. Module alias mappings
+        // 2. Module alias mappings (Strict direct module check)
         $aliasMap = [
             'dashboard' => 'dashboard',
             'pos' => 'sale',
-            'categories' => 'stock',
-            'products' => 'stock',
-            'import' => 'stock',
-            'import_stock' => 'stock',
-            'stock_check' => 'stock',
-            'expiry_check' => 'stock',
+            'categories' => 'categories',
+            'products' => 'products',
+            'import' => 'import',
+            'import_stock' => 'import_stock',
+            'stock_check' => 'stock_check',
+            'expiry_check' => 'expiry_check',
             'reports' => 'report',
-            'financial' => 'report',
+            'financial' => 'financial',
+            'daily_report' => 'daily_report',
+            'all_sales' => 'all_sales',
+            'best_seller' => 'best_seller',
+            'profit_cost' => 'profit_cost',
+            'category_sales' => 'category_sales',
+            'delete_bills' => 'delete_bills',
+            'item_sales' => 'item_sales',
             'accounting' => 'accounting',
             'settings' => 'setup',
-            'branches' => ['branches', 'setup'],
-            'database' => ['database', 'setup'],
-            'permissions' => ['permissions', 'users'],
+            'branches' => 'branches',
+            'database' => 'database',
+            'permissions' => 'permissions',
             'user_manage' => 'users',
-            'customers' => ['customers', 'sale']
+            'customers' => 'customers'
         ];
         
         $perms = $_SESSION['permissions'] ?? [];
@@ -801,6 +830,71 @@ if (!function_exists('resolveBankQr')) {
             }
         }
         return '../../assets/img/qr_placeholder.png';
+    }
+}
+
+// Global Branch Store Helper Functions
+if (!function_exists('isMainBranch')) {
+    function isMainBranch($pdo, $store_id = null) {
+        if ($store_id === null) {
+            $store_id = intval($_SESSION['store_id'] ?? 1);
+        }
+        $isAdmin = (
+            ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' ||
+            strtolower($_SESSION['status'] ?? '') === 'admin' ||
+            ($_SESSION['user_id'] ?? 0) == 1
+        );
+        if ($isAdmin && $store_id == 1) {
+            return true;
+        }
+        if (!$pdo) return ($store_id == 1);
+        try {
+            $stmt = $pdo->prepare("SELECT is_main FROM tbstore WHERE store_id = ? LIMIT 1");
+            $stmt->execute([$store_id]);
+            $isMain = $stmt->fetchColumn();
+            return (bool)$isMain;
+        } catch (Exception $e) {
+            return ($store_id == 1);
+        }
+    }
+}
+
+if (!function_exists('getActiveStoreId')) {
+    function getActiveStoreId($pdo) {
+        $userStoreId = intval($_SESSION['store_id'] ?? 1);
+        $isAdmin = (
+            ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' ||
+            strtolower($_SESSION['status'] ?? '') === 'admin' ||
+            ($_SESSION['user_id'] ?? 0) == 1
+        );
+        $isMain = isMainBranch($pdo, $userStoreId);
+        
+        // If logged-in user belongs to a sub-branch (not main, not admin), enforce strict branch lock
+        if (!$isMain && !$isAdmin) {
+            return $userStoreId;
+        }
+
+        // If main branch / admin, check if active_store_id is set in session
+        if (isset($_SESSION['active_store_id']) && $_SESSION['active_store_id'] !== '') {
+            return intval($_SESSION['active_store_id']);
+        }
+        return $userStoreId;
+    }
+}
+
+if (!function_exists('getLowStockAlerts')) {
+    function getLowStockAlerts($pdo) {
+        if (!$pdo) return [];
+        try {
+            $sql = "SELECT p.*, s.store_name, s.is_main 
+                    FROM products p 
+                    JOIN tbstore s ON p.store_id = s.store_id 
+                    WHERE p.qty <= p.min_qty AND s.status = 'active'
+                    ORDER BY s.is_main ASC, p.qty ASC";
+            return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
     }
 }
 ?>

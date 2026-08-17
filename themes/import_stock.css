@@ -215,3 +215,40 @@ body {
     font-size: 1rem !important;
 }
 
+/* Action buttons styling: Keep color on hover with soft background highlight */
+.btn-outline-primary {
+  color: #2563eb !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  transition: all 0.2s ease;
+}
+.btn-outline-primary:hover {
+  color: #1d4ed8 !important;
+  background-color: #eff6ff !important;
+  border-color: transparent !important;
+}
+
+.btn-outline-success {
+  color: #10b981 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  transition: all 0.2s ease;
+}
+.btn-outline-success:hover {
+  color: #059669 !important;
+  background-color: #ecfdf5 !important;
+  border-color: transparent !important;
+}
+
+.btn-outline-danger {
+  color: #ef4444 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  transition: all 0.2s ease;
+}
+.btn-outline-danger:hover {
+  color: #dc2626 !important;
+  background-color: #fef2f2 !important;
+  border-color: transparent !important;
+}
+

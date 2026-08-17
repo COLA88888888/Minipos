@@ -8,9 +8,11 @@
         </h5>
       </div>
       <div class="col-sm-6 text-right">
-        <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCustomerModal" style="border-radius: 6px;">
-          <i class="fas fa-user-plus mr-1"></i> ເພີ່ມລູກຄ້າໃໝ່
-        </button>
+        <?php if (hasPermission('customers')): ?>
+          <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCustomerModal" style="border-radius: 6px;">
+            <i class="fas fa-user-plus mr-1"></i> ເພີ່ມລູກຄ້າໃໝ່
+          </button>
+        <?php endif; ?>
       </div>
     </div>
   </div>

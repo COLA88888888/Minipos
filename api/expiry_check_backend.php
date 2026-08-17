@@ -10,7 +10,7 @@ if (!isset($base_path)) {
 require_once __DIR__ . '/../config/db.php';
 
 // Check if logged in and has access to stock
-if (empty($_SESSION['user_id']) || (!hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('products') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -77,6 +77,8 @@ $search_query = trim($_GET['search_query'] ?? '');
 $category_filter = !empty($_GET['category_id']) ? intval($_GET['category_id']) : 0;
 $status_filter = $_GET['status_filter'] ?? ''; // 'expired', 'near', 'normal'
 
+$activeStoreId = getActiveStoreId($pdo);
+
 // Base Query
 $query = "
     SELECT pb.*, p.product_name, p.base_unit, c.category_name, s.shelf_name,
@@ -85,11 +87,11 @@ $query = "
     JOIN products p ON pb.product_id = p.product_id
     JOIN categories c ON p.category_id = c.category_id
     LEFT JOIN shelves s ON p.shelf_id = s.shelf_id
-    WHERE pb.quantity > 0 AND pb.expiry_date IS NOT NULL
+    WHERE pb.quantity > 0 AND pb.expiry_date IS NOT NULL AND p.store_id = ?
 ";
 
 $where_clauses = [];
-$params = [];
+$params = [$activeStoreId];
 
 if ($search_query !== '') {
     $query .= " AND p.product_name LIKE ?";

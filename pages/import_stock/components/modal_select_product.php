@@ -65,7 +65,7 @@
 
         <!-- Products List Table inside Modal -->
         <div class="table-responsive bg-white rounded border shadow-sm mb-3" style="max-height: 420px; overflow-y: auto; border-radius: 12px !important;">
-          <table class="table table-hover mb-0 align-middle">
+          <table class="table table-hover mb-0 align-middle text-nowrap">
             <thead class="text-dark font-weight-bold" style="position: sticky; top: 0; z-index: 10; background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
               <tr>
                 <th class="text-center" style="width: 70px;">ລະຫັດ</th>

@@ -101,6 +101,10 @@ function getToast() {
  */
 function toggleUserPerm(userId, perm, checkbox) {
   var val = checkbox.checked ? 1 : 0;
+  var switchStates = {};
+  document.querySelectorAll('[data-user-id="' + userId + '"]').forEach(function(cb) {
+    switchStates[cb.id] = cb.checked ? 1 : 0;
+  });
 
   $.ajax({
     url: window.location.href,
@@ -109,7 +113,9 @@ function toggleUserPerm(userId, perm, checkbox) {
       ajax_action: 'toggle_perm',
       user_id: userId,
       perm: perm,
-      val: val
+      val: val,
+      switch_key: checkbox.id,
+      switch_states: JSON.stringify(switchStates)
     },
     dataType: 'json',
     success: function(res) {
@@ -140,9 +146,6 @@ function toggleUserPerm(userId, perm, checkbox) {
     },
     error: function() {
       checkbox.checked = !checkbox.checked;
-      document.querySelectorAll('[data-user-id="' + userId + '"][data-perm="' + perm + '"]').forEach(function(cb) {
-        cb.checked = checkbox.checked;
-      });
       if (typeof Swal !== 'undefined') {
         Swal.fire({
           icon: 'error',
@@ -153,6 +156,28 @@ function toggleUserPerm(userId, perm, checkbox) {
     }
   });
 }
+
+// Restore each matrix switch from its own saved state.  Several columns can
+// use the same permission internally, so their visual state must be restored
+// by switch ID rather than by the shared permission name.
+$(function() {
+  $.ajax({
+    url: window.location.href,
+    type: 'POST',
+    dataType: 'json',
+    data: { ajax_action: 'get_switch_states' },
+    success: function(res) {
+      if (!res.success || !res.states) return;
+
+      Object.keys(res.states).forEach(function(switchKey) {
+        var checkbox = document.getElementById(switchKey);
+        if (checkbox) {
+          checkbox.checked = Number(res.states[switchKey]) === 1;
+        }
+      });
+    }
+  });
+});
 
 /**
  * 5. ຟັງຊັນນຳໃຊ້ຮູບແບບສິດດ່ວນ (Apply Role Preset Template via AJAX)

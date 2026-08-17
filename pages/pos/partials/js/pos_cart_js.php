@@ -123,17 +123,41 @@ function updateCartUI() {
     container.append(rowHtml);
   });
 
-  var discountStr = $('#cartDiscount').val() || '0';
-  var discountVal = parseFloat(discountStr.replace(/\D/g, '')) || 0;
-  var vatVal = subtotal * (<?php echo $vat_rate; ?> / 100);
-  var netTotal = Math.max(0, subtotal - discountVal + vatVal);
+  <?php
+    $storeTaxType = $company['tax_type'] ?? 'inclusive';
+    $storeVatPercent = floatval($company['vat_percent'] ?? 7.00);
+  ?>
+  var discountStr  = $('#cartDiscount').val() || '0';
+  var discountVal  = parseFloat(discountStr.replace(/\D/g, '')) || 0;
+  var taxType      = '<?php echo $storeTaxType; ?>';
+  var vatPercent   = <?php echo $storeVatPercent; ?>;
+  var amtAfterDisc = Math.max(0, subtotal - discountVal);
+  var vatVal       = 0;
+  var netTotal     = amtAfterDisc;
+
+  if (taxType === 'exclusive' && vatPercent > 0) {
+    vatVal = Math.round(amtAfterDisc * (vatPercent / 100));
+    netTotal = amtAfterDisc + vatVal;
+    $('#cartVatRow').attr('style', 'display: flex !important;');
+    $('#cartVatLabel').text('ພາສີ VAT (' + vatPercent + '%):');
+    $('#cartVat').text('+' + vatVal.toLocaleString() + ' ₭');
+  } else if (taxType === 'inclusive' && vatPercent > 0) {
+    vatVal = Math.round(amtAfterDisc - (amtAfterDisc / (1 + (vatPercent / 100))));
+    netTotal = amtAfterDisc;
+    $('#cartVatRow').attr('style', 'display: flex !important;');
+    $('#cartVatLabel').text('ລວມ ພາສີ VAT (' + vatPercent + '%):');
+    $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
+  } else {
+    vatVal = 0;
+    netTotal = amtAfterDisc;
+    $('#cartVatRow').attr('style', 'display: none !important;');
+  }
 
   var lineCount = cart.length;
   var countText = lineCount + ' ລາຍການ (' + totalItemsCount + ' ຈຳນວນ)';
 
   $('#cartItemCountBadge').text(countText);
   $('#cartSubtotal').text(subtotal.toLocaleString() + ' ₭');
-  $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
   $('#cartTotal').text(netTotal.toLocaleString() + ' ₭');
 
   if (totalItemsCount > 0) {

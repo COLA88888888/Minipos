@@ -7,15 +7,15 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
 require_once dirname(__DIR__, 3) . '/config/db.php';
 
-// Check permissions (Item sales report is accessible with either 'sale' or 'report' permission)
+// Check permissions (Item sales & All sales reports check specific sub-permissions)
 $currentReportType = trim($_GET['type'] ?? 'all_sales');
 if ($currentReportType === 'item_sales') {
-    if (!hasPermission('sale') && !hasPermission('report')) {
+    if (!hasPermission('item_sales') && !hasPermission('sale') && !hasPermission('report') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
         echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
         exit();
     }
 } else {
-    if (!hasPermission('report')) {
+    if (!hasPermission($currentReportType) && !hasPermission('all_sales') && !hasPermission('report') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
         echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
         exit();
     }
@@ -109,7 +109,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
     }
 
     try {
-        $stmtB = $pdo->prepare("SELECT * FROM tbsale_save WHERE sale_save_bill = :bill");
+        $stmtB = $pdo->prepare("
+            SELECT s.*, sl.vat_amount, sl.tax_type, sl.vat_rate 
+            FROM tbsale_save s 
+            LEFT JOIN sales sl ON s.sale_save_bill = sl.invoice_number 
+            WHERE s.sale_save_bill = :bill
+        ");
         $stmtB->execute([':bill' => $billNo]);
         $billData = $stmtB->fetch(PDO::FETCH_ASSOC);
 
@@ -335,7 +340,16 @@ if (!empty($bank_filter)) {
 }
 
 // Branch Store Filter
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
+
 $filter_store_id = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : 0;
+// If user is sub-branch (non-main, non-admin), strictly lock reports to their assigned store_id
+if (!$isMain && !$isAdmin) {
+    $filter_store_id = $userStoreId;
+}
+
 $branchesList = [];
 try {
     $branchesList = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -465,11 +479,12 @@ if ($view_mode === 'item') {
                s.sale_pay, s.sale_return,
                " . ($hasCashCol ? "s.cash_received," : "") . "
                " . ($hasQrCol ? "s.qr_received," : "") . "
-               p.product_name, cat.category_name
+               p.product_name, cat.category_name, COALESCE(st.store_name, 'ສາຂາ') AS store_name
         FROM tbsale_save_detail d
         INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
         LEFT JOIN products p ON d.save_proid = p.product_id
         LEFT JOIN categories cat ON p.category_id = cat.category_id
+        LEFT JOIN tbstore st ON s.store_id = st.store_id
         WHERE {$whereClause}
         ORDER BY s.sale_date DESC, s.sale_time DESC, d.Id DESC
     ";
@@ -527,6 +542,7 @@ if ($view_mode === 'item') {
             'date_time' => date('d/m/Y', strtotime($r['sale_date'])) . ' ' . substr($r['sale_time'], 0, 5),
             'pro_code'  => $r['save_proid'] ?: ($r['product_id'] ?? '-'),
             'pro_name'  => $r['save_proname'] ?: ($r['product_name'] ?? 'ສິນຄ້າ'),
+            'store_name'=> $r['store_name'] ?? 'ສາຂາ',
             'qty'       => $qty,
             'price'     => $price,
             'gross'     => $gross,
@@ -557,8 +573,9 @@ if ($view_mode === 'item') {
 } else {
     // VIEW MODE 1: ສະແດງຕາມບິນ (INVOICE SUMMARY VIEW)
     $sql = "
-        SELECT s.*
+        SELECT s.*, COALESCE(st.store_name, 'ສາຂາ') AS store_name
         FROM tbsale_save s
+        LEFT JOIN tbstore st ON s.store_id = st.store_id
         WHERE {$whereClause}
         ORDER BY s.sale_date DESC, s.sale_time DESC, s.Id DESC
     ";
@@ -637,6 +654,7 @@ if ($view_mode === 'item') {
         $sales_data[] = [
             'bill_no'         => $r['sale_save_bill'],
             'date_time'       => date('d/m/Y', strtotime($r['sale_date'])) . ' ' . substr($r['sale_time'], 0, 5),
+            'store_name'      => $r['store_name'] ?? 'ສາຂາ',
             'qty'             => $qty,
             'gross'           => $gross,
             'discount'        => $disc,

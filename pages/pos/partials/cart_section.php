@@ -69,6 +69,11 @@
       </div>
     </div>
     
+    <div class="d-flex justify-content-between align-items-center mb-1 small text-muted" id="cartVatRow" style="display: none !important;">
+      <span id="cartVatLabel">ພາສີ (VAT 7%):</span>
+      <span class="font-weight-bold text-dark" id="cartVat">0 ₭</span>
+    </div>
+    
     <div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top">
       <span class="font-weight-bold" style="font-size: 1.05rem; color: #1e293b;">ຍອດຊຳລະສຸດທິ:</span>
       <span class="font-weight-bold" style="font-size: 1.45rem; color: #16a34a;" id="cartTotal">0 ₭</span>
