@@ -35,10 +35,16 @@ try {
 
 rsort($available_years);
 
-// 2. Filter Inputs & Automatic Year Date Bounds Sync
-$selected_year = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : $current_year_real;
+// 2. Fetch Stores & Filter Inputs
+$stores_list = [];
+try {
+    $stores_list = $pdo->query("SELECT store_id, store_name, is_main FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {}
 
-if (isset($_GET['year'])) {
+$selected_store = isset($_GET['store_id']) && is_numeric($_GET['store_id']) ? (int)$_GET['store_id'] : 0;
+$selected_year  = isset($_GET['year']) && is_numeric($_GET['year']) ? (int)$_GET['year'] : $current_year_real;
+
+if (isset($_GET['year']) || isset($_GET['store_id'])) {
     if (isset($_GET['from_date']) && !empty($_GET['from_date']) && date('Y', strtotime($_GET['from_date'])) == $selected_year) {
         $from_date = trim($_GET['from_date']);
     } else {
@@ -66,6 +72,10 @@ if (!empty($from_date)) {
 if (!empty($to_date)) {
     $where[] = "DATE(s.sale_date) <= :to_date";
     $params[':to_date'] = $to_date;
+}
+if ($selected_store > 0) {
+    $where[] = "s.store_id = :store_id";
+    $params[':store_id'] = $selected_store;
 }
 $whereClause = implode(" AND ", $where);
 
@@ -116,6 +126,14 @@ $monthly_margin = array_fill(1, 12, 0.0);
 
 if ($total_sales > 0) {
     try {
+        $monthlyWhere = ["YEAR(s.sale_date) = :yr", "(s.sale_status IS NULL OR s.sale_status != 'CANCEL')"];
+        $monthlyParams = [':yr' => $selected_year];
+        if ($selected_store > 0) {
+            $monthlyWhere[] = "s.store_id = :store_id";
+            $monthlyParams[':store_id'] = $selected_store;
+        }
+        $monthlyWhereClause = implode(" AND ", $monthlyWhere);
+
         $stmtMonthly = $pdo->prepare("
             SELECT 
                 MONTH(s.sale_date) AS m,
@@ -127,10 +145,10 @@ if ($total_sales > 0) {
                      WHERE d.save_bill = s.sale_save_bill)
                 ), 0) AS cost
             FROM tbsale_save s
-            WHERE YEAR(s.sale_date) = :yr AND (s.sale_status IS NULL OR s.sale_status != 'CANCEL')
+            WHERE {$monthlyWhereClause}
             GROUP BY MONTH(s.sale_date)
         ");
-        $stmtMonthly->execute([':yr' => $selected_year]);
+        $stmtMonthly->execute($monthlyParams);
         while ($mRow = $stmtMonthly->fetch(PDO::FETCH_ASSOC)) {
             $m = (int)$mRow['m'];
             $s = floatval($mRow['sales']);
@@ -151,13 +169,22 @@ foreach ($available_years as $yrItem) {
 }
 
 try {
-    $stmtYearly = $pdo->query("
+    $yearlyWhere = ["sale_date IS NOT NULL", "sale_date != '0000-00-00'", "(sale_status IS NULL OR sale_status != 'CANCEL')"];
+    $yearlyParams = [];
+    if ($selected_store > 0) {
+        $yearlyWhere[] = "store_id = :store_id";
+        $yearlyParams[':store_id'] = $selected_store;
+    }
+    $yearlyWhereClause = implode(" AND ", $yearlyWhere);
+
+    $stmtYearly = $pdo->prepare("
         SELECT YEAR(sale_date) AS yr, COALESCE(SUM(sale_barlance), 0) AS total_sales
         FROM tbsale_save
-        WHERE sale_date IS NOT NULL AND sale_date != '0000-00-00' AND (sale_status IS NULL OR sale_status != 'CANCEL')
+        WHERE {$yearlyWhereClause}
         GROUP BY YEAR(sale_date)
         ORDER BY yr ASC
     ");
+    $stmtYearly->execute($yearlyParams);
     while ($yRow = $stmtYearly->fetch(PDO::FETCH_ASSOC)) {
         $yrVal = (int)$yRow['yr'];
         $yearly_sales_map[$yrVal] = floatval($yRow['total_sales']);
@@ -218,6 +245,21 @@ require_once __DIR__ . '/../layouts/header.php';
   <!-- Modern Filter Box: Date Range + Dynamic Auto Year Selector -->
   <div class="report-filter-box no-print mb-4" style="padding: 14px 18px; border-radius: 12px; background: #ffffff; border: 1.5px solid #e2e8f0; box-shadow: 0 3px 12px rgba(0,0,0,0.03);">
     <form method="GET" action="home.php" class="d-flex align-items-end flex-wrap" style="gap: 12px;">
+      <!-- Branch / Store Selector -->
+      <div style="flex: 1 1 170px; min-width: 150px;">
+        <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
+          <i class="fas fa-store text-success mr-1"></i> ເລືອກສາຂາ:
+        </label>
+        <select name="store_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit();" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #10b981; color: #047857; background: #ecfdf5;">
+          <option value="0" <?php echo ($selected_store === 0) ? 'selected' : ''; ?>>-- ທຸກສາຂາ --</option>
+          <?php foreach ($stores_list as $st): ?>
+            <option value="<?php echo $st['store_id']; ?>" <?php echo ($selected_store == $st['store_id']) ? 'selected' : ''; ?>>
+              <?php echo htmlspecialchars($st['store_name']); ?><?php echo (!empty($st['is_main']) ? ' (ສາຂາໃຫຍ່)' : ''); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+
       <!-- Year Select (Auto-Generated) -->
       <div style="flex: 1 1 140px; min-width: 130px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">

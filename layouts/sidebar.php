@@ -128,7 +128,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/categories/categories.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-th-list text-info"></i>
-                  <p>ປະເພດສິນຄ້າ</p>
+                  <p>ໝວດໝູ່ສິນຄ້າ</p>
                 </a>
               </li>
               <?php endif; ?>
@@ -143,7 +143,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('import_stock') || hasPermission('stock')): ?>
+              <?php if (hasPermission('import_stock')): ?>
               <!-- Sub-menu: ນຳເຂົ້າສິນຄ້າ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/import_stock.php" target="frame" class="nav-link">
@@ -153,7 +153,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('import_list') || hasPermission('stock')): ?>
+              <?php if (hasPermission('import_list') || hasPermission('import_stock')): ?>
               <!-- Sub-menu: ລາຍການສິນຄ້າຮັບເຂົ້າ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/import_list.php" target="frame" class="nav-link">
@@ -162,7 +162,7 @@
                 </a>
               </li>
               <?php endif; ?>
-              <?php if (hasPermission('stock_transfer') || hasPermission('stock')): ?>
+              <?php if (hasPermission('stock_transfer')): ?>
               <!-- Sub-menu: ໂອນສິນຄ້າລະຫວ່າງສາຂາ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/stock_transfer.php" target="frame" class="nav-link">
@@ -172,7 +172,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('transfer_history') || hasPermission('stock')): ?>
+              <?php if (hasPermission('transfer_history')): ?>
               <!-- Sub-menu: ປະຫວັດການໂອນສິນຄ້າ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/transfer_history.php" target="frame" class="nav-link">
@@ -209,7 +209,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if (hasPermission('daily_report') || hasPermission('report')): ?>
+              <?php if (hasPermission('daily_report')): ?>
               <!-- 1. ລາຍງານປະຈຳວັນ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/daily_report.php" target="frame" class="nav-link">
@@ -219,7 +219,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('all_sales') || hasPermission('report')): ?>
+              <?php if (hasPermission('all_sales')): ?>
               <!-- 2. ລາຍງານການຂາຍທັງໝົດ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/all_sales.php" target="frame" class="nav-link">
@@ -229,7 +229,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('best_seller') || hasPermission('report')): ?>
+              <?php if (hasPermission('best_seller')): ?>
               <!-- 3. ລາຍງານສິນຄ້າຂາຍດີ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/best_seller.php" target="frame" class="nav-link">
@@ -239,7 +239,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('profit_cost') || hasPermission('report')): ?>
+              <?php if (hasPermission('profit_cost')): ?>
               <!-- 4. ລາຍງານກຳໄລ-ຕົ້ນທຶນ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/profit_cost.php" target="frame" class="nav-link">
@@ -249,7 +249,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('financial') || hasPermission('report')): ?>
+              <?php if (hasPermission('financial')): ?>
               <!-- 5. ລາຍງານການເງິນ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/financial.php" target="frame" class="nav-link">
@@ -259,7 +259,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('category_sales') || hasPermission('report')): ?>
+              <?php if (hasPermission('category_sales')): ?>
               <!-- 6. ລາຍງານຕາມ/ປະເພດສິນຄ້າ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/category_sales.php" target="frame" class="nav-link">
@@ -269,7 +269,7 @@
               </li>
               <?php endif; ?>
 
-              <?php if (hasPermission('delete_bills') || hasPermission('report')): ?>
+              <?php if (hasPermission('delete_bills')): ?>
               <!-- 7. ປະຫວັດການລົບບິນຂາຍ -->
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/delete_bills.php" target="frame" class="nav-link">
@@ -282,7 +282,7 @@
           </li>
         <?php endif; ?>
 
-        <?php if (hasPermission('users') || hasPermission('permissions') || hasPermission('setup')): ?>
+        <?php if (hasPermission('users') || hasPermission('permissions') || hasPermission('branches') || hasPermission('stores') || hasPermission('print_barcode') || hasPermission('exchange_rate') || hasPermission('promotions') || hasPermission('price_adjustment') || hasPermission('printers') || hasPermission('database')): ?>
           <!-- Header: Administration & Settings -->
           <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ການຈັດການລະບົບ</li>
 
@@ -306,7 +306,7 @@
             </li>
           <?php endif; ?>
 
-          <?php if (hasPermission('setup')): ?>
+          <?php if (hasPermission('branches')): ?>
             <!-- Menu: ຈັດການສາຂາ (ໂຟເດີແຍກຕ່າງຫາກ pages/branches/) -->
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/branches/branches.php" target="frame" class="nav-link">
@@ -314,7 +314,9 @@
                 <p>ຈັດການສາຂາ</p>
               </a>
             </li>
+          <?php endif; ?>
 
+          <?php if (hasPermission('stores') || hasPermission('print_barcode') || hasPermission('exchange_rate') || hasPermission('promotions') || hasPermission('price_adjustment') || hasPermission('printers')): ?>
             <!-- Dropdown Treeview: ຕັ້ງຄ່າລະບົບ -->
             <li class="nav-item has-treeview">
               <a href="#" class="nav-link">
@@ -325,6 +327,7 @@
                 </p>
               </a>
               <ul class="nav nav-treeview">
+                <?php if (hasPermission('stores')): ?>
                 <!-- 1. ຂໍ້ມູນຮ້ານ (pages/settings/stores/) -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/stores/" target="frame" class="nav-link">
@@ -332,7 +335,9 @@
                     <p>ຂໍ້ມູນຮ້ານ</p>
                   </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if (hasPermission('print_barcode')): ?>
                 <!-- 2. ພິມບາໂຄ້ດ -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/print_barcode/" target="frame" class="nav-link">
@@ -340,7 +345,9 @@
                     <p>ພິມບາໂຄ້ດ</p>
                   </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if (hasPermission('exchange_rate')): ?>
                 <!-- 3. ອັດຕາແລກປ່ຽນເງິນ -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/exchange_rate/" target="frame" class="nav-link">
@@ -348,7 +355,9 @@
                     <p>ອັດຕາເເລກປ່ຽນເງິນ</p>
                   </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if (hasPermission('promotions')): ?>
                 <!-- 4. ໂປຣໂມຊັ່ນ -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/promotions/" target="frame" class="nav-link">
@@ -356,7 +365,9 @@
                     <p>ໂປຣໂມຊັ່ນ</p>
                   </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if (hasPermission('price_adjustment')): ?>
                 <!-- 5. ປັບລາຄາສິນຄ້າ -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/price_adjustment/" target="frame" class="nav-link">
@@ -364,7 +375,9 @@
                     <p>ປັບລາຄາສິນຄ້າ</p>
                   </a>
                 </li>
+                <?php endif; ?>
 
+                <?php if (hasPermission('printers')): ?>
                 <!-- 6. ຕັ້ງຄ່າປິ່ນເຕີ -->
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/printers/" target="frame" class="nav-link">
@@ -372,6 +385,7 @@
                     <p>ຕັ້ງຄ່າປິ່ນເຕີ</p>
                   </a>
                 </li>
+                <?php endif; ?>
               </ul>
             </li>
 

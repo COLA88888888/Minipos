@@ -41,7 +41,7 @@
         <div class="modal-footer bg-light py-3 px-4 border-top">
           <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal" style="border-radius: 8px;">ຍົກເລີກ</button>
           <button type="submit" class="btn btn-warning font-weight-bold px-4 shadow-sm" style="border-radius: 8px;">
-            <i class="fas fa-save mr-1"></i> ບັນທຶກການແກ້ໄຂ
+            <i class="fas fa-save mr-1"></i> ອັບເດດ
           </button>
         </div>
       </form>

@@ -23,9 +23,11 @@ require_once __DIR__ . '/../../../layouts/header.php';
         <i class="fas fa-tags text-warning mr-2"></i> ຈັດການປັບລາຄາສິນຄ້າ
     </div>
     <div class="col-sm-6 text-sm-right mt-2 mt-sm-0">
-      <button type="button" class="btn btn-primary font-weight-bold text-white shadow-sm px-3.5 py-2" data-toggle="modal" data-target="#priceAdjModal" style="border-radius: 6px; font-size: 0.92rem;">
-        <i class="fas fa-plus-circle mr-1.5"></i> ປັບລາຄາສິນຄ້າໃໝ່
-      </button>
+      <?php if (hasPermission('price_adjustment', 'add')): ?>
+        <button type="button" class="btn btn-primary font-weight-bold text-white shadow-sm px-3.5 py-2" data-toggle="modal" data-target="#priceAdjModal" style="border-radius: 6px; font-size: 0.92rem;">
+          <i class="fas fa-plus-circle mr-1.5"></i> ປັບລາຄາສິນຄ້າໃໝ່
+        </button>
+      <?php endif; ?>
     </div>
   </div>
 

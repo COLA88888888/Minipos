@@ -127,6 +127,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Date Range Filter parameters for revenue breakdown (Default to all sales history)
+// Date Range & Store/Branch Filter parameters for revenue breakdown (Default to all sales history)
 $start_date = $_GET['start_date'] ?? '2000-01-01';
 $end_date   = $_GET['end_date'] ?? date('Y-m-d');
+$filter_store_id = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : (isset($_GET['branch_id']) && $_GET['branch_id'] !== '' ? intval($_GET['branch_id']) : 0);
+
+// Fetch active branches for store filter dropdown
+$branches_list = [];
+try {
+    $branches_stmt = $pdo->query("SELECT store_id, store_code, store_name, is_main, status FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC");
+    $branches_list = $branches_stmt ? $branches_stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+} catch (Exception $e) {}
+

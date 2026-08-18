@@ -170,28 +170,28 @@
   </td>
 </tr>
 
-<!-- 7.4 ຕັ້ງຄ່າລະບົບ & ຈັດການສາຂາ -->
+<!-- 7.4 ຂໍ້ມູນຮ້ານ (Store Settings) -->
 <tr>
   <td class="pl-4">
     <div class="perm-module-info">
-      <div class="perm-module-icon icon-bg-settings">
-        <i class="fas fa-cogs"></i>
+      <div class="perm-module-icon" style="background: #eff6ff; color: #2563eb;">
+        <i class="fas fa-store"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຕັ້ງຄ່າລະບົບ & ຈັດການສາຂາ</div>
-        <div class="perm-module-desc">ເຂົ້າເຖິງ ແລະ ຕັ້ງຄ່າລະບົບ, ຮ້ານ, ບາໂຄ້ດ, ອັດຕາແລກປ່ຽນ ຯລຯ</div>
+        <div class="perm-module-title">ຂໍ້ມູນຮ້ານ</div>
+        <div class="perm-module-desc">ຈັດການຂໍ້ມູນຮ້ານ, ເລກຜູ້ເສຍອາກອນ, ໂລໂກ້ ແລະ ທີ່ຢູ່</div>
       </div>
     </div>
   </td>
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_setup_view_<?php echo $u['Id']; ?>" 
-             data-perm="setup" 
+             id="perm_stores_view_<?php echo $u['Id']; ?>" 
+             data-perm="stores" 
              data-user-id="<?php echo $u['Id']; ?>"
-             <?php echo (!empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo (!empty($u['stores']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
              <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'setup', this)">
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'stores', this)">
       <span class="matrix-slider"></span>
     </label>
   </td>
@@ -199,16 +199,299 @@
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_setup_edit_<?php echo $u['Id']; ?>" 
-             data-perm="edit" 
+             id="perm_stores_edit_<?php echo $u['Id']; ?>" 
+             data-perm="stores" 
              data-user-id="<?php echo $u['Id']; ?>"
-             <?php echo (!empty($u['edit']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo (!empty($u['stores']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
              <?php echo ($isAdmin) ? 'disabled' : ''; ?>
-             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'edit', this)">
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'stores', this)">
       <span class="matrix-slider"></span>
     </label>
   </td>
   <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+</tr>
+
+<!-- 7.5 ພິມບາໂຄ້ດ (Print Barcode) -->
+<tr>
+  <td class="pl-4">
+    <div class="perm-module-info">
+      <div class="perm-module-icon" style="background: #e0f2fe; color: #0284c7;">
+        <i class="fas fa-barcode"></i>
+      </div>
+      <div>
+        <div class="perm-module-title">ພິມບາໂຄ້ດ</div>
+        <div class="perm-module-desc">ພິມບາໂຄ້ດ ແລະ ລາຄາສິນຄ້າອອກເຈ້ຍ</div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_print_barcode_view_<?php echo $u['Id']; ?>" 
+             data-perm="print_barcode" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['print_barcode']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'print_barcode', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+</tr>
+
+<!-- 7.6 ອັດຕາແລກປ່ຽນເງິນ (Exchange Rate) -->
+<!-- 7.6 ອັດຕາແລກປ່ຽນເງິນ (Exchange Rate) -->
+<tr>
+  <td class="pl-4">
+    <div class="perm-module-info">
+      <div class="perm-module-icon" style="background: #dcfce7; color: #16a34a;">
+        <i class="fas fa-exchange-alt"></i>
+      </div>
+      <div>
+        <div class="perm-module-title">ອັດຕາແລກປ່ຽນເງິນ</div>
+        <div class="perm-module-desc">ຕັ້ງຄ່າ ແລະ ປັບອັດຕາແລກປ່ຽນເງິນຕ່າງປະເທດ</div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_exchange_rate_view_<?php echo $u['Id']; ?>" 
+             data-perm="exchange_rate" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['exchange_rate']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'exchange_rate', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_exchange_rate_add_<?php echo $u['Id']; ?>" 
+             data-perm="exchange_rate" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['exchange_rate']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'exchange_rate', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_exchange_rate_edit_<?php echo $u['Id']; ?>" 
+             data-perm="exchange_rate" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['exchange_rate']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'exchange_rate', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_exchange_rate_del_<?php echo $u['Id']; ?>" 
+             data-perm="exchange_rate" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['exchange_rate']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'exchange_rate', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+</tr>
+
+<!-- 7.7 ໂປຣໂມຊັ່ນ (Promotions) -->
+<tr>
+  <td class="pl-4">
+    <div class="perm-module-info">
+      <div class="perm-module-icon" style="background: #ffe4e6; color: #e11d48;">
+        <i class="fas fa-percent"></i>
+      </div>
+      <div>
+        <div class="perm-module-title">ໂປຣໂມຊັ່ນ</div>
+        <div class="perm-module-desc">ສ້າງ, ແກ້ໄຂ ແລະ ຈັດການໂປຣໂມຊັ່ນສ່ວນຫຼຸດສິນຄ້າ</div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_promotions_view_<?php echo $u['Id']; ?>" 
+             data-perm="promotions" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['promotions']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'promotions', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_promotions_add_<?php echo $u['Id']; ?>" 
+             data-perm="promotions" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['promotions']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'promotions', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_promotions_edit_<?php echo $u['Id']; ?>" 
+             data-perm="promotions" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['promotions']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'promotions', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_promotions_del_<?php echo $u['Id']; ?>" 
+             data-perm="promotions" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['promotions']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'promotions', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+</tr>
+
+<!-- 7.8 ປັບລາຄາສິນຄ້າ (Price Adjustment) -->
+<tr>
+  <td class="pl-4">
+    <div class="perm-module-info">
+      <div class="perm-module-icon" style="background: #fef3c7; color: #d97706;">
+        <i class="fas fa-tags"></i>
+      </div>
+      <div>
+        <div class="perm-module-title">ປັບລາຄາສິນຄ້າ</div>
+        <div class="perm-module-desc">ປັບລາຄາຂາຍ ແລະ ລາຄາຊື້ສິນຄ້າເປັນຊຸດ</div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_price_adjustment_view_<?php echo $u['Id']; ?>" 
+             data-perm="price_adjustment" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['price_adjustment']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'price_adjustment', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_price_adjustment_add_<?php echo $u['Id']; ?>" 
+             data-perm="price_adjustment" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['price_adjustment']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'price_adjustment', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_price_adjustment_edit_<?php echo $u['Id']; ?>" 
+             data-perm="price_adjustment" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['price_adjustment']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'price_adjustment', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_price_adjustment_del_<?php echo $u['Id']; ?>" 
+             data-perm="price_adjustment" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['price_adjustment']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'price_adjustment', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+</tr>
+
+<!-- 7.9 ຕັ້ງຄ່າປິ່ນເຕີ (Printer Settings) -->
+<tr>
+  <td class="pl-4">
+    <div class="perm-module-info">
+      <div class="perm-module-icon" style="background: #f0fdf4; color: #16a34a;">
+        <i class="fas fa-print"></i>
+      </div>
+      <div>
+        <div class="perm-module-title">ຕັ້ງຄ່າປິ່ນເຕີ</div>
+        <div class="perm-module-desc">ຕັ້ງຄ່າເຄື່ອງພິມ ໃບບິນ ແລະ ບາໂຄ້ດ</div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_printers_view_<?php echo $u['Id']; ?>" 
+             data-perm="printers" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['printers']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'printers', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_printers_add_<?php echo $u['Id']; ?>" 
+             data-perm="printers" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['printers']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'printers', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_printers_edit_<?php echo $u['Id']; ?>" 
+             data-perm="printers" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['printers']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'printers', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox" 
+             id="perm_printers_del_<?php echo $u['Id']; ?>" 
+             data-perm="printers" 
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['printers']) || !empty($u['setup']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'printers', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
 </tr>
 
 <!-- 7.5 ຖານຂໍ້ມູນ (Database Management) -->

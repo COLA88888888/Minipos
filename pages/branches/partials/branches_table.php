@@ -49,15 +49,23 @@ if (!defined('MINIPOS_APP')) {
                 <?php endif; ?>
               </td>
               <td class="text-center" style="white-space: nowrap;">
-                <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold rounded-circle mr-1" 
-                        onclick='openEditBranchModal(<?php echo json_encode($b); ?>)' title="ແກ້ໄຂ">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button type="button" class="btn btn-sm <?php echo $b['status'] === 'active' ? 'btn-outline-danger' : 'btn-outline-success'; ?> rounded-circle" 
-                        onclick='confirmToggleBranchStatus(<?php echo $b["store_id"]; ?>, <?php echo json_encode($b["store_name"]); ?>, <?php echo json_encode($b["status"]); ?>)' 
-                        title="<?php echo $b['status'] === 'active' ? 'ປິດສາຂາ' : 'ເປີດໃຊ້ງານສາຂາ'; ?>">
-                  <i class="fas fa-power-off"></i>
-                </button>
+                <?php if (hasPermission('branches', 'edit') || hasPermission('branches', 'del')): ?>
+                  <div class="btn-group btn-group-sm">
+                    <?php if (hasPermission('branches', 'edit')): ?>
+                      <button type="button" class="btn btn-sm btn-warning text-dark font-weight-bold rounded-circle mr-1" 
+                              onclick='openEditBranchModal(<?php echo json_encode($b); ?>)' title="ແກ້ໄຂ">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button type="button" class="btn btn-sm <?php echo $b['status'] === 'active' ? 'btn-outline-danger' : 'btn-outline-success'; ?> rounded-circle" 
+                              onclick='confirmToggleBranchStatus(<?php echo $b["store_id"]; ?>, <?php echo json_encode($b["store_name"]); ?>, <?php echo json_encode($b["status"]); ?>)' 
+                              title="<?php echo $b['status'] === 'active' ? 'ປິດສາຂາ' : 'ເປີດໃຊ້ງານສາຂາ'; ?>">
+                        <i class="fas fa-power-off"></i>
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                <?php else: ?>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>

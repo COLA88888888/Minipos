@@ -24,19 +24,19 @@
         </div>
 
         <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
-          <table class="table table-hover align-middle border-top mb-0" id="selectCustomerTable" style="width: 100%;">
+          <table class="table table-hover align-middle border-top mb-0" id="selectCustomerTable" style="width: 100%; white-space: nowrap;">
             <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-transform: uppercase;">
-              <tr>
-                <th class="py-3 text-center" style="width: 60px;">ລຳດັບ</th>
-                <th class="py-3 text-center" style="width: 110px;">ລະຫັດ</th>
-                <th class="py-3">ຊື່</th>
-                <th class="py-3" style="width: 130px;">ເບີໂທ</th>
-                <th class="py-3 text-center" style="width: 150px;">ເລກບັດສະມາຊິກ</th>
-                <th class="py-3 text-center" style="width: 140px;">ເວລາທີ່ສະໝັກ</th>
-                <th class="py-3 text-center" style="width: 100px;">ເລືອກ</th>
+              <tr style="white-space: nowrap;">
+                <th class="py-3 text-center" style="width: 60px; white-space: nowrap;">ລຳດັບ</th>
+                <th class="py-3 text-center" style="width: 140px; white-space: nowrap;">ລະຫັດ</th>
+                <th class="py-3" style="white-space: nowrap;">ຊື່</th>
+                <th class="py-3 text-center" style="width: 140px; white-space: nowrap;">ເບີໂທ</th>
+                <th class="py-3 text-center" style="width: 160px; white-space: nowrap;">ເລກບັດສະມາຊິກ</th>
+                <th class="py-3 text-center" style="width: 140px; white-space: nowrap;">ເວລາທີ່ສະໝັກ</th>
+                <th class="py-3 text-center" style="width: 110px; white-space: nowrap;">ເລືອກ</th>
               </tr>
             </thead>
-            <tbody id="customerTableBody" style="font-size: 0.92rem;">
+            <tbody id="customerTableBody" style="font-size: 0.92rem; white-space: nowrap;">
               <!-- Dynamically populated -->
             </tbody>
           </table>

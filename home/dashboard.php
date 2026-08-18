@@ -173,46 +173,73 @@ if (!hasPermission('dashboard')) {
       $formattedStart = date('d/m/Y', strtotime($license_start));
       $formattedExpire = date('d/m/Y', strtotime($license_expire));
 
-      // Low Stock Alerts for Main Branch
+      // Low Stock Alerts for Main Branch (Grouped by store/branch)
       $lowStockList = getLowStockAlerts($pdo);
       $lowStockCount = count($lowStockList);
+
+      $groupedLowStock = [];
+      foreach ($lowStockList as $alert) {
+          $stId = $alert['store_id'];
+          if (!isset($groupedLowStock[$stId])) {
+              $groupedLowStock[$stId] = [
+                  'store_id'   => $alert['store_id'],
+                  'store_name' => $alert['store_name'],
+                  'is_main'    => $alert['is_main'] ?? 0,
+                  'items'      => []
+              ];
+          }
+          $groupedLowStock[$stId]['items'][] = $alert;
+      }
     ?>
 
-    <!-- Right side: Notifications Bell + Live Clock + Logout -->
+    <!-- Right side: Subscription Days Remaining + Notifications Bell + Logout -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
       
-      <!-- Notifications Dropdown (Low Stock Warning for Main Branch) -->
+      <!-- Notifications Dropdown (Low Stock Warning Grouped by Branch - Only for Main Branch / Admin) -->
       <?php if ($userIsMain || $userIsAdmin): ?>
         <li class="nav-item dropdown">
-          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສືເບິດ" style="font-size: 1.15rem;">
+          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສິນຄ້າໝົດ" style="font-size: 1.25rem; cursor: pointer;">
             <i class="fas fa-bell <?php echo ($lowStockCount > 0) ? 'text-warning fa-bounce' : ''; ?>"></i>
             <?php if ($lowStockCount > 0): ?>
-              <span class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.65rem; border-radius: 10px; padding: 2px 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+              <span class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
                 <?php echo $lowStockCount; ?>
               </span>
             <?php endif; ?>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 330px; padding: 0; overflow: hidden;">
-            <div class="dropdown-header font-weight-bold d-flex justify-content-between align-items-center py-2.5 px-3" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #ffffff;">
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 340px; padding: 0; overflow: hidden;">
+            <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
               <span><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ (<?php echo $lowStockCount; ?>)</span>
             </div>
             <div class="dropdown-divider m-0"></div>
             
-            <div style="max-height: 280px; overflow-y: auto;">
-              <?php if ($lowStockCount > 0): ?>
-                <?php foreach ($lowStockList as $alert): ?>
-                  <a href="#" onclick="openStockTransferModal(<?php echo $alert['store_id']; ?>, '<?php echo addslashes($alert['product_name']); ?>')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom text-wrap" style="transition: background 0.15s;">
-                    <div>
-                      <strong class="d-block text-dark" style="font-size: 0.84rem;"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
-                      <span class="badge badge-light border text-muted" style="font-size: 0.72rem;">
-                        <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($alert['store_name']); ?>
-                      </span>
-                    </div>
-                    <div class="text-right">
-                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.78rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
-                      <span class="d-block text-primary font-weight-bold mt-1" style="font-size: 0.75rem;"><i class="fas fa-shipping-fast mr-1"></i>ໂອນໃຫ້</span>
-                    </div>
-                  </a>
+            <div style="max-height: 320px; overflow-y: auto;">
+              <?php if ($lowStockCount > 0 && !empty($groupedLowStock)): ?>
+                <?php foreach ($groupedLowStock as $stId => $branchGroup): ?>
+                  <!-- ຫົວຂໍ້ແຍກຕາມສາຂາ (Branch Section Header) -->
+                  <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between" style="background-color: #f1f5f9; font-size: 0.82rem;">
+                    <span>
+                      <i class="fas fa-store text-primary mr-1"></i> <?php echo htmlspecialchars($branchGroup['store_name']); ?>
+                      <?php if (!empty($branchGroup['is_main'])): ?>
+                        <small class="text-muted">(ສາງຫຼັກ)</small>
+                      <?php endif; ?>
+                    </span>
+                    <span class="badge badge-warning text-dark font-weight-bold" style="font-size: 0.7rem; border-radius: 6px;">
+                      <?php echo count($branchGroup['items']); ?> ລາຍການ
+                    </span>
+                  </div>
+
+                  <!-- ລາຍການສິນຄ້າໃນສາຂານັ້ນ (Items in Branch Section) -->
+                  <?php foreach ($branchGroup['items'] as $alert): ?>
+                    <a href="#" onclick="openStockTransferModal(<?php echo $alert['store_id']; ?>, '<?php echo addslashes($alert['product_name']); ?>', <?php echo intval($alert['product_id']); ?>)" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom text-wrap" style="transition: background 0.15s; background-color: #ffffff;">
+                      <div style="max-width: 60%;">
+                        <strong class="d-block text-dark text-truncate" style="font-size: 0.84rem;" title="<?php echo htmlspecialchars($alert['product_name']); ?>"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
+                      </div>
+                      <div class="text-right">
+                        <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.75rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
+                        <span class="d-block text-primary font-weight-bold mt-1" style="font-size: 0.75rem;"><i class="fas fa-shipping-fast mr-1"></i>ໂອນໃຫ້</span>
+                      </div>
+                    </a>
+                  <?php endforeach; ?>
                 <?php endforeach; ?>
               <?php else: ?>
                 <div class="text-center py-4 text-muted">
@@ -233,25 +260,14 @@ if (!hasPermission('dashboard')) {
         </li>
       <?php endif; ?>
 
-      <!-- Real-Time Current Date & Time Display -->
-      <li class="nav-item d-none d-sm-flex align-items-center text-white mr-1" style="font-size: 0.85rem; font-weight: 600;">
-        <span id="live_datetime_clock"><?php echo date('d/m/Y H:i:s'); ?></span>
-      </li>
-
-      <!-- Subscription info -->
-      <li class="nav-item d-none d-md-flex align-items-center text-white" style="font-size: 0.85rem; font-weight: 600; gap: 8px;">
-        <span class="d-inline-flex align-items-center">
-          ເຫຼືອ <span class="mx-1 text-warning" style="font-size: 0.95rem; font-weight: 800; text-decoration: underline;"><?php echo $daysRemaining; ?></span> ວັນ
-        </span>
-        <span class="opacity-50 d-none d-xl-inline" style="color: rgba(255,255,255,0.6);">|</span>
-        <span class="d-none d-xl-inline opacity-90">
-          <i class="fas fa-play-circle mr-1 text-light"></i>ເລີ່ມ: <strong><?php echo $formattedStart; ?></strong>
-        </span>
-        <span class="opacity-50 d-none d-lg-inline" style="color: rgba(255,255,255,0.6);">|</span>
-        <span class="d-none d-lg-inline opacity-90">
-          <i class="fas fa-flag-checkered mr-1 text-light"></i>ສິ້ນສຸດ: <strong><?php echo $formattedExpire; ?></strong>
-        </span>
-      </li>
+      <!-- Subscription info (Only for Main Branch / Admin) -->
+      <?php if ($userIsMain || $userIsAdmin): ?>
+        <li class="nav-item d-none d-md-flex align-items-center text-white mr-1" style="font-size: 0.85rem; font-weight: 600;">
+          <span class="d-inline-flex align-items-center">
+            ເເພັກເກັດ:<span class="mx-1 text-white" style="font-size: 0.95rem; font-weight: 800"><?php echo $daysRemaining; ?></span> ວັນ
+          </span>
+        </li>
+      <?php endif; ?>
 
       <!-- Logout button -->
       <li class="nav-item">
@@ -275,11 +291,12 @@ if (!hasPermission('dashboard')) {
       });
     }
 
-    function openStockTransferModal(targetStoreId, productName) {
+    function openStockTransferModal(targetStoreId, productName, productId) {
       var iframe = document.getElementById('mainContentFrame');
-      var transferUrl = '../pages/import_stock/stock_transfer.php?target_store=' + targetStoreId + '&search=' + encodeURIComponent(productName);
+      var transferUrl = '../pages/import_stock/stock_transfer.php?target_store=' + targetStoreId + '&search=' + encodeURIComponent(productName || '') + (productId ? '&product_id=' + productId : '') + '&auto_add=1';
       if (iframe) {
         iframe.src = transferUrl;
+        sessionStorage.setItem('currentIframeSrc', transferUrl);
       } else {
         window.location.href = transferUrl;
       }

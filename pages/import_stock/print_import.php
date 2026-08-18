@@ -50,15 +50,17 @@ $importDate = !empty($import['import_date']) ? date('d/m/Y H:i', strtotime($impo
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ໃບບິນຮັບສິນຄ້າເຂົ້າ - <?php echo htmlspecialchars($import['invoice_number']); ?></title>
+  <link rel="stylesheet" href="../../assets/css/local-font.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao+Looped:wght@400;500;700&display=swap');
     
     * {
       box-sizing: border-box;
+      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
     }
     
     body {
-      font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif;
+      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
       margin: 0;
       padding: 0;
       background-color: #f1f5f9;
@@ -178,6 +180,12 @@ $importDate = !empty($import['import_date']) ? date('d/m/Y H:i', strtotime($impo
     <h3 class="title">ໃບບິນຮັບເຂົ້າສະຕັອກ</h3>
     
     <!-- Bill Info -->
+    <?php if (!empty($company['tax_id'])): ?>
+    <div class="info-line">
+      <span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span>
+      <span style="font-weight: 700; font-size: 11px;"><?php echo htmlspecialchars($company['tax_id']); ?></span>
+    </div>
+    <?php endif; ?>
     <div class="info-line">
       <span>Bill:</span>
       <span style="font-weight: 700; font-size: 13px;"><?php echo htmlspecialchars($import['invoice_number']); ?></span>

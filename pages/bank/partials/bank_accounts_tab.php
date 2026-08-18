@@ -38,7 +38,38 @@ if (!function_exists('resolveBankQr')) {
     }
 }
 
-// Calculate revenue per bank for date range ($start_date to $end_date)
+// Check store_id or branch_id column for tbsale_save & sales tables
+$save_store_col = null;
+$sales_store_col = null;
+try {
+    $saveCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
+    if (in_array('store_id', $saveCols)) {
+        $save_store_col = 'store_id';
+    } elseif (in_array('branch_id', $saveCols)) {
+        $save_store_col = 'branch_id';
+    }
+
+    $salesCols = $pdo->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN);
+    if (in_array('store_id', $salesCols)) {
+        $sales_store_col = 'store_id';
+    } elseif (in_array('branch_id', $salesCols)) {
+        $sales_store_col = 'branch_id';
+    }
+} catch (Exception $e) {}
+
+$save_store_clause = "";
+$sales_store_clause = "";
+
+if (!empty($filter_store_id) && $filter_store_id > 0) {
+    if ($save_store_col) {
+        $save_store_clause = " AND " . $save_store_col . " = " . intval($filter_store_id);
+    }
+    if ($sales_store_col) {
+        $sales_store_clause = " AND " . $sales_store_col . " = " . intval($filter_store_id);
+    }
+}
+
+// Calculate revenue per bank for date range ($start_date to $end_date) and optional store_id filter
 // Exclusively sums the net bank transfer amount (sale_transfer or net transfer total), strictly excluding cash
 $bank_sales_sql = "
     SELECT 
@@ -60,6 +91,7 @@ $bank_sales_sql = "
             sale_date as created_at
         FROM tbsale_save
         WHERE (sale_status IS NULL OR sale_status = 'SUCCESS' OR sale_status != 'CANCEL')
+          {$save_store_clause}
         UNION ALL
         SELECT 
             sale_id,
@@ -74,6 +106,7 @@ $bank_sales_sql = "
         FROM sales
         WHERE (status IS NULL OR status = 'SUCCESS' OR status != 'CANCEL') 
           AND invoice_number NOT IN (SELECT sale_save_bill FROM tbsale_save WHERE sale_save_bill IS NOT NULL)
+          {$sales_store_clause}
     ) s ON (
         (
             (s.bank_account_id IS NOT NULL AND s.bank_account_id > 0 AND s.bank_account_id = b.id)
@@ -227,7 +260,7 @@ function getBankBrandStyle($bankCode) {
           <div>
             <small style="color: <?php echo $brand['text_sub']; ?>;" class="font-weight-bold">ຍອດຮັບເງິນ:</small>
             <div class="font-weight-bold text-white" style="font-size: 1.02rem;">
-              <?php echo number_format($receivedAmt, 0); ?> ₭
+              <span class="counter-num" data-target="<?php echo $receivedAmt; ?>" data-suffix=" ₭"><?php echo number_format($receivedAmt, 0); ?> ₭</span>
             </div>
           </div>
           <div class="text-right">
@@ -247,7 +280,7 @@ function getBankBrandStyle($bankCode) {
         <div>
           <small class="text-white-50 font-weight-bold text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.5px;">ລວມຍອດຮັບເງິນໂອນທັງໝົດ</small>
           <h4 class="font-weight-bold text-white mb-0 mt-1">
-            <?php echo number_format($total_transfer_sum, 0); ?> <span style="font-size: 0.9rem;">₭</span>
+            <span class="counter-num" data-target="<?php echo $total_transfer_sum; ?>" data-suffix=" ₭"><?php echo number_format($total_transfer_sum, 0); ?> ₭</span>
           </h4>
           <small class="text-white-50 font-weight-bold mt-1 d-block">
             <i class="fas fa-exchange-alt mr-1"></i> ລວມ <?php echo number_format($total_transfer_count); ?> ລາຍການ
@@ -340,16 +373,22 @@ function getBankBrandStyle($bankCode) {
                 <?php endif; ?>
               </td>
               <td class="py-3 text-center">
-                <div class="btn-group btn-group-sm">
-                  <button type="button" class="btn btn-sm btn-outline-primary" title="ແກ້ໄຂ" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <?php if (hasPermission('edit')): ?>
-                    <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
-                  <?php endif; ?>
-                </div>
+                <?php if (hasPermission('accounting', 'edit') || hasPermission('bank', 'edit') || hasPermission('accounting', 'del') || hasPermission('bank', 'del')): ?>
+                  <div class="btn-group btn-group-sm">
+                    <?php if (hasPermission('accounting', 'edit') || hasPermission('bank', 'edit')): ?>
+                      <button type="button" class="btn btn-sm btn-outline-primary" title="ແກ້ໄຂ" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (hasPermission('accounting', 'del') || hasPermission('bank', 'del')): ?>
+                      <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                <?php else: ?>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -452,4 +491,28 @@ function deleteBankAccount(bankId, bankName) {
     }
   });
 }
+
+// CountUp Animated Numbers (ເງິນແລ່ນ)
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.counter-num').forEach(function (el) {
+    var target = parseFloat(el.getAttribute('data-target') || '0');
+    var suffix = el.getAttribute('data-suffix') || '';
+    if (isNaN(target)) target = 0;
+    var startTime = null;
+    var duration = 1200;
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var prog = Math.min((ts - startTime) / duration, 1);
+      var ease = 1 - Math.pow(1 - prog, 3);
+      var val = Math.floor(ease * target);
+      el.textContent = val.toLocaleString('en-US') + suffix;
+      if (prog < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = Math.round(target).toLocaleString('en-US') + suffix;
+      }
+    }
+    requestAnimationFrame(step);
+  });
+});
 </script>

@@ -65,16 +65,20 @@
               </td>
 
               <td class="text-center align-middle">
-                <?php if (hasPermission('edit')): ?>
+                <?php if (hasPermission('customers', 'edit') || hasPermission('customers', 'del')): ?>
                   <div class="btn-group btn-group-sm">
-                    <!-- Edit Button -->
-                    <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <!-- Delete Button -->
-                    <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <?php if (hasPermission('customers', 'edit')): ?>
+                      <!-- Edit Button -->
+                      <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
+                        <i class="fas fa-edit"></i>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (hasPermission('customers', 'del')): ?>
+                      <!-- Delete Button -->
+                      <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    <?php endif; ?>
                   </div>
                 <?php else: ?>
                   <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>

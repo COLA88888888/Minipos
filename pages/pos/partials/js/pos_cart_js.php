@@ -98,12 +98,12 @@ function updateCartUI() {
         </div>
 
         <!-- 4. ຈຳນວນ -->
-        <div class="cart-item-qty-wrap" style="flex-shrink:0; display:flex; align-items:center; border:1.5px solid #e2e8f0; border-radius:8px; overflow:hidden; background:#f8fafc;">
-          <button onclick="incCartQty('${item.cartKey}', -1)" title="ຫຼຸດ" class="btn-qty-minus" style="width:28px; height:30px; border:none; background:transparent; color:#ef4444; font-size:0.78rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;">
+        <div class="cart-item-qty-wrap" style="flex-shrink:0; display:flex; align-items:center; border:1.5px solid #cbd5e1; border-radius:8px; overflow:hidden; background:#f8fafc;">
+          <button onclick="incCartQty('${item.cartKey}', -1)" title="ຫຼຸດ" class="btn-qty-minus" style="width:32px; height:34px; border:none; background:transparent; color:#ef4444; font-size:0.92rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;">
             <i class="fas fa-minus"></i>
           </button>
-          <input type="number" min="1" value="${item.quantity}" onchange="changeCartQty('${item.cartKey}', this.value)" class="input-qty-val" style="width:34px; height:30px; border:none; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; text-align:center; font-size:0.86rem; font-weight:700; color:#1e293b; background:#ffffff; padding:0; -moz-appearance:textfield;" ${isGift ? 'readonly' : ''}>
-          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:28px; height:30px; border:none; background:transparent; color:#2563eb; font-size:0.78rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;" ${isGift ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+          <input type="number" min="1" value="${item.quantity}" onchange="changeCartQty('${item.cartKey}', this.value)" class="input-qty-val" style="width:38px; height:34px; border:none; border-left:1px solid #cbd5e1; border-right:1px solid #cbd5e1; text-align:center; font-size:0.92rem; font-weight:700; color:#1e293b; background:#ffffff; padding:0; -moz-appearance:textfield;" ${isGift ? 'readonly' : ''}>
+          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:32px; height:34px; border:none; background:transparent; color:#2563eb; font-size:0.92rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;" ${isGift ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
             <i class="fas fa-plus"></i>
           </button>
         </div>
@@ -114,8 +114,8 @@ function updateCartUI() {
         </div>
 
         <!-- 6. ປຸ່ມລົບ -->
-        <button class="cart-item-del-btn" onclick="removeFromCart('${item.cartKey}')" title="ລຶບ" style="flex-shrink:0; width:28px; height:28px; border:none; background:transparent; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">
-          <i class="fas fa-trash-alt" style="font-size:0.90rem;"></i>
+        <button class="cart-item-del-btn" onclick="removeFromCart('${item.cartKey}')" title="ລຶບ" style="flex-shrink:0; width:32px; height:32px; border:none; background:transparent; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">
+          <i class="fas fa-trash-alt" style="font-size:1.1rem !important;"></i>
         </button>
 
       </div>

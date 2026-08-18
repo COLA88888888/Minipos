@@ -423,7 +423,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       </h5>
     </div>
     <div class="col-sm-6 text-right">
-      <?php if ($isAdmin || !empty($_SESSION['permissions']['products']) || !empty($_SESSION['permissions']['edit'])): ?>
+      <?php if (hasPermission('products', 'add')): ?>
         <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600;">
           <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
         </button>
@@ -622,15 +622,19 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                 <!-- ຈັດການ (ໄອຄອນແກ້ໄຂ, ລົບ ສະເພາະ) -->
                 <td class="text-center" style="white-space: nowrap;">
-                  <?php if ($isAdmin || !empty($_SESSION['permissions']['edit'])): ?>
-                    <button type="button" class="icon-btn icon-btn-edit mr-1" title="ແກ້ໄຂ"
-                      onclick='editProduct(<?php echo json_encode($p); ?>)'>
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
-                      onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
-                      <i class="fas fa-trash-alt"></i>
-                    </button>
+                  <?php if (hasPermission('products', 'edit') || hasPermission('products', 'del')): ?>
+                    <?php if (hasPermission('products', 'edit')): ?>
+                      <button type="button" class="icon-btn icon-btn-edit mr-1" title="ແກ້ໄຂ"
+                        onclick='editProduct(<?php echo json_encode($p); ?>)'>
+                        <i class="fas fa-edit"></i>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (hasPermission('products', 'del')): ?>
+                      <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
+                        onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    <?php endif; ?>
                   <?php else: ?>
                     <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
                   <?php endif; ?>

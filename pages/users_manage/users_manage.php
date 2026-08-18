@@ -24,9 +24,11 @@ require_once __DIR__ . '/../../layouts/header.php';
           </h5>
         </div>
         <div class="col-sm-6 text-right">
-          <button type="button" class="btn btn-primary px-3 py-1.5 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px; white-space: nowrap;">
-            <i class="fas fa-user-plus mr-1"></i> ເພີ່ມຜູ້ໃຊ້
-          </button>
+          <?php if (hasPermission('users', 'add')): ?>
+            <button type="button" class="btn btn-primary px-3 py-1.5 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px; white-space: nowrap;">
+              <i class="fas fa-user-plus mr-1"></i> ເພີ່ມຜູ້ໃຊ້
+            </button>
+          <?php endif; ?>
         </div>
       </div>
     </div>
@@ -110,11 +112,13 @@ require_once __DIR__ . '/../../layouts/header.php';
                           <button type="button" class="btn btn-outline-info" title="ເບິ່ງລາຍລະອຽດ" onclick='openViewModal(<?php echo $userJson; ?>)'>
                             <i class="fas fa-eye"></i>
                           </button>
-                          <!-- Edit Button -->
-                          <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $userJson; ?>)'>
-                            <i class="fas fa-edit"></i>
-                          </button>
-                          <?php if (hasPermission('edit')): ?>
+                          <?php if (hasPermission('users', 'edit')): ?>
+                            <!-- Edit Button -->
+                            <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $userJson; ?>)'>
+                              <i class="fas fa-edit"></i>
+                            </button>
+                          <?php endif; ?>
+                          <?php if (hasPermission('users', 'del')): ?>
                             <!-- Delete Button -->
                             <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteUser(<?php echo $u['Id']; ?>, '<?php echo htmlspecialchars(addslashes($u['username'])); ?>')">
                               <i class="fas fa-trash-alt"></i>

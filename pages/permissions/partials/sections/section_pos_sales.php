@@ -1,7 +1,7 @@
 <!-- SECTION 2: ຂາຍສິນຄ້າ POS -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-cash-register mr-1"></i> 2. ຂາຍສິນຄ້າ POS (Dropdown Menu)
+    <i class="fas fa-cash-register mr-1"></i> 2. ຂາຍສິນຄ້າ POS
   </td>
 </tr>
 
@@ -11,7 +11,7 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-shopping-cart text-warning mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">↳ ຂາຍສິນຄ້າ (POS Sale Page)</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ຂາຍສິນຄ້າ</div>
         <div class="text-muted" style="font-size: 0.8rem;">ເຂົ້າເຖິງໜ້າຄິດເງິນ ແລະ ຂາຍສິນຄ້າ POS</div>
       </div>
     </div>

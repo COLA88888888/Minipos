@@ -435,7 +435,7 @@ function printReceipt() {
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
     <style>
       @page { size: 80mm auto; margin: 0mm; }
-      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', Arial, sans-serif !important; color: #000 !important; }
+      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', Arial, sans-serif !important; color: #000 !important; }
       html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 12px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 

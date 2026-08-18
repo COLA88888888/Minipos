@@ -6,9 +6,11 @@
     </h5>
   </div>
   <div class="col-sm-6 text-right">
-    <button type="button" class="btn btn-primary px-3.5 font-weight-bold" data-toggle="modal" data-target="#addPromoModal" style="border-radius: 6px; height: 38px; border: none;">
-      <i class="fas fa-plus-circle mr-1.5"></i> ເພີ່ມໂປຣໂມຊັ່ນໃໝ່
-    </button>
+    <?php if (hasPermission('promotions', 'add')): ?>
+      <button type="button" class="btn btn-primary px-3.5 font-weight-bold" data-toggle="modal" data-target="#addPromoModal" style="border-radius: 6px; height: 38px; border: none;">
+        <i class="fas fa-plus-circle mr-1.5"></i> ເພີ່ມໂປຣໂມຊັ່ນໃໝ່
+      </button>
+    <?php endif; ?>
   </div>
 </div>
 

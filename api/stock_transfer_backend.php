@@ -5,7 +5,7 @@ session_start();
 require_once __DIR__ . '/../config/db.php';
 
 // Authorization check
-if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && !hasPermission('transfer_history') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
+if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && !hasPermission('transfer_history') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
     echo json_encode(['success' => false, 'message' => 'Access denied: Insufficient permissions']);
     exit();
 }

@@ -59,16 +59,24 @@
               </td>
               <td class="text-center">
                 <!-- ປຸ່ມຈັດການ (ແກ້ໄຂ ແລະ ລຶບ) -->
-                <div class="btn-group btn-group-sm" role="group">
-                  <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ" 
-                          onclick="editRate(<?php echo $r['Id']; ?>, '<?php echo number_format($thbVal, 0); ?>', '<?php echo number_format($usdVal, 0); ?>')">
-                    <i class="fas fa-edit"></i>
-                  </button>
-                  <button type="button" class="btn btn-outline-danger btn-sm px-2" title="ລຶບ" 
-                          onclick="deleteRate(<?php echo $r['Id']; ?>)">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                </div>
+                <?php if (hasPermission('exchange_rate', 'edit') || hasPermission('exchange_rate', 'del')): ?>
+                  <div class="btn-group btn-group-sm" role="group">
+                    <?php if (hasPermission('exchange_rate', 'edit')): ?>
+                      <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ" 
+                              onclick="editRate(<?php echo $r['Id']; ?>, '<?php echo number_format($thbVal, 0); ?>', '<?php echo number_format($usdVal, 0); ?>')">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (hasPermission('exchange_rate', 'del')): ?>
+                      <button type="button" class="btn btn-outline-danger btn-sm px-2" title="ລຶບ" 
+                              onclick="deleteRate(<?php echo $r['Id']; ?>)">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    <?php endif; ?>
+                  </div>
+                <?php else: ?>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>

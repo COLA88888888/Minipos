@@ -1,7 +1,7 @@
 <!-- SECTION 1: ເມນູ (MAIN MENU) -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-th-large mr-1"></i> 1. ເມນູ (MAIN MENU)
+    <i class="fas fa-th-large mr-1"></i> 1. ເມນູ
   </td>
 </tr>
 

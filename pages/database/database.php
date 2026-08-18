@@ -43,16 +43,16 @@ if (file_exists($backupDir)) {
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             <h4 class="font-weight-bold text-dark mb-1">
-                <i class="fas fa-database text-info mr-2"></i> ຈັດການ & ສຳຮອງຖານຂໍ້ມູນ (Database Backup & Restore)
+                <i class="fas fa-database text-info mr-2"></i>ສຳຮອງຖານຂໍ້ມູນ
             </h4>
-            <p class="text-muted small mb-0">ສ້າງໄຟລ໌ສຳຮອງ (Backup) ແລະ ຟື້ນຟູຂໍ້ມູນ (Restore)</p>
+            <p class="text-muted small mb-0">ສ້າງໄຟລ໌ສຳຮອງ Backup</p>
         </div>
         <div class="mt-2 mt-md-0">
             <button class="btn btn-primary-custom btn-sm font-weight-bold shadow-sm px-3 py-2" style="border-radius: 6px; font-size: 0.82rem;" onclick="createBackup()">
                 <i class="fas fa-file-download mr-1"></i> ສ້າງໄຟລ໌ສຳຮອງ
             </button>
             <button class="btn btn-secondary-custom btn-sm font-weight-bold shadow-sm ml-2 px-3 py-2" style="border-radius: 6px; font-size: 0.82rem;" onclick="$('#uploadRestoreModal').modal('show')">
-                <i class="fas fa-file-upload mr-1"></i> ອັບໂຫຼດ & ຟື້ນຟູ (.SQL)
+                <i class="fas fa-file-upload mr-1"></i> ອັບໂຫຼດ
             </button>
         </div>
     </div>
@@ -61,7 +61,7 @@ if (file_exists($backupDir)) {
     <div class="card card-custom mb-4">
         <div class="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center">
             <h5 class="card-title font-weight-bold text-dark mb-0">
-                <i class="fas fa-history text-primary mr-2"></i> ລາຍການໄຟລ໌ສຳຮອງຖານຂໍ້ມູນ (Backup Cards)
+                <i class="fas fa-history text-primary mr-2"></i> ລາຍການໄຟລ໌ສຳຮອງຖານຂໍ້ມູນ
             </h5>
             <span class="badge badge-primary px-3 py-2" style="border-radius: 20px;">
                 ລວມ <?php echo count($backupFiles); ?> ໄຟລ໌

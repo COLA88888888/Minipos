@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <rect width="200" height="200" rx="36" fill="#ea580c"/>
-  <!-- ST Bank Emblem -->
-  <path d="M 60 50 C 60 38, 140 38, 140 62 C 140 92, 60 85, 60 115 C 60 142, 140 142, 140 130" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
-  <!-- STB Typography -->
-  <text x="100" y="176" font-family="'Montserrat', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="24" fill="#ffffff" text-anchor="middle" letter-spacing="3">ST BANK</text>
-</svg>

@@ -132,9 +132,11 @@ require_once __DIR__ . '/../../../layouts/header.php';
       </h5>
     </div>
     <div class="col-sm-6 text-right">
-      <button type="button" class="btn btn-primary px-3.5 font-weight-bold text-white shadow-sm" data-toggle="modal" data-target="#addPromoModal" style="border-radius: 8px;">
-        <i class="fas fa-plus-circle mr-1.5"></i> ສ້າງໂປຣໂມຊັ່ນໃໝ່
-      </button>
+      <?php if (hasPermission('promotions', 'add')): ?>
+        <button type="button" class="btn btn-primary px-3.5 font-weight-bold text-white shadow-sm" data-toggle="modal" data-target="#addPromoModal" style="border-radius: 8px;">
+          <i class="fas fa-plus-circle mr-1.5"></i> ສ້າງໂປຣໂມຊັ່ນໃໝ່
+        </button>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -244,33 +246,47 @@ require_once __DIR__ . '/../../../layouts/header.php';
                   </span>
                 </td>
                 
-                <!-- 8. ສະຖານະ (Toggle Switch - 48x20px, no hover scale) -->
+                <!-- 8. ສະຖານະ (Toggle Switch) -->
                 <td class="text-center" style="white-space: nowrap;">
-                  <form action="" method="POST" style="display:inline-block; vertical-align: middle;">
-                    <input type="hidden" name="action" value="toggle_status">
-                    <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                    <input type="hidden" name="status" value="<?php echo $p['status'] ? 0 : 1; ?>">
-                    <button type="submit" class="btn btn-link p-0 border-0 shadow-none align-middle" style="outline: none; text-decoration: none; cursor: pointer; transform: none !important;" title="<?php echo $p['status'] ? 'ປິດໃຊ້ງານ' : 'ເປີດໃຊ້ງານ'; ?>">
-                      <div style="width: 48px; height: 20px; background: <?php echo $p['status'] ? '#10b981' : '#cbd5e1'; ?>; border-radius: 20px; position: relative; transition: background-color 0.2s ease-in-out; display: inline-block; vertical-align: middle;">
-                        <div style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; <?php echo $p['status'] ? 'right: 3px;' : 'left: 3px;'; ?> transition: all 0.2s ease-in-out; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
-                      </div>
-                    </button>
-                  </form>
+                  <?php if (hasPermission('promotions', 'edit')): ?>
+                    <form action="" method="POST" style="display:inline-block; vertical-align: middle;">
+                      <input type="hidden" name="action" value="toggle_status">
+                      <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
+                      <input type="hidden" name="status" value="<?php echo $p['status'] ? 0 : 1; ?>">
+                      <button type="submit" class="btn btn-link p-0 border-0 shadow-none align-middle" style="outline: none; text-decoration: none; cursor: pointer; transform: none !important;" title="<?php echo $p['status'] ? 'ປິດໃຊ້ງານ' : 'ເປີດໃຊ້ງານ'; ?>">
+                        <div style="width: 48px; height: 20px; background: <?php echo $p['status'] ? '#10b981' : '#cbd5e1'; ?>; border-radius: 20px; position: relative; transition: background-color 0.2s ease-in-out; display: inline-block; vertical-align: middle;">
+                          <div style="width: 14px; height: 14px; background: #ffffff; border-radius: 50%; position: absolute; top: 3px; <?php echo $p['status'] ? 'right: 3px;' : 'left: 3px;'; ?> transition: all 0.2s ease-in-out; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>
+                        </div>
+                      </button>
+                    </form>
+                  <?php else: ?>
+                    <span class="badge <?php echo $p['status'] ? 'badge-success' : 'badge-secondary'; ?> px-2 py-1">
+                      <?php echo $p['status'] ? 'ເປີດ' : 'ປິດ'; ?>
+                    </span>
+                  <?php endif; ?>
                 </td>
                 
                 <!-- 9. ຈັດການ -->
                 <td class="text-center">
-                  <div class="btn-group btn-group-sm" role="group">
-                    <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ"
-                            onclick="editPromo(<?php echo htmlspecialchars(json_encode($p)); ?>)">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <form action="" method="POST" onsubmit="return confirm('ຕ້ອງການລົບໂປຣໂມຊັ່ນນີ້ແທ້ຫຼືບໍ່?');" style="display:inline;">
-                      <input type="hidden" name="action" value="delete_promo">
-                      <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                      <button type="submit" class="btn btn-outline-danger btn-sm px-2" title="ລຶບ"><i class="fas fa-trash-alt"></i></button>
-                    </form>
-                  </div>
+                  <?php if (hasPermission('promotions', 'edit') || hasPermission('promotions', 'del')): ?>
+                    <div class="btn-group btn-group-sm" role="group">
+                      <?php if (hasPermission('promotions', 'edit')): ?>
+                        <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ"
+                                onclick="editPromo(<?php echo htmlspecialchars(json_encode($p)); ?>)">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                      <?php endif; ?>
+                      <?php if (hasPermission('promotions', 'del')): ?>
+                        <form action="" method="POST" onsubmit="return confirm('ຕ້ອງການລົບໂປຣໂມຊັ່ນນີ້ແທ້ຫຼືບໍ່?');" style="display:inline;">
+                          <input type="hidden" name="action" value="delete_promo">
+                          <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
+                          <button type="submit" class="btn btn-outline-danger btn-sm px-2" title="ລຶບ"><i class="fas fa-trash-alt"></i></button>
+                        </form>
+                      <?php endif; ?>
+                    </div>
+                  <?php else: ?>
+                    <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                  <?php endif; ?>
                 </td>
               </tr>
             <?php endforeach; ?>

@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $com_address         = trim($_POST['com_address'] ?? '');
         $com_tel             = trim($_POST['com_tel'] ?? '');
         $com_email           = trim($_POST['com_email'] ?? '');
+        $tax_id              = trim($_POST['tax_id'] ?? '');
         $receipt_footer      = trim($_POST['receipt_footer'] ?? '');
         $tax_type            = trim($_POST['tax_type'] ?? 'inclusive');
         $vat_percent         = floatval($_POST['vat_percent'] ?? 7.00);
@@ -76,8 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Check if record exists in tbcompanyinfo
                 $cnt = $pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
                 if ($cnt > 0) {
-                    $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, barcode = ?, tax_type = ?, vat_percent = ?, license_start_date = ?, license_expire_date = ?";
-                    $params = [$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $tax_type, $vat_percent, $license_start_date, $license_expire_date];
+                    $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, tax_id = ?, barcode = ?, tax_type = ?, vat_percent = ?, license_start_date = ?, license_expire_date = ?";
+                    $params = [$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $tax_type, $vat_percent, $license_start_date, $license_expire_date];
 
                     if ($newLogoName) {
                         $sql .= ", img_url = ?";
@@ -96,8 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $logo = $newLogoName ? $newLogoName : 'logo.png';
                     $qr = $newQrName ? $newQrName : '';
-                    $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, barcode, img_url, qr_img, tax_type, vat_percent, license_start_date, license_expire_date, branch_id) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-                    $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $receipt_footer, $logo, $qr, $tax_type, $vat_percent, $license_start_date, $license_expire_date]);
+                    $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, tax_id, barcode, img_url, qr_img, tax_type, vat_percent, license_start_date, license_expire_date, branch_id) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
+                    $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $logo, $qr, $tax_type, $vat_percent, $license_start_date, $license_expire_date]);
                 }
 
                 // Sync with main store in tbstore if exists
@@ -310,6 +311,17 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <input type="text" name="com_email" class="form-control" 
                    value="<?php echo htmlspecialchars($company['com_email'] ?? ''); ?>" 
                    placeholder="example@gmail.com ຫຼື Facebook Page...">
+          </div>
+
+          <!-- Taxpayer ID / Tax Number -->
+          <div class="form-group mb-3">
+            <label class="font-weight-bold text-dark small mb-1">
+              <i class="fas fa-id-card text-primary mr-1"></i> ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ (Taxpayer ID):
+            </label>
+            <input type="text" name="tax_id" class="form-control font-weight-bold" 
+                   value="<?php echo htmlspecialchars($company['tax_id'] ?? ''); ?>" 
+                   placeholder="ປ້ອນເລກປະຈຳຕົວຜູ້ເສຍອາກອນ (ຖ້າບໍ່ປ້ອນ ຈະບໍ່ສະແດງໃນໃບບິນ)...">
+            <small class="text-muted"><i class="fas fa-info-circle mr-1"></i> ໝາຍເຫດ: ຖ້າປ້ອນເລກປະຈຳຕົວຜູ້ເສຍອາກອນ ລະບົບຈະສະແດງໃນໃບບິນອັດໂນມັດ, ຖ້າປະຫວ່າງໄວ້ ຈະບໍ່ສະແດງໃນໃບບິນ.</small>
           </div>
 
           <!-- Tax / VAT Configuration Section -->

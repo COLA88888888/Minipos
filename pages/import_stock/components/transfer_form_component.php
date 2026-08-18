@@ -63,9 +63,9 @@
         ສະແກນບາໂຄ້ດ / ລະຫັດສິນຄ້າຕົ້ນທາງ <span class="text-danger">*</span>
       </label>
       <div class="input-group">
-        <input type="text" id="direct_barcode_input" class="form-control" placeholder="ສະແກນບາໂຄ້ດ ຫຼື ປ້ອນລະຫັດ..." value="<?php echo htmlspecialchars($preSearch); ?>" autocomplete="off" style="height: 42px; border-radius: 8px 0 0 8px;" oninput="onDirectBarcodeChange()" onkeydown="onDirectBarcodeKeyDown(event)">
+        <input type="text" id="direct_barcode_input" class="form-control" placeholder="ສະແກນບາໂຄ້ດ ຫຼື ປ້ອນລະຫັດ..." value="<?php echo htmlspecialchars($preSearch); ?>" autocomplete="off" style="height: 42px; border-radius: 8px 0 0 8px; border: 1.5px solid #007bff;" oninput="onDirectBarcodeChange()" onkeydown="onDirectBarcodeKeyDown(event)">
         <div class="input-group-append">
-          <button type="button" class="btn btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#productSelectModal" title="ເປີດປັອບອັບເລືອກສິນຄ້າ">
+          <button type="button" class="btn btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#productSelectModal" title="ເປີດປັອບອັບເລືອກສິນຄ້າ" style="height: 42px; border: 1.5px solid #007bff !important; border-radius: 0 8px 8px 0 !important; background-color: #eff6ff; color: #0056b3;">
             <i class="fas fa-search-plus mr-1"></i> ເລືອກສິນຄ້າ
           </button>
         </div>

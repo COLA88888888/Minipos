@@ -52,15 +52,17 @@ $transferDate = !empty($transfer['transfer_date']) ? date('d/m/Y H:i', strtotime
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ໃບໂອນສິນຄ້າ - <?php echo htmlspecialchars($transfer['transfer_code']); ?></title>
+  <link rel="stylesheet" href="../../assets/css/local-font.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao+Looped:wght@400;500;700&display=swap');
     
     * {
       box-sizing: border-box;
+      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
     }
     
     body {
-      font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif;
+      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
       margin: 0;
       padding: 0;
       background-color: #f1f5f9;
@@ -155,6 +157,12 @@ $transferDate = !empty($transfer['transfer_date']) ? date('d/m/Y H:i', strtotime
       (Stock Transfer Receipt)
     </div>
     
+    <?php if (!empty($company['tax_id'])): ?>
+    <div class="info-line">
+      <span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span>
+      <span style="font-weight: 700; font-size: 11px;"><?php echo htmlspecialchars($company['tax_id']); ?></span>
+    </div>
+    <?php endif; ?>
     <div class="info-line">
       <span>ເລກທີໃບໂອນ:</span>
       <strong><?php echo htmlspecialchars($transfer['transfer_code']); ?></strong>

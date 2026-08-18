@@ -66,6 +66,12 @@ if ($conn && !empty($_SESSION['user_id'])) {
             'delete_bills' => $isAdmin ? 1 : (int)($refresh_row['delete_bills'] ?? 0),
             'accounting' => $isAdmin ? 1 : (int)($refresh_row['accounting'] ?? 0),
             'setup' => $isAdmin ? 1 : (int)($refresh_row['setup'] ?? 0),
+            'stores' => $isAdmin ? 1 : (int)($refresh_row['stores'] ?? $refresh_row['setup'] ?? 0),
+            'print_barcode' => $isAdmin ? 1 : (int)($refresh_row['print_barcode'] ?? $refresh_row['setup'] ?? 0),
+            'exchange_rate' => $isAdmin ? 1 : (int)($refresh_row['exchange_rate'] ?? $refresh_row['setup'] ?? 0),
+            'promotions' => $isAdmin ? 1 : (int)($refresh_row['promotions'] ?? $refresh_row['setup'] ?? 0),
+            'price_adjustment' => $isAdmin ? 1 : (int)($refresh_row['price_adjustment'] ?? $refresh_row['setup'] ?? 0),
+            'printers' => $isAdmin ? 1 : (int)($refresh_row['printers'] ?? $refresh_row['setup'] ?? 0),
             'users' => $isAdmin ? 1 : (int)($refresh_row['users'] ?? 0),
             'permissions' => $isAdmin ? 1 : (int)($refresh_row['permissions'] ?? 0),
             'branches' => $isAdmin ? 1 : (int)($refresh_row['branches'] ?? 0),
@@ -75,6 +81,17 @@ if ($conn && !empty($_SESSION['user_id'])) {
             'stock_transfer' => $isAdmin ? 1 : (int)($refresh_row['stock_transfer'] ?? 0),
             'transfer_history' => $isAdmin ? 1 : (int)($refresh_row['transfer_history'] ?? 0)
         ];
+
+        // Refresh switch states from database table user_permission_switch_states
+        $uid = intval($_SESSION['user_id']);
+        $swStates = [];
+        $swRes = mysqli_query($conn, "SELECT switch_key, is_enabled FROM user_permission_switch_states WHERE user_id = '$uid'");
+        if ($swRes) {
+            while ($swRow = mysqli_fetch_assoc($swRes)) {
+                $swStates[$swRow['switch_key']] = (int)$swRow['is_enabled'];
+            }
+        }
+        $_SESSION['switch_states'] = $swStates;
 
         // Enforce active branch status check (log out non-admin user if their branch is disabled/inactive)
         if (!$isAdmin) {
@@ -187,6 +204,10 @@ try {
         $hasQrImg = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'qr_img'")->fetch();
         if (!$hasQrImg) {
             $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `qr_img` VARCHAR(255) NULL AFTER `img_url`");
+        }
+        $hasTaxId = $pdo->query("SHOW COLUMNS FROM `tbcompanyinfo` LIKE 'tax_id'")->fetch();
+        if (!$hasTaxId) {
+            $pdo->exec("ALTER TABLE `tbcompanyinfo` ADD COLUMN `tax_id` VARCHAR(100) NULL AFTER `com_email`");
         }
     } catch (Throwable $ex) {}
 
@@ -706,44 +727,122 @@ if (!function_exists('logActivity')) {
 
 // === Permission Helper Functions ===
 if (!function_exists('hasPermission')) {
-    function hasPermission($module, $action = 'view') {
-        if (empty($_SESSION['user_id'])) return false;
+    function hasPermission($module, $action = 'view', $checkUserId = null) {
+        $userId = $checkUserId !== null ? intval($checkUserId) : intval($_SESSION['user_id'] ?? 0);
+        if ($userId <= 0) return false;
         
-        $status = $_SESSION['status'] ?? '';
-        
-        // 1. Admin (ຜູ້ບໍລິຫານ): Full access to all modules and actions
-        if ($status === 'ຜູ້ບໍລິຫານ' || strtolower($status) === 'admin' || ($_SESSION['user_id'] ?? null) == 1) {
-            return true;
+        // If checking current logged-in user
+        if ($userId === intval($_SESSION['user_id'] ?? 0)) {
+            $status = $_SESSION['status'] ?? '';
+            if ($status === 'ຜູ້ບໍລິຫານ' || strtolower($status) === 'admin' || $userId === 1) {
+                return true;
+            }
+            $switchStates = $_SESSION['switch_states'] ?? [];
+            $perms = $_SESSION['permissions'] ?? [];
+            if (is_string($perms)) {
+                $decoded = json_decode($perms, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $perms = $decoded;
+                }
+            }
+            if (!is_array($perms)) {
+                $perms = [];
+            }
+        } else {
+            // If checking another specified user ID
+            global $pdo;
+            $uRow = null;
+            if (isset($pdo)) {
+                $uStmt = $pdo->prepare("SELECT * FROM tbuser WHERE Id = ?");
+                $uStmt->execute([$userId]);
+                $uRow = $uStmt->fetch(PDO::FETCH_ASSOC);
+            }
+
+            if (!$uRow) return false;
+
+            $userStatusVal = $uRow['status'] ?? $uRow['userstatus'] ?? '';
+            $isAdmin = ($userId === 1 || strtolower($userStatusVal) === 'admin' || strtolower($userStatusVal) === 'super admin' || $userStatusVal === 'ຜູ້ບໍລິຫານ');
+            if ($isAdmin) return true;
+
+            // Fetch target user's switch states
+            $switchStates = [];
+            if (isset($pdo)) {
+                $swStmt = $pdo->prepare("SELECT switch_key, is_enabled FROM user_permission_switch_states WHERE user_id = ?");
+                $swStmt->execute([$userId]);
+                foreach ($swStmt->fetchAll(PDO::FETCH_ASSOC) as $sRow) {
+                    $switchStates[$sRow['switch_key']] = (int)$sRow['is_enabled'];
+                }
+            }
+
+            $perms = $uRow;
         }
-        
-        // 2. Module alias mappings (Strict direct module check)
-        $aliasMap = [
-            'dashboard' => 'dashboard',
-            'pos' => 'sale',
-            'categories' => 'categories',
-            'products' => 'products',
-            'import' => 'import',
-            'import_stock' => 'import_stock',
-            'stock_check' => 'stock_check',
-            'expiry_check' => 'expiry_check',
-            'reports' => 'report',
-            'financial' => 'financial',
-            'daily_report' => 'daily_report',
-            'all_sales' => 'all_sales',
-            'best_seller' => 'best_seller',
-            'profit_cost' => 'profit_cost',
-            'category_sales' => 'category_sales',
-            'delete_bills' => 'delete_bills',
-            'item_sales' => 'item_sales',
-            'accounting' => 'accounting',
-            'settings' => 'setup',
-            'branches' => 'branches',
-            'database' => 'database',
-            'permissions' => 'permissions',
-            'user_manage' => 'users',
-            'customers' => 'customers'
+
+        // Action Code Mapping
+        $actKeyMap = [
+            'view'   => 'view',
+            'add'    => 'add',
+            'create' => 'add',
+            'edit'   => 'edit',
+            'update' => 'edit',
+            'delete' => 'del',
+            'del'    => 'del',
+            'remove' => 'del'
         ];
-        
+        $actCode = $actKeyMap[strtolower($action)] ?? 'view';
+
+        // Module alias mappings
+        $aliasMap = [
+            'dashboard'        => 'dashboard',
+            'pos'              => 'sale',
+            'categories'       => 'categories',
+            'products'         => 'products',
+            'import'           => 'import',
+            'import_stock'     => 'import_stock',
+            'import_list'      => 'import_list',
+            'stock_check'      => 'stock_check',
+            'expiry_check'     => 'expiry_check',
+            'reports'          => 'report',
+            'financial'        => 'financial',
+            'daily_report'     => 'report',
+            'all_sales'        => 'report',
+            'best_seller'      => 'report',
+            'profit_cost'      => 'report',
+            'category_sales'   => 'report',
+            'delete_bills'     => 'report',
+            'item_sales'       => 'item_sales',
+            'accounting'       => 'accounting',
+            'bank'             => 'accounting',
+            'settings'         => 'setup',
+            'stores'           => 'setup',
+            'print_barcode'    => 'setup',
+            'exchange_rate'    => 'setup',
+            'promotions'       => 'setup',
+            'price_adjustment' => 'setup',
+            'printers'         => 'setup',
+            'branches'         => 'branches',
+            'database'         => 'database',
+            'permissions'      => 'permissions',
+            'user_manage'      => 'users',
+            'users'            => 'users',
+            'customers'        => 'customers',
+            'stock_transfer'   => 'stock_transfer',
+            'transfer_history' => 'transfer_history'
+        ];
+
+        $targetModule = $aliasMap[$module] ?? $module;
+
+        // Check explicit switch key for exact module or target module alias (e.g., perm_bank_edit_6 or perm_accounting_edit_6)
+        $switchKey1 = 'perm_' . $module . '_' . $actCode . '_' . $userId;
+        if (isset($switchStates[$switchKey1])) {
+            return (int)$switchStates[$switchKey1] === 1;
+        }
+
+        $switchKey2 = 'perm_' . $targetModule . '_' . $actCode . '_' . $userId;
+        if (isset($switchStates[$switchKey2])) {
+            return (int)$switchStates[$switchKey2] === 1;
+        }
+
+        // Check general edit/delete permission columns in tbuser
         $perms = $_SESSION['permissions'] ?? [];
         if (is_string($perms)) {
             $decoded = json_decode($perms, true);
@@ -751,41 +850,17 @@ if (!function_exists('hasPermission')) {
                 $perms = $decoded;
             }
         }
-        
         if (!is_array($perms)) {
             $perms = [];
         }
-        
-        // Check direct flag in array (e.g. ['sale' => 1])
-        if (isset($perms[$module]) && ($perms[$module] === 1 || $perms[$module] === '1' || $perms[$module] === true)) {
-            return true;
-        }
-        
-        // Check mapped alias
-        if (isset($aliasMap[$module])) {
-            $target = $aliasMap[$module];
-            if (is_array($target)) {
-                foreach ($target as $t) {
-                    if (!empty($perms[$t])) {
-                        return true;
-                    }
-                }
-            } elseif (!empty($perms[$target])) {
-                return true;
-            }
-        }
-        
-        // Check if $perms is a list of module strings: e.g. ["pos", "products"]
-        if (in_array($module, $perms, true)) {
-            return true;
-        }
-        
-        // Check granular array format: ['stock' => ['view' => 1, 'add' => 1]]
-        if (isset($perms[$module]) && is_array($perms[$module])) {
-            return !empty($perms[$module][$action]);
-        }
-        
-        return false;
+
+        // Check view/module access flag
+        $hasModuleAccess = (
+            !empty($perms[$targetModule]) ||
+            !empty($perms[$module])
+        );
+
+        return $hasModuleAccess;
     }
 }
 

@@ -112,6 +112,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
             // ອັບເດດ Session permissions ທັນທີ ຖ້າແມ່ນຜູ້ໃຊ້ທີ່ກຳລັງ Login ຢູ່
             if ($user_id == ($_SESSION['user_id'] ?? 0)) {
                 $_SESSION['permissions'][$perm] = $val;
+                if (!isset($_SESSION['switch_states']) || !is_array($_SESSION['switch_states'])) {
+                    $_SESSION['switch_states'] = [];
+                }
+                $_SESSION['switch_states'][$switchKey] = $val;
+                foreach ($switchStates as $sK => $sV) {
+                    if (preg_match($switchKeyPattern, $sK)) {
+                        $_SESSION['switch_states'][$sK] = (int)!empty($sV);
+                    }
+                }
             }
 
             // ດຶງຂໍ້ມູນຜູ້ໃຊ້ທີ່ຖືກອັບເດດ ເພື່ອຄຳນວນຈຳນວນສິດທີ່ເປີດຢູ່

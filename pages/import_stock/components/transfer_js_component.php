@@ -4,39 +4,47 @@
 <script>
   var PRODUCTS_LIST = <?php echo json_encode($products); ?>;
   var PRODUCTS_UNITS = <?php echo json_encode($product_units_map); ?>;
+  var PRE_PRODUCT_ID = <?php echo json_encode($preProductId ?? 0); ?>;
+  var AUTO_ADD = <?php echo json_encode(!empty($autoAdd) ? 1 : 0); ?>;
   var selectedProduct = null;
   var cartItems = [];
 
   $(document).ready(function() {
     $('#direct_barcode_input').focus();
-    if ("<?php echo addslashes($preSearch); ?>" !== '') {
+    if ("<?php echo addslashes($preSearch); ?>" !== '' || PRE_PRODUCT_ID > 0) {
       onDirectBarcodeChange();
+      if (AUTO_ADD && selectedProduct) {
+        addCurrentItemToCart();
+      }
     }
   });
 
   function onDirectBarcodeChange() {
     var query = $('#direct_barcode_input').val().trim().toLowerCase();
-    if (query === '') {
-      resetDirectSelection();
-      return;
+    var found = null;
+
+    if (PRE_PRODUCT_ID > 0) {
+      found = PRODUCTS_LIST.find(function(p) { return p.product_id == PRE_PRODUCT_ID; });
     }
 
-    var found = PRODUCTS_LIST.find(function(p) {
-      if (String(p.product_id) === query) return true;
-      if (p.barcode && String(p.barcode).toLowerCase() === query) return true;
-      if (PRODUCTS_UNITS[p.product_id]) {
-        var uMatch = PRODUCTS_UNITS[p.product_id].find(function(u) {
-          return u.barcode && String(u.barcode).toLowerCase() === query;
-        });
-        if (uMatch) return true;
-      }
-      return false;
-    });
-
-    if (!found) {
+    if (!found && query !== '') {
       found = PRODUCTS_LIST.find(function(p) {
-        return (p.product_name && p.product_name.toLowerCase().indexOf(query) !== -1);
+        if (String(p.product_id) === query) return true;
+        if (p.barcode && String(p.barcode).toLowerCase() === query) return true;
+        if (PRODUCTS_UNITS[p.product_id]) {
+          var uMatch = PRODUCTS_UNITS[p.product_id].find(function(u) {
+            return u.barcode && String(u.barcode).toLowerCase() === query;
+          });
+          if (uMatch) return true;
+        }
+        return false;
       });
+
+      if (!found) {
+        found = PRODUCTS_LIST.find(function(p) {
+          return (p.product_name && p.product_name.toLowerCase().indexOf(query) !== -1);
+        });
+      }
     }
 
     if (found) {

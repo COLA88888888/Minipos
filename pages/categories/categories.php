@@ -24,7 +24,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           </h5>
         </div>
         <div class="col-sm-6 text-right">
-          <?php if (hasPermission('categories')): ?>
+          <?php if (hasPermission('categories', 'add')): ?>
           <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCategoryModal" style="border-radius: 6px;">
             <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມປະເພດສິນຄ້າ
           </button>
@@ -113,9 +113,8 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                       <td class="text-center align-middle">
                         <?php 
-                          $isUserAdmin = (($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || ($_SESSION['user_id'] ?? 0) == 1);
-                          $canEditCat = $isUserAdmin || !empty($_SESSION['permissions']['edit']);
-                          $canDeleteCat = $isUserAdmin || !empty($_SESSION['permissions']['edit']);
+                          $canEditCat = hasPermission('categories', 'edit');
+                          $canDeleteCat = hasPermission('categories', 'del');
                         ?>
                         <?php if ($canEditCat || $canDeleteCat): ?>
                           <div class="btn-group btn-group-sm">

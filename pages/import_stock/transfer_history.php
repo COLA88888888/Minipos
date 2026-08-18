@@ -6,7 +6,7 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 require_once __DIR__ . '/../../config/db.php';
 
 // Authorization check
-if (empty($_SESSION['user_id']) || (!hasPermission('transfer_history') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
+if (empty($_SESSION['user_id']) || (!hasPermission('transfer_history') && !hasPermission('stock_transfer') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }

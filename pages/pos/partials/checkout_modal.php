@@ -104,13 +104,20 @@
               <?php endif; ?>
 
               <div class="text-center mt-2 pt-2 border-top">
-                <div class="font-weight-bold mb-1" style="font-size:0.80rem;color:#7c3aed;">
+                <div class="font-weight-bold mb-1.5" style="font-size:0.85rem;color:#7c3aed;">
                   <i class="fas fa-qrcode mr-1"></i> ສະແກນ QR Code ຊຳລະເງິນ <span id="posActiveBankNameTitle" class="text-primary font-weight-bold"></span>
                 </div>
-                <img id="posActiveBankQrImg" src="<?php echo htmlspecialchars($defaultQrPath); ?>" 
-                     style="max-width: 110px; max-height: 110px; object-fit: contain; border-radius: 8px; border: 2px solid #c4b5fd; padding: 3px; background: #fff; box-shadow: 0 3px 10px rgba(124, 58, 237, 0.10);"
-                     onerror="this.src='../../assets/img/qr_placeholder.png';"
-                     alt="Bank QR Code">
+                <div style="display: inline-block; position: relative; cursor: pointer;" onclick="zoomPosQrImage()" title="ກົດເພື່ອຂະຫຍາຍ QR Code ໃຫຍ່ HD">
+                  <img id="posActiveBankQrImg" src="<?php echo htmlspecialchars($defaultQrPath); ?>" 
+                       style="width: 180px; height: 180px; object-fit: contain; border-radius: 12px; border: 2.5px solid #6366f1; padding: 5px; background: #ffffff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.20); image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; transition: transform 0.2s;"
+                       onerror="this.src='../../assets/img/qr_placeholder.png';"
+                       alt="Bank QR Code"
+                       onmouseover="this.style.transform='scale(1.04)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                  <div style="font-size: 0.75rem; color: #4f46e5; font-weight: 700; margin-top: 5px;">
+                    <i class="fas fa-search-plus mr-1"></i> ກົດເພື່ອຂະຫຍາຍໃຫຍ່ HD
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -298,6 +305,9 @@
           <div class="receipt-header-tel" style="font-size:12px;font-weight:600;color:#000;line-height:1.4;">ໂທ: <?php echo htmlspecialchars($company['com_tel']); ?></div>
         </div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <?php if (!empty($company['tax_id'])): ?>
+          <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span><span id="rc_tax_id" style="font-weight:700;"><?php echo htmlspecialchars($company['tax_id']); ?></span></div>
+        <?php endif; ?>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກບິນ:</span><span id="rc_bill" style="font-weight:700;">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ວັນທີ:</span><span id="rc_date">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ຜູ້ຂາຍ:</span><span id="rc_cashier">-</span></div>
@@ -346,3 +356,43 @@
     </div>
   </div>
 </div>
+
+<!-- Modal: QR Code Enlarge / Zoom HD -->
+<div class="modal fade" id="qrZoomModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+  <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 380px;">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 18px; overflow: hidden; background: #ffffff;">
+      <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #4f46e5, #3730a3);">
+        <h6 class="modal-title font-weight-bold m-0" style="font-size: 1rem;">
+          <i class="fas fa-qrcode mr-2 text-warning"></i> QR Code ຊຳລະເງິນ (ຂະໜາດໃຫຍ່ HD)
+        </h6>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <div class="font-weight-bold text-dark mb-2" id="qrZoomBankTitle" style="font-size: 1.05rem;">
+          ສະແກນ QR Code ຊຳລະເງິນ
+        </div>
+        <div class="p-3 d-inline-block shadow-sm" style="background: #ffffff; border: 3px solid #6366f1; border-radius: 16px;">
+          <img id="qrZoomImg" src="" style="width: 280px; height: 280px; object-fit: contain; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; display: block;" alt="Zoomed QR Code">
+        </div>
+        <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">
+          <i class="fas fa-mobile-alt mr-1 text-primary"></i> ໃຊ້ແອັບທະນາຄານ ສະແກນ QR Code ເພື່ອຊຳລະເງິນ
+        </p>
+      </div>
+      <div class="modal-footer border-0 bg-light p-2.5 justify-content-center">
+        <button type="button" class="btn btn-secondary font-weight-bold px-4 py-2" data-dismiss="modal" style="border-radius: 10px;">ປິດ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function zoomPosQrImage() {
+  var src = $('#posActiveBankQrImg').attr('src');
+  var bankName = $('#posActiveBankNameTitle').text() || '';
+  if (src && src.indexOf('qr_placeholder') === -1) {
+    $('#qrZoomImg').attr('src', src);
+    $('#qrZoomBankTitle').text('ສະແກນ QR Code ' + bankName);
+    $('#qrZoomModal').modal('show');
+  }
+}
+</script>

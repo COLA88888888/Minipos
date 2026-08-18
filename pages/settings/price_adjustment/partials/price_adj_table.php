@@ -127,13 +127,17 @@
 
               <!-- 11. ຈັດການ (ໄອຄອນລຶບ) -->
               <td class="text-center">
-                <form action="" method="POST" onsubmit="return confirm('ຕ້ອງການລຶບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?');" style="display:inline;">
-                  <input type="hidden" name="action" value="delete_log">
-                  <input type="hidden" name="adjust_id" value="<?php echo $adj['adjust_id']; ?>">
-                  <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="ລຶບປະຫວັດ" style="border-radius: 6px;">
-                    <i class="fas fa-trash-alt" style="font-size: 0.84rem;"></i>
-                  </button>
-                </form>
+                <?php if (hasPermission('price_adjustment', 'del')): ?>
+                  <form action="" method="POST" onsubmit="return confirm('ຕ້ອງການລຶບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?');" style="display:inline;">
+                    <input type="hidden" name="action" value="delete_log">
+                    <input type="hidden" name="adjust_id" value="<?php echo $adj['adjust_id']; ?>">
+                    <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="ລຶບປະຫວັດ" style="border-radius: 6px;">
+                      <i class="fas fa-trash-alt" style="font-size: 0.84rem;"></i>
+                    </button>
+                  </form>
+                <?php else: ?>
+                  <span class="badge badge-light text-muted" style="font-size: 0.75rem;">-</span>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>

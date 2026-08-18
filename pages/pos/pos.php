@@ -12,12 +12,12 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Mobile Navigation / Tab Switcher (Visible ONLY on Mobile ≤ 991px) -->
   <div class="pos-mobile-nav border-bottom bg-white d-lg-none">
     <div class="d-flex" style="gap: 6px;">
-      <button type="button" class="btn btn-sm flex-fill font-weight-bold py-2 btn-primary active" id="mobileTabProductsBtn" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.88rem; transition: all 0.2s;">
-        <i class="fas fa-boxes mr-1.5"></i> ເລືອກສິນຄ້າ
+      <button type="button" class="btn flex-fill font-weight-bold btn-primary active py-2 px-2 shadow-sm" id="mobileTabProductsBtn" onclick="switchMobilePosTab('products')" style="border-radius: 10px; font-size: 1.35rem; min-height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-weight: 800;">
+        <i class="fas fa-boxes mr-2" style="font-size: 1.4rem;"></i> ເລືອກສິນຄ້າ
       </button>
-      <button type="button" class="btn btn-sm flex-fill font-weight-bold py-2 btn-outline-primary" id="mobileTabCartBtn" onclick="switchMobilePosTab('cart')" style="border-radius: 8px; font-size: 0.88rem; transition: all 0.2s;">
-        <i class="fas fa-shopping-cart mr-1.5"></i> ລາຍການຂາຍ
-        <span class="badge badge-danger ml-1 font-weight-bold" id="mobileCartCountBadge" style="display: none; font-size: 0.75rem;">0</span>
+      <button type="button" class="btn flex-fill font-weight-bold btn-outline-primary py-2 px-2 shadow-sm" id="mobileTabCartBtn" onclick="switchMobilePosTab('cart')" style="border-radius: 10px; font-size: 1.35rem; min-height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-weight: 800;">
+        <i class="fas fa-shopping-cart mr-2" style="font-size: 1.4rem;"></i> ລາຍການຂາຍ
+        <span class="badge badge-danger ml-2 font-weight-bold" id="mobileCartCountBadge" style="display: none; font-size: 0.9rem; padding: 4px 8px; border-radius: 10px;">0</span>
       </button>
     </div>
   </div>
@@ -34,9 +34,9 @@ require_once __DIR__ . '/../../layouts/header.php';
 
 <!-- Mobile Floating Cart Bar (Visible on Mobile when on Products tab) -->
 <div id="mobileFloatingCartBar" class="d-lg-none" style="display: none; position: fixed; bottom: 14px; left: 12px; right: 12px; z-index: 1050;">
-  <button type="button" class="btn btn-primary btn-block shadow-lg font-weight-bold py-2.5 px-3 d-flex justify-content-between align-items-center" onclick="switchMobilePosTab('cart')" style="border-radius: 12px; font-size: 0.92rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; box-shadow: 0 6px 20px rgba(37,99,235,0.45) !important;">
-    <span><i class="fas fa-shopping-basket mr-2"></i> ເບິ່ງລາຍການຂາຍ (<span id="floatingCartItemCount">0 ລາຍການ</span>)</span>
-    <span class="font-weight-bold" style="font-size: 1.02rem;" id="floatingCartTotal">0 ₭ <i class="fas fa-chevron-right ml-1"></i></span>
+  <button type="button" class="btn btn-primary btn-block shadow-lg font-weight-bold py-3 px-3.5 d-flex justify-content-between align-items-center" onclick="switchMobilePosTab('cart')" style="border-radius: 14px; font-size: 1.05rem; min-height: 52px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; box-shadow: 0 8px 24px rgba(37,99,235,0.5) !important;">
+    <span><i class="fas fa-shopping-basket mr-2" style="font-size: 1.15rem;"></i> ເບິ່ງລາຍການຂາຍ (<span id="floatingCartItemCount">0 ລາຍການ</span>)</span>
+    <span class="font-weight-bold" style="font-size: 1.15rem;" id="floatingCartTotal">0 ₭ <i class="fas fa-chevron-right ml-1"></i></span>
   </button>
 </div>
 

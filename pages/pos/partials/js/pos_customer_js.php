@@ -65,16 +65,16 @@ function filterCustomersList() {
       : `<span class="text-muted">-</span>`;
 
     tbody.append(`
-      <tr>
-        <td class="text-center text-muted font-weight-bold align-middle">${idx + 1}</td>
-        <td class="text-center align-middle font-weight-bold"><span class="cust-code-badge">${c.customer_code || '-'}</span></td>
-        <td class="font-weight-bold text-dark align-middle">${c.customer_name}</td>
-        <td class="align-middle text-dark">${c.phone ? `<a href="tel:${c.phone}" class="text-dark">${c.phone}</a>` : '<span class="text-muted">-</span>'}</td>
-        <td class="text-center align-middle font-weight-bold">${memberCardBadge}</td>
-        <td class="text-center align-middle text-secondary" style="font-size: 0.88rem;"><i class="far fa-clock text-info mr-1"></i>${createdAt}</td>
-        <td class="text-center align-middle">
-          <button type="button" class="btn btn-sm btn-primary rounded-circle shadow-sm" title="ເລືອກລູກຄ່ານີ້" onclick='selectCustomer(${jsonStr})' style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none;">
-            <i class="fas fa-check" style="font-size: 0.85rem; color: #ffffff;"></i>
+      <tr style="white-space: nowrap;">
+        <td class="text-center text-muted font-weight-bold align-middle" style="white-space: nowrap;">${idx + 1}</td>
+        <td class="text-center align-middle font-weight-bold" style="white-space: nowrap;"><span class="cust-code-badge" style="white-space: nowrap;">${c.customer_code || '-'}</span></td>
+        <td class="font-weight-bold text-dark align-middle" style="white-space: nowrap;">${c.customer_name}</td>
+        <td class="align-middle text-center text-dark" style="white-space: nowrap;">${c.phone ? `<a href="tel:${c.phone}" class="text-dark font-weight-bold">${c.phone}</a>` : '<span class="text-muted">-</span>'}</td>
+        <td class="text-center align-middle font-weight-bold" style="white-space: nowrap;">${memberCardBadge}</td>
+        <td class="text-center align-middle text-secondary" style="font-size: 0.88rem; white-space: nowrap;"><i class="far fa-clock text-info mr-1"></i>${createdAt}</td>
+        <td class="text-center align-middle" style="white-space: nowrap;">
+          <button type="button" class="btn btn-sm btn-success rounded-circle shadow-sm" title="ເລືອກລູກຄ່ານີ້" onclick='selectCustomer(${jsonStr})' style="width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #10b981 !important; color: #ffffff !important; border: none !important; cursor: pointer;">
+            <i class="fas fa-check" style="font-size: 0.9rem; color: #ffffff;"></i>
           </button>
         </td>
       </tr>

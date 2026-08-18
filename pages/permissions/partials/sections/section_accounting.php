@@ -19,7 +19,7 @@
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_acc_view_<?php echo $u['Id']; ?>" 
+             id="perm_accounting_view_<?php echo $u['Id']; ?>" 
              data-perm="accounting" 
              data-user-id="<?php echo $u['Id']; ?>"
              <?php echo (!empty($u['accounting']) || $isAdmin) ? 'checked' : ''; ?>
@@ -31,7 +31,7 @@
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_acc_add_<?php echo $u['Id']; ?>" 
+             id="perm_accounting_add_<?php echo $u['Id']; ?>" 
              data-perm="accounting" 
              data-user-id="<?php echo $u['Id']; ?>"
              <?php echo (!empty($u['accounting']) || $isAdmin) ? 'checked' : ''; ?>
@@ -43,7 +43,7 @@
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_acc_edit_<?php echo $u['Id']; ?>" 
+             id="perm_accounting_edit_<?php echo $u['Id']; ?>" 
              data-perm="accounting" 
              data-user-id="<?php echo $u['Id']; ?>"
              <?php echo (!empty($u['accounting']) || $isAdmin) ? 'checked' : ''; ?>
@@ -55,7 +55,7 @@
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
-             id="perm_acc_del_<?php echo $u['Id']; ?>" 
+             id="perm_accounting_del_<?php echo $u['Id']; ?>" 
              data-perm="accounting" 
              data-user-id="<?php echo $u['Id']; ?>"
              <?php echo (!empty($u['accounting']) || $isAdmin) ? 'checked' : ''; ?>

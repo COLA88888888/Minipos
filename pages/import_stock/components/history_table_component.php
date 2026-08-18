@@ -83,9 +83,6 @@
 
   <!-- Pagination Bar -->
   <div class="d-flex flex-column flex-md-row align-items-center justify-content-between pt-4 pb-3 px-3 border-top bg-light" style="border-radius: 0 0 14px 14px;">
-    <div class="text-muted font-weight-bold mb-3 mb-md-0" style="font-size: 0.88rem;">
-      ສະແດງ <span id="page_info_start" class="text-primary font-weight-bold">0</span> ຫາ <span id="page_info_end" class="text-primary font-weight-bold">0</span> ຈາກທັງໝົດ <span id="page_info_total" class="text-dark font-weight-bold">0</span> ລາຍການ
-    </div>
 
     <div class="d-flex justify-content-end ml-md-auto">
       <ul class="pagination pagination-circle mb-0" id="transferPagination">

@@ -340,43 +340,81 @@ input:disabled + .matrix-slider {
   color: #94a3b8;
 }
 
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+.perm-detail-card, .user-detail-panel, .perm-detail-body {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: hidden !important;
+}
+
+.perm-matrix-table-wrapper {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-sizing: border-box !important;
+}
+
+.perm-matrix-table-wrapper table.perm-matrix-table {
+  min-width: 540px !important;
+  width: 100% !important;
+}
+
 @media (max-width: 991.98px) {
   .user-list-card, .perm-detail-card {
     height: auto;
-    max-height: 480px;
+    max-height: 520px;
     min-height: auto;
   }
   .user-list-card {
-    max-height: 300px;
+    max-height: 280px;
   }
 }
 
 @media (max-width: 575.98px) {
   .container-fluid {
-    padding: 10px !important;
+    padding: 8px !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+  .row {
+    margin-left: -4px !important;
+    margin-right: -4px !important;
+  }
+  .col-12, [class*='col-'] {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
   }
   .perm-detail-header {
-    padding: 8px 12px;
+    padding: 8px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
   .perm-detail-body {
-    padding: 8px 6px;
+    padding: 6px 4px !important;
   }
   .perm-matrix-table th, .perm-matrix-table td {
-    padding: 6px 8px;
+    padding: 6px 6px !important;
   }
   .perm-module-info {
-    gap: 8px;
+    gap: 6px;
   }
   .perm-module-icon {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    font-size: 0.85rem;
-  }
-  .perm-module-title {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
     font-size: 0.8rem;
   }
+  .perm-module-title {
+    font-size: 0.78rem;
+  }
   .perm-module-desc {
-    font-size: 0.68rem;
+    font-size: 0.66rem;
   }
 }

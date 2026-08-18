@@ -6,7 +6,7 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 require_once __DIR__ . '/../../config/db.php';
 
 // Authorization check
-if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && !hasPermission('stock') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
+if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -145,6 +145,8 @@ $stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is
 // Target store pre-selected from GET
 $preSelectedTarget = intval($_GET['target_store'] ?? 0);
 $preSearch = trim($_GET['search'] ?? '');
+$preProductId = intval($_GET['product_id'] ?? 0);
+$autoAdd = intval($_GET['auto_add'] ?? 0);
 
 $sourceStoreId = 1;
 if (!$isMain && !$isAdmin) {

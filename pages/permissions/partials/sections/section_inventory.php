@@ -11,7 +11,7 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-th-list text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ປະເພດສິນຄ້າ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ໝວດໝູ່ສິນຄ້າ</div>
         <div class="text-muted" style="font-size: 0.8rem;">ຈັດການໝວດໝູ່ ແລະ ປະເພດສິນຄ້າ</div>
       </div>
     </div>
