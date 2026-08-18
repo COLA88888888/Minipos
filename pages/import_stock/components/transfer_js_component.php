@@ -99,11 +99,88 @@
   function selectProductFromModal(productId) {
     var prod = PRODUCTS_LIST.find(function(p) { return p.product_id == productId; });
     if (prod) {
-      $('#direct_barcode_input').val(prod.barcode || prod.product_id);
-      setDirectSelectedProduct(prod);
+      var existingIndex = cartItems.findIndex(function(item) {
+        return item.product_id == prod.product_id && item.unit_key == 'base';
+      });
+
+      if (existingIndex !== -1) {
+        cartItems[existingIndex].quantity += 1;
+      } else {
+        cartItems.push({
+          product_id: prod.product_id,
+          product_name: prod.product_name,
+          barcode: prod.barcode || '',
+          stock_qty: parseInt(prod.qty || 0),
+          unit_key: 'base',
+          unit_name: prod.unit || 'ອັນ',
+          multiplier: 1,
+          quantity: 1
+        });
+      }
+      renderCartTable();
       $('#productSelectModal').modal('hide');
-      setTimeout(function() { $('#direct_qty').focus().select(); }, 400);
     }
+  }
+
+  function addSelectedModalProductsToCart() {
+    var targetProducts = [];
+
+    if (window.modalSelectAllCatalog && typeof PRODUCTS_LIST !== 'undefined' && PRODUCTS_LIST.length > 0) {
+      targetProducts = PRODUCTS_LIST;
+    } else {
+      $('.modal-product-checkbox:checked').each(function() {
+        var pid = $(this).attr('data-product-id');
+        if (pid) {
+          var prod = PRODUCTS_LIST.find(function(p) { return p.product_id == pid; });
+          if (prod) targetProducts.push(prod);
+        }
+      });
+    }
+
+    if (targetProducts.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'ກະລຸນາເລືອກສິນຄ້າ', text: 'ກະລຸນາຕິກເລືອກສິນຄ້າຢ່າງນ້ອຍ 1 ລາຍການ!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    var addedCount = 0;
+    targetProducts.forEach(function(prod) {
+      var existingIndex = cartItems.findIndex(function(item) {
+        return item.product_id == prod.product_id && item.unit_key == 'base';
+      });
+
+      if (existingIndex !== -1) {
+        cartItems[existingIndex].quantity += 1;
+      } else {
+        cartItems.push({
+          product_id: prod.product_id,
+          product_name: prod.product_name,
+          barcode: prod.barcode || '',
+          stock_qty: parseInt(prod.qty || 0),
+          unit_key: 'base',
+          unit_name: prod.unit || 'ອັນ',
+          multiplier: 1,
+          quantity: 1
+        });
+      }
+      addedCount++;
+    });
+
+    renderCartTable();
+    $('#productSelectModal').modal('hide');
+
+    // Reset modal selection state
+    window.modalSelectAllCatalog = false;
+    $('#selectAllModalProducts').prop('checked', false);
+    $('.modal-product-checkbox').prop('checked', false);
+    if (typeof updateModalSelectedCount === 'function') updateModalSelectedCount();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'ເພີ່ມສິນຄ້າສຳເລັດ!',
+      text: 'ເພີ່ມສິນຄ້າລວມ ' + addedCount + ' ລາຍການ ເຂົ້າໃນລາຍການໂອນຮຽບຮ້ອຍແລ້ວ',
+      timer: 1800,
+      showConfirmButton: false
+    });
   }
 
   function addCurrentItemToCart() {
@@ -162,15 +239,28 @@
     $('#direct_barcode_input').focus();
   }
 
+  var cartCurrentPage = 1;
+  var cartPageSize = 10;
+
   function renderCartTable() {
     var tbody = $('#cart_table_body');
     if (cartItems.length === 0) {
       tbody.html('<tr id="empty_cart_row"><td colspan="5" class="text-center text-muted py-5"><i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i><span class="font-weight-bold">ຍັງບໍ່ມີລາຍການສິນຄ້າໃນໃບໂອນ</span><br><small>ກະລຸນາສະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າທີ່ຈະໂອນ</small></td></tr>');
+      $('#cart_pagination_row').addClass('d-none').removeClass('d-flex');
       return;
     }
 
+    var totalItems = cartItems.length;
+    var totalPages = Math.ceil(totalItems / cartPageSize) || 1;
+    if (cartCurrentPage > totalPages) cartCurrentPage = totalPages;
+    if (cartCurrentPage < 1) cartCurrentPage = 1;
+
+    var startIdx = (cartCurrentPage - 1) * cartPageSize;
+    var endIdx = Math.min(startIdx + cartPageSize, totalItems);
+
     var html = '';
-    cartItems.forEach(function(item, idx) {
+    for (var idx = startIdx; idx < endIdx; idx++) {
+      var item = cartItems[idx];
       html += '<tr>' +
                 '<td class="text-center align-middle font-weight-bold text-secondary">' + (idx + 1) + '</td>' +
                 '<td class="align-middle">' +
@@ -185,9 +275,41 @@
                   '<button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" onclick="removeCartItem(' + idx + ')"><i class="fas fa-trash-alt"></i></button>' +
                 '</td>' +
               '</tr>';
-    });
+    }
 
     tbody.html(html);
+
+    if (totalItems > 10) {
+      $('#cart_pagination_row').removeClass('d-none').addClass('d-flex');
+      $('#cart_page_start').text(startIdx + 1);
+      $('#cart_page_end').text(endIdx);
+      $('#cart_page_total').text(totalItems);
+      renderCartPagination(totalPages);
+    } else {
+      $('#cart_pagination_row').addClass('d-none').removeClass('d-flex');
+    }
+  }
+
+  function goToCartPage(p) {
+    cartCurrentPage = p;
+    renderCartTable();
+  }
+
+  function renderCartPagination(totalPages) {
+    var container = $('#cartTablePagination');
+    container.empty();
+    if (totalPages <= 1) return;
+
+    var prevDisabled = (cartCurrentPage === 1) ? 'disabled' : '';
+    container.append('<li class="page-item ' + prevDisabled + '"><a class="page-link" href="javascript:void(0)" onclick="goToCartPage(' + (cartCurrentPage - 1) + ')"><i class="fas fa-chevron-left"></i></a></li>');
+
+    for (var p = 1; p <= totalPages; p++) {
+      var activeClass = (p === cartCurrentPage) ? 'active' : '';
+      container.append('<li class="page-item ' + activeClass + '"><a class="page-link" href="javascript:void(0)" onclick="goToCartPage(' + p + ')">' + p + '</a></li>');
+    }
+
+    var nextDisabled = (cartCurrentPage === totalPages) ? 'disabled' : '';
+    container.append('<li class="page-item ' + nextDisabled + '"><a class="page-link" href="javascript:void(0)" onclick="goToCartPage(' + (cartCurrentPage + 1) + ')"><i class="fas fa-chevron-right"></i></a></li>');
   }
 
   function updateCartItemQty(idx, val) {

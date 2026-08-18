@@ -74,6 +74,70 @@
     }
   }
 
+  function addSelectedModalProductsToCart() {
+    var targetProducts = [];
+
+    if (window.modalSelectAllCatalog && typeof PRODUCTS_LIST !== 'undefined' && PRODUCTS_LIST.length > 0) {
+      targetProducts = PRODUCTS_LIST;
+    } else {
+      $('.modal-product-checkbox:checked').each(function() {
+        var pid = $(this).attr('data-product-id');
+        if (pid) {
+          var p = PRODUCTS_LIST.find(function(item) { return item.product_id == pid; });
+          if (p) targetProducts.push(p);
+        }
+      });
+    }
+
+    if (targetProducts.length === 0) {
+      Swal.fire({ icon: 'warning', title: 'ກະລຸນາເລືອກສິນຄ້າ', text: 'ກະລຸນາຕິກເລືອກສິນຄ້າຢ່າງນ້ອຍ 1 ລາຍການ!', confirmButtonColor: '#2563eb' });
+      return;
+    }
+
+    var addedCount = 0;
+    targetProducts.forEach(function(p) {
+      var baseUnit = p.unit || 'ອັນ';
+      var existingIndex = cartItems.findIndex(function(item) {
+        return item.product_id == p.product_id && item.unit_key == 'base' && item.expiry_date == '';
+      });
+
+      if (existingIndex !== -1) {
+        cartItems[existingIndex].quantity += 1;
+      } else {
+        cartItems.push({
+          product_id: p.product_id,
+          product_name: p.product_name,
+          barcode: p.barcode || '-',
+          base_unit: baseUnit,
+          unit_key: 'base',
+          unit_name: baseUnit,
+          multiplier: 1,
+          quantity: 1,
+          cost_price: parseFloat(p.bprice || 0),
+          expiry_date: ''
+        });
+      }
+      addedCount++;
+    });
+
+    renderCartTable();
+    $('#productSelectModal').modal('hide');
+
+    // Reset modal selection state
+    window.modalSelectAllCatalog = false;
+    $('#selectAllModalProducts').prop('checked', false);
+    $('.modal-product-checkbox').prop('checked', false);
+    if (typeof updateModalSelectedCount === 'function') updateModalSelectedCount();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'ເພີ່ມສິນຄ້າສຳເລັດ!',
+      text: 'ເພີ່ມສິນຄ້າລວມ ' + addedCount + ' ລາຍການ ເຂົ້າໃນລາຍການນໍາເຂົ້າຮຽບຮ້ອຍແລ້ວ',
+      timer: 1800,
+      showConfirmButton: false
+    });
+  }
+
   function setDirectSelectedProduct(p) {
     selectedProduct = p;
     $('#direct_matched_name').text(p.product_name);
@@ -206,15 +270,18 @@
     var grandTotalCost = 0;
 
     cartItems.forEach(function(item) {
-      var itemBaseQty = item.quantity * item.multiplier;
-      var itemTotalCost = item.quantity * item.cost_price;
+      var cost = parseFloat(item.cost_price) || 0;
+      var qty = parseInt(item.quantity) || 1;
+      var mult = parseInt(item.multiplier) || 1;
+      var itemBaseQty = qty * mult;
+      var itemTotalCost = qty * cost;
       grandTotalBase += itemBaseQty;
       grandTotalCost += itemTotalCost;
     });
 
     $('#cart_total_items').text(totalItems);
-    $('#cart_total_base').text(grandTotalBase.toLocaleString());
-    $('#cart_grand_total').text(grandTotalCost.toLocaleString() + ' ₭');
+    $('#cart_total_base').text((grandTotalBase || 0).toLocaleString());
+    $('#cart_grand_total').text((grandTotalCost || 0).toLocaleString() + ' ₭');
     $('#cart_json_input').val(JSON.stringify(cartItems));
 
     // Pagination for cart items table
@@ -227,7 +294,9 @@
 
     for (var idx = startIdx; idx < endIdx; idx++) {
       var item = cartItems[idx];
-      var itemTotalCost = item.quantity * item.cost_price;
+      var cost = parseFloat(item.cost_price) || 0;
+      var qty = parseInt(item.quantity) || 1;
+      var itemTotalCost = qty * cost;
 
       var rowHtml = `
         <tr>
@@ -238,14 +307,14 @@
           </td>
           <td class="text-center align-middle">
             <div class="input-group input-group-sm mx-auto" style="max-width: 130px;">
-              <input type="number" class="form-control text-center font-weight-bold" min="1" value="${item.quantity}" onchange="updateCartQty(${idx}, this.value)">
+              <input type="number" class="form-control text-center font-weight-bold" min="1" value="${qty}" onchange="updateCartQty(${idx}, this.value)">
               <div class="input-group-append">
                 <span class="input-group-text bg-light font-weight-bold text-dark">${escapeHtml(item.unit_name)}</span>
               </div>
             </div>
           </td>
           <td class="text-right align-middle font-weight-bold text-dark" style="font-size: 0.95rem;">
-            ${item.cost_price.toLocaleString()} ₭
+            ${cost.toLocaleString()} ₭
           </td>
           <td class="text-right align-middle font-weight-bold text-primary" style="font-size: 1.05rem;">
             ${itemTotalCost.toLocaleString()} ₭
@@ -258,11 +327,15 @@
       tbody.append(rowHtml);
     }
 
-    $('#cart_page_start').text(startIdx + 1);
-    $('#cart_page_end').text(endIdx);
-    $('#cart_page_total').text(totalItems);
-
-    renderCartPagination(totalPages);
+    if (totalItems > 10) {
+      $('#cart_pagination_row').removeClass('d-none').addClass('d-flex');
+      $('#cart_page_start').text(startIdx + 1);
+      $('#cart_page_end').text(endIdx);
+      $('#cart_page_total').text(totalItems);
+      renderCartPagination(totalPages);
+    } else {
+      $('#cart_pagination_row').addClass('d-none').removeClass('d-flex');
+    }
   }
 
   function renderCartPagination(totalPages) {

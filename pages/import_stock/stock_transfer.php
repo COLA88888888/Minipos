@@ -237,6 +237,11 @@ require_once __DIR__ . '/../../layouts/header.php';
         <?php if ($message_type === 'success'): ?>
           <script>
             $(document).ready(function() {
+              try {
+                if (window.parent && typeof window.parent.pollLiveNotifications === 'function') {
+                  window.parent.pollLiveNotifications();
+                }
+              } catch(e) {}
               Swal.fire({
                 title: 'ບັນທຶກສຳເລັດ!',
                 text: '<?php echo addslashes($message); ?>',

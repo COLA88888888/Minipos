@@ -63,6 +63,19 @@
           </div>
         </div>
 
+        <!-- Batch Action Bar: Displayed when items are checked -->
+        <div id="modal_batch_actions_bar" class="alert alert-info py-2 px-3 mb-3 d-none align-items-center justify-content-between border-0 shadow-sm" style="border-radius: 10px; background-color: #eff6ff; color: #1e40af;">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-check-circle mr-2 text-primary fa-lg"></i>
+            <span class="font-weight-bold" style="font-size: 0.92rem;">
+              ເລືອກແລ້ວ <span id="modal_selected_count" class="badge badge-primary font-weight-bold mx-1" style="font-size: 0.88rem; padding: 3px 8px;">0</span> ລາຍການ
+            </span>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3 py-1.5 shadow-sm" onclick="addSelectedModalProductsToCart()" style="border-radius: 8px; font-size: 0.85rem;">
+            <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
+          </button>
+        </div>
+
         <!-- Products List Table inside Modal -->
         <div class="table-responsive bg-white rounded border shadow-sm mb-3" style="max-height: 420px; overflow-y: auto; border-radius: 12px !important;">
           <table class="table table-hover mb-0 align-middle text-nowrap">
@@ -74,7 +87,14 @@
                 <th class="text-center">ສະຕັອກ</th>
                 <th class="text-right">ລາຄາຊື້</th>
                 <th class="text-right">ລາຄາຂາຍ</th>
-                <th class="text-center" style="width: 70px;">ເລືອກ</th>
+                <th class="text-center" style="width: 120px;">
+                  <div class="custom-control custom-checkbox d-inline-flex align-items-center justify-content-center" title="ເລືອກທັງໝົດ">
+                    <input type="checkbox" class="custom-control-input" id="selectAllModalProducts" onchange="toggleSelectAllModalProducts(this.checked)">
+                    <label class="custom-control-label font-weight-bold text-dark" for="selectAllModalProducts" style="cursor: pointer; font-size: 0.85rem; user-select: none;">
+                      ເລືອກ
+                    </label>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody id="modal_product_list">
@@ -100,7 +120,7 @@
                     $stockQty = intval($p['qty']);
                     $unitName = $p['unit'] ?: 'ອັນ';
                   ?>
-                  <tr class="modal-product-row" data-search="<?php echo htmlspecialchars($searchData); ?>" data-category="<?php echo htmlspecialchars($catId); ?>" onclick="selectProductFromModal(<?php echo $p['product_id']; ?>)" style="cursor: pointer;">
+                  <tr class="modal-product-row" data-search="<?php echo htmlspecialchars($searchData); ?>" data-category="<?php echo htmlspecialchars($catId); ?>" onclick="toggleRowCheckbox(this, event)" style="cursor: pointer;">
                     
                     <!-- 1. ລະຫັດ (Product ID) -->
                     <td class="text-center align-middle font-weight-bold text-secondary">
@@ -152,11 +172,17 @@
                       <?php echo number_format($p['price']); ?> ₭
                     </td>
 
-                    <!-- 7. ປຸ່ມເລືອກ (Clean & Modern Green Icon Only Button) -->
+                    <!-- 7. ປຸ່ມເລືອກ + ບັອກຕິກ (Checkbox & Green Check Button) -->
                     <td class="text-center align-middle">
-                      <button type="button" class="btn btn-modal-select-green" style="background-color: #10b981 !important; color: #ffffff !important; border: none !important; width: 36px !important; height: 36px !important; border-radius: 6px !important; transform: none !important;" onclick="event.stopPropagation(); selectProductFromModal(<?php echo $p['product_id']; ?>)" title="ເລືອກສິນຄ້ານີ້">
-                        <i class="fas fa-check font-weight-bold" style="color: #ffffff !important; font-size: 1rem !important;"></i>
-                      </button>
+                      <div class="d-flex align-items-center justify-content-center" style="gap: 8px;">
+                        <div class="custom-control custom-checkbox" style="padding-left: 1.5rem;">
+                          <input type="checkbox" class="custom-control-input modal-product-checkbox" id="chk_modal_prod_<?php echo $p['product_id']; ?>" data-product-id="<?php echo $p['product_id']; ?>" onclick="event.stopPropagation(); checkSingleModalProduct()">
+                          <label class="custom-control-label" for="chk_modal_prod_<?php echo $p['product_id']; ?>" style="cursor: pointer;"></label>
+                        </div>
+                        <button type="button" class="btn btn-modal-select-green" style="background-color: #10b981 !important; color: #ffffff !important; border: none !important; width: 34px !important; height: 34px !important; border-radius: 6px !important; transform: none !important;" onclick="event.stopPropagation(); selectProductFromModal(<?php echo $p['product_id']; ?>)" title="ເລືອກສິນຄ້ານີ້ດຽວ">
+                          <i class="fas fa-check font-weight-bold" style="color: #ffffff !important; font-size: 0.9rem !important;"></i>
+                        </button>
+                      </div>
                     </td>
 
                   </tr>
@@ -179,3 +205,48 @@
     </div>
   </div>
 </div>
+
+<script>
+  window.modalSelectAllCatalog = false;
+
+  function toggleSelectAllModalProducts(isChecked) {
+    window.modalSelectAllCatalog = isChecked;
+    $('.modal-product-row:visible .modal-product-checkbox').prop('checked', isChecked);
+    updateModalSelectedCount();
+  }
+
+  function checkSingleModalProduct() {
+    var visibleBoxes = $('.modal-product-row:visible .modal-product-checkbox');
+    var checkedBoxes = $('.modal-product-row:visible .modal-product-checkbox:checked');
+    if (checkedBoxes.length < visibleBoxes.length) {
+      window.modalSelectAllCatalog = false;
+    }
+    $('#selectAllModalProducts').prop('checked', visibleBoxes.length > 0 && visibleBoxes.length === checkedBoxes.length);
+    updateModalSelectedCount();
+  }
+
+  function toggleRowCheckbox(rowEl, evt) {
+    if ($(evt.target).closest('.custom-checkbox, button').length) return;
+    var chk = $(rowEl).find('.modal-product-checkbox');
+    if (chk.length > 0) {
+      chk.prop('checked', !chk.prop('checked'));
+      checkSingleModalProduct();
+    }
+  }
+
+  function updateModalSelectedCount() {
+    var count = 0;
+    if (window.modalSelectAllCatalog && typeof PRODUCTS_LIST !== 'undefined') {
+      count = PRODUCTS_LIST.length;
+    } else {
+      count = $('.modal-product-checkbox:checked').length;
+    }
+
+    $('#modal_selected_count').text(count);
+    if (count > 0) {
+      $('#modal_batch_actions_bar').removeClass('d-none').addClass('d-flex');
+    } else {
+      $('#modal_batch_actions_bar').addClass('d-none').removeClass('d-flex');
+    }
+  }
+</script>

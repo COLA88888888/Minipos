@@ -96,7 +96,7 @@ if ($action === 'get_transfer_details') {
             ]);
             exit();
         } else {
-            // Main branch notification poll
+            // Main branch notification poll (Low stock & Out of stock across all stores)
             $lowStockList = getLowStockAlerts($pdo);
             $totalCount = count($lowStockList);
 

@@ -16,6 +16,19 @@ $base_path = '../';
 $site_name = 'POS Wlaodev';
 $site_logo = '../assets/img/logo/logo.png';
 
+if (!empty($_SESSION['user_id'])) {
+    try {
+        $uFetch = $pdo->prepare("SELECT profile_img, fname, lname, username, status FROM tbuser WHERE Id = ? LIMIT 1");
+        $uFetch->execute([$_SESSION['user_id']]);
+        if ($userRow = $uFetch->fetch(PDO::FETCH_ASSOC)) {
+            if (!empty($userRow['profile_img'])) $_SESSION['profile_img'] = $userRow['profile_img'];
+            if (isset($userRow['fname'])) $_SESSION['fname'] = $userRow['fname'];
+            if (isset($userRow['lname'])) $_SESSION['lname'] = $userRow['lname'];
+            if (isset($userRow['status'])) $_SESSION['status'] = $userRow['status'];
+        }
+    } catch (Exception $e) {}
+}
+
 $display_name = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
 if ($display_name === '') {
     $display_name = $_SESSION['username'] ?? 'admin';
@@ -228,7 +241,7 @@ if (!hasPermission('dashboard')) {
       $formattedStart = date('d/m/Y', strtotime($license_start));
       $formattedExpire = date('d/m/Y', strtotime($license_expire));
 
-      // Low Stock Alerts for Main Branch (Grouped by store/branch)
+      // Low Stock & Out of Stock Alerts for Main Branch & All Branches (Grouped by store)
       $lowStockList = getLowStockAlerts($pdo);
       $lowStockCount = count($lowStockList);
 
@@ -250,7 +263,7 @@ if (!hasPermission('dashboard')) {
     <!-- Right side: Subscription Days Remaining + Notifications Bell + Logout -->
     <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
       
-      <!-- Notifications Dropdown (Low Stock Warning Grouped by Branch - Only for Main Branch / Admin) -->
+      <!-- Notifications Dropdown (Low Stock & Out of Stock Warning Grouped by Branch - Only for Main Branch / Admin) -->
       <?php if ($userIsMain || $userIsAdmin): ?>
         <li class="nav-item dropdown">
           <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" onclick="markNotifAsRead('mainNotifBadge')" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສິນຄ້າໝົດ" style="font-size: 1.25rem; cursor: pointer;">
@@ -263,11 +276,12 @@ if (!hasPermission('dashboard')) {
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
-              <span><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ (<?php echo $lowStockCount; ?>)</span>
+              <span class="text-truncate mr-2"><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ໝົດ/ໝົດ (<span id="mainNotifTitleCount"><?php echo $lowStockCount; ?></span>)</span>
+              <button type="button" id="btnMarkAllMain" class="btn btn-xs btn-outline-light font-weight-bold flex-shrink-0" onclick="markAllNotifsAsRead('mainNotifBadge')" style="border-radius: 6px; font-size: 0.73rem; <?php echo ($lowStockCount > 0) ? '' : 'display: none;'; ?>">ອ່ານທັງໝົດ</button>
             </div>
             <div class="dropdown-divider m-0"></div>
             
-            <div style="max-height: 320px; overflow-y: auto;">
+            <div id="mainNotifDropdownBody" style="max-height: 380px; overflow-y: auto;">
               <?php if ($lowStockCount > 0 && !empty($groupedLowStock)): ?>
                 <?php foreach ($groupedLowStock as $stId => $branchGroup): ?>
                   <!-- ຫົວຂໍ້ແຍກຕາມສາຂາ (Branch Section Header) -->
@@ -285,12 +299,18 @@ if (!hasPermission('dashboard')) {
 
                   <!-- ລາຍການສິນຄ້າໃນສາຂານັ້ນ (Single Line Flex Row) -->
                   <?php foreach ($branchGroup['items'] as $alert): ?>
+                    <?php 
+                      $isOutOfStock = intval($alert['qty']) <= 0;
+                      $badgeClass = $isOutOfStock ? 'badge-danger' : 'badge-warning text-dark';
+                      $qtyLabel = $isOutOfStock ? 'ໝົດແລ້ວ (0)' : 'ເຫຼືອ ' . $alert['qty'] . ' ' . htmlspecialchars($alert['unit'] ?: 'ອັນ');
+                    ?>
                     <div id="notif_item_main_<?php echo $alert['product_id']; ?>" onclick="markItemAsRead('main_<?php echo $alert['product_id']; ?>', 'mainNotifBadge')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;">
                       <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                        <i class="fas fa-exclamation-circle <?php echo $isOutOfStock ? 'text-danger' : 'text-warning'; ?> mr-1.5" style="font-size: 0.82rem;"></i>
                         <strong class="text-dark text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($alert['product_name']); ?>"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
                       </div>
-                      <div class="text-nowrap flex-shrink-0">
-                        <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
+                      <div class="text-nowrap flex-shrink-0 ml-2">
+                        <span class="badge <?php echo $badgeClass; ?> font-weight-bold px-2 py-1" style="font-size: 0.74rem; border-radius: 6px;"><?php echo $qtyLabel; ?></span>
                       </div>
                     </div>
                   <?php endforeach; ?>
@@ -298,7 +318,7 @@ if (!hasPermission('dashboard')) {
               <?php else: ?>
                 <div class="text-center py-4 text-muted">
                   <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
-                  <span style="font-size: 0.85rem;">ບໍ່ມີສິນຄ້າໃກ້ສິນສຸດໃນສາຂາ</span>
+                  <span style="font-size: 0.85rem;">ບໍ່ມີສິນຄ້າໃກ້ໝົດ ຫຼື ໝົດແລ້ວ</span>
                 </div>
               <?php endif; ?>
             </div>
@@ -327,8 +347,8 @@ if (!hasPermission('dashboard')) {
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
-              <span><i class="fas fa-bell text-white mr-1.5"></i> ແຈ້ງເຕືອນສາຂາ (<?php echo $totalSubNotifications; ?>)</span>
-              <button type="button" class="btn btn-xs btn-outline-light font-weight-bold" onclick="markAllNotifsAsRead('subNotifBadge')" style="border-radius: 6px; font-size: 0.73rem;">ອ່ານທັງໝົດ</button>
+              <span class="text-truncate mr-2"><i class="fas fa-bell text-white mr-1.5"></i> ແຈ້ງເຕືອນສາຂາ (<span id="subNotifTitleCount"><?php echo $totalSubNotifications; ?></span>)</span>
+              <button type="button" id="btnMarkAllSub" class="btn btn-xs btn-outline-light font-weight-bold flex-shrink-0" onclick="markAllNotifsAsRead('subNotifBadge')" style="border-radius: 6px; font-size: 0.73rem; <?php echo ($totalSubNotifications > 0) ? '' : 'display: none;'; ?>">ອ່ານທັງໝົດ</button>
             </div>
             <div class="dropdown-divider m-0"></div>
             
@@ -428,12 +448,11 @@ if (!hasPermission('dashboard')) {
   </nav>
 
   <script>
-    // Web Audio API Notification Chime Generator with Browser Autoplay Policy Unlocker
+    // Web Audio API Notification Chime Generator with Mobile Autoplay Policy Unlocker
     var sharedAudioCtx = null;
     var isAudioUnlocked = false;
 
     function unlockAudioContext() {
-      if (isAudioUnlocked && sharedAudioCtx && sharedAudioCtx.state === 'running') return;
       try {
         var AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
@@ -452,8 +471,9 @@ if (!hasPermission('dashboard')) {
       } catch(e) {}
     }
 
-    ['click', 'touchstart', 'touchend', 'keydown'].forEach(function(evtName) {
-      document.addEventListener(evtName, unlockAudioContext, { once: false, capture: true });
+    ['click', 'touchstart', 'touchend', 'pointerdown', 'keydown'].forEach(function(evtName) {
+      document.addEventListener(evtName, unlockAudioContext, { capture: true, passive: true });
+      window.addEventListener(evtName, unlockAudioContext, { capture: true, passive: true });
     });
 
     function playNotificationSound() {
@@ -468,26 +488,33 @@ if (!hasPermission('dashboard')) {
         }
         
         var now = ctx.currentTime;
-        var notes = [587.33, 739.99, 880.00]; // Loud D-Major Triad Chime
-        notes.forEach(function(freq, idx) {
-          var startTime = now + (idx * 0.12);
+        var chimeNotes = [
+          { freq: 880.00, delay: 0.00, duration: 0.30, gain: 0.9 },
+          { freq: 1108.73, delay: 0.12, duration: 0.30, gain: 0.9 },
+          { freq: 1318.51, delay: 0.24, duration: 0.55, gain: 1.0 }
+        ];
+
+        chimeNotes.forEach(function(note) {
+          var startTime = now + note.delay;
           var osc = ctx.createOscillator();
-          var gain = ctx.createGain();
-          
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, startTime);
-          
-          gain.gain.setValueAtTime(0.5, startTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
-          
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          
+          var gainNode = ctx.createGain();
+
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(note.freq, startTime);
+
+          gainNode.gain.setValueAtTime(note.gain, startTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + note.duration);
+
+          osc.connect(gainNode);
+          gainNode.connect(ctx.destination);
+
           osc.start(startTime);
-          osc.stop(startTime + 0.45);
+          osc.stop(startTime + note.duration);
         });
       } catch(e) {}
     }
+    window.playNotificationSound = playNotificationSound;
+    window.unlockAudioContext = unlockAudioContext;
 
     function updateBadgeUI(badgeId) {
       var readKeys = [];
@@ -514,6 +541,7 @@ if (!hasPermission('dashboard')) {
         }
       });
 
+      var btnId = badgeId === 'mainNotifBadge' ? '#btnMarkAllMain' : '#btnMarkAllSub';
       var badge = $('#' + badgeId);
       if (unreadCount > 0 && !isAllRead) {
         if (badge.length > 0) {
@@ -523,8 +551,10 @@ if (!hasPermission('dashboard')) {
           var parentAnchor = $('#' + iconId).parent();
           parentAnchor.append('<span id="' + badgeId + '" class="badge badge-danger font-weight-bold position-absolute" style="top: -2px; right: -4px; font-size: 0.72rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1.5px solid #ffffff;">' + unreadCount + '</span>');
         }
+        $(btnId).show();
       } else {
         if (badge.length > 0) badge.hide();
+        $(btnId).hide();
       }
     }
 
@@ -553,9 +583,61 @@ if (!hasPermission('dashboard')) {
 
     function markAllNotifsAsRead(badgeId) {
       var badge = $('#' + badgeId);
-      if (badge) badge.hide();
+      if (badge.length > 0) badge.hide();
+
+      var btnId = badgeId === 'mainNotifBadge' ? '#btnMarkAllMain' : '#btnMarkAllSub';
+      $(btnId).hide();
+
       try {
         localStorage.setItem('notif_read_all_' + badgeId, '1');
+      } catch(e) {}
+
+      var readKeys = [];
+      try {
+        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+      } catch(e) { readKeys = []; }
+
+      // Collect all items from DOM dropdown
+      var dropdownBodyId = badgeId === 'mainNotifBadge' ? 'mainNotifDropdownBody' : 'subNotifDropdownBody';
+      $('#' + dropdownBodyId + ' .dropdown-item').each(function() {
+        var itemId = $(this).attr('id');
+        if (itemId) {
+          var key = itemId.replace('notif_item_', '');
+          if (!readKeys.includes(key)) {
+            readKeys.push(key);
+          }
+          $(this).css('opacity', '0.55');
+        }
+      });
+
+      // Collect all items from cached server polling response
+      if (window.lastNotifResponse) {
+        var res = window.lastNotifResponse;
+        if (res.is_main) {
+          (res.grouped_low_stock || []).forEach(function(grp) {
+            (grp.items || []).forEach(function(item) {
+              var k = 'main_' + item.product_id;
+              if (!readKeys.includes(k)) readKeys.push(k);
+            });
+          });
+        } else {
+          (res.incoming_transfers || []).forEach(function(t) {
+            var k = 'trf_' + t.transfer_id;
+            if (!readKeys.includes(k)) readKeys.push(k);
+          });
+          (res.sub_low_stock || []).forEach(function(s) {
+            var k = 'stk_' + s.product_id;
+            if (!readKeys.includes(k)) readKeys.push(k);
+          });
+          (res.sub_new_products || []).forEach(function(p) {
+            var k = 'np_' + p.product_id;
+            if (!readKeys.includes(k)) readKeys.push(k);
+          });
+        }
+      }
+
+      try {
+        localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(readKeys));
       } catch(e) {}
     }
 
@@ -589,7 +671,8 @@ if (!hasPermission('dashboard')) {
 
     function viewTransferDetailsModal(transferId) {
       if (!transferId) return;
-      markItemAsRead('trf_' + transferId, 'subNotifBadge');
+      var activeBadgeId = ($('#mainNotifBadge').length > 0 && $('#mainNotifBadge').is(':visible')) ? 'mainNotifBadge' : 'subNotifBadge';
+      markItemAsRead('trf_' + transferId, activeBadgeId);
 
       // Automatically hide notification dropdown menu when clicking an item
       $('.dropdown-menu, .nav-item.dropdown, .dropdown').removeClass('show');
@@ -677,6 +760,7 @@ if (!hasPermission('dashboard')) {
         dataType: 'json',
         success: function(res) {
           if (!res || !res.success) return;
+          window.lastNotifResponse = res;
           
           var badgeId = res.is_main ? 'mainNotifBadge' : 'subNotifBadge';
           var badge = $('#' + badgeId);
@@ -720,6 +804,10 @@ if (!hasPermission('dashboard')) {
           }
           lastNotifCount[badgeId] = totalServerCount;
 
+          var btnId = res.is_main ? '#btnMarkAllMain' : '#btnMarkAllSub';
+          var titleCountId = res.is_main ? '#mainNotifTitleCount' : '#subNotifTitleCount';
+          $(titleCountId).text(totalServerCount);
+
           if (unreadCount > 0 && !isAllRead) {
             if (badge.length > 0) {
               badge.text(unreadCount).show();
@@ -727,12 +815,47 @@ if (!hasPermission('dashboard')) {
               var parentAnchor = $('#' + (res.is_main ? 'mainNotifBellIcon' : 'subNotifBellIcon')).parent();
               parentAnchor.append('<span id="' + badgeId + '" class="badge badge-danger font-weight-bold position-absolute" style="top: -2px; right: -4px; font-size: 0.72rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1.5px solid #ffffff;">' + unreadCount + '</span>');
             }
+            $(btnId).show();
           } else {
             badge.hide();
+            $(btnId).hide();
           }
 
           // Dynamically update dropdown HTML in real time without page refresh
-          if (!res.is_main) {
+          if (res.is_main) {
+            var bodyEl = $('#mainNotifDropdownBody');
+            if (bodyEl.length > 0) {
+              var html = '';
+              if (res.grouped_low_stock && res.grouped_low_stock.length > 0) {
+                res.grouped_low_stock.forEach(function(grp) {
+                  html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #f1f5f9; font-size: 0.82rem; white-space: nowrap;">';
+                  html += '<span class="text-truncate"><i class="fas fa-store text-primary mr-1"></i> ' + (grp.store_name || '') + (grp.is_main ? ' <small class="text-muted">(ສາງຫຼັກ)</small>' : '') + '</span>';
+                  html += '<span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + (grp.items ? grp.items.length : 0) + ' ລາຍການ</span>';
+                  html += '</div>';
+
+                  (grp.items || []).forEach(function(alert) {
+                    var isRead = readKeys.includes('main_' + alert.product_id);
+                    var isOutOfStock = (parseInt(alert.qty || 0) <= 0);
+                    var badgeClass = isOutOfStock ? 'badge-danger' : 'badge-warning text-dark';
+                    var qtyLabel = isOutOfStock ? 'ໝົດແລ້ວ (0)' : ('ເຫຼືອ ' + alert.qty + ' ' + (alert.unit || 'ອັນ'));
+
+                    html += '<div id="notif_item_main_' + alert.product_id + '" onclick="markItemAsRead(\'main_' + alert.product_id + '\', \'mainNotifBadge\')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                    html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
+                    html += '<i class="fas fa-exclamation-circle ' + (isOutOfStock ? 'text-danger' : 'text-warning') + ' mr-1.5" style="font-size: 0.82rem;"></i>';
+                    html += '<strong class="text-dark text-truncate" style="font-size: 0.82rem;" title="' + (alert.product_name || '') + '">' + (alert.product_name || '') + '</strong>';
+                    html += '</div>';
+                    html += '<div class="text-nowrap flex-shrink-0 ml-2">';
+                    html += '<span class="badge ' + badgeClass + ' font-weight-bold px-2 py-1" style="font-size: 0.74rem; border-radius: 6px;">' + qtyLabel + '</span>';
+                    html += '</div>';
+                    html += '</div>';
+                  });
+                });
+              } else {
+                html = '<div class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i><span style="font-size: 0.85rem;">ບໍ່ມີສິນຄ້າໃກ້ໝົດ ຫຼື ໝົດແລ້ວ</span></div>';
+              }
+              bodyEl.html(html);
+            }
+          } else {
             var bodyEl = $('#subNotifDropdownBody');
             if (bodyEl.length > 0) {
               var currentStoreId = <?php echo intval($_SESSION['store_id'] ?? 1); ?>;
@@ -816,7 +939,8 @@ if (!hasPermission('dashboard')) {
       });
     }
 
-    setInterval(pollLiveNotifications, 3000);
+    window.pollLiveNotifications = pollLiveNotifications;
+    setInterval(pollLiveNotifications, 1500);
 
     function switchDashboardBranch(storeId) {
       $.ajax({
@@ -1124,6 +1248,9 @@ if (!hasPermission('dashboard')) {
         var iframeWin = this.contentWindow;
         var iframeDoc = this.contentDocument || iframeWin.document;
         if (iframeDoc && window.jQuery) {
+          $(iframeDoc).off('click.audioUnlock touchstart.audioUnlock').on('click.audioUnlock touchstart.audioUnlock', function() {
+            if (window.unlockAudioContext) window.unlockAudioContext();
+          });
           $(iframeDoc).off('click.notifClose touchstart.notifClose').on('click.notifClose touchstart.notifClose', function() {
             $('.dropdown-menu.show').removeClass('show');
             $('.nav-item.dropdown.show').removeClass('show');
