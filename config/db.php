@@ -34,16 +34,15 @@ if (isset($_SESSION['user_id'])) {
 if (!empty($_SESSION['user_id'])) {
     $session_user_id = intval($_SESSION['user_id']);
     $nowVientiane = date('Y-m-d H:i:s');
-    // ອັບເດດເວລາເຄື່ອນໄຫວລ້າສຸດ (Online activity status)
-    if ($conn) {
-        try {
-            $chkCol = @mysqli_query($conn, "SHOW COLUMNS FROM tbuser LIKE 'last_activity'");
-            if ($chkCol && mysqli_num_rows($chkCol) === 0) {
-                @mysqli_query($conn, "ALTER TABLE tbuser ADD COLUMN last_activity DATETIME NULL");
-            }
+    // ອັບເດດເວລາເຄື່ອນໄຫວລ້າສຸດ (Online activity status for current logged-in user)
+    try {
+        if (!empty($pdo)) {
+            $stmtAct = $pdo->prepare("UPDATE tbuser SET last_activity = ? WHERE Id = ?");
+            $stmtAct->execute([$nowVientiane, $session_user_id]);
+        } elseif ($conn) {
             @mysqli_query($conn, "UPDATE tbuser SET last_activity = '$nowVientiane' WHERE Id = '$session_user_id'");
-        } catch (Throwable $ex) {}
-    }
+        }
+    } catch (Throwable $ex) {}
 }
 if ($conn && !empty($_SESSION['user_id'])) {
     $session_user_id = mysqli_real_escape_string($conn, (string)$_SESSION['user_id']);
@@ -1003,14 +1002,41 @@ if (!function_exists('getIncomingTransfersForStore')) {
     function getIncomingTransfersForStore($pdo, $store_id) {
         if (!$pdo || empty($store_id)) return [];
         try {
-            $sql = "SELECT t.*, s.store_name as from_store_name 
+            $sql = "SELECT t.*, s.store_name as from_store_name, to_s.store_name as to_store_name
                     FROM stock_transfers t
-                    JOIN tbstore s ON t.from_store_id = s.store_id
-                    WHERE t.to_store_id = ? 
+                    LEFT JOIN tbstore s ON t.from_store_id = s.store_id
+                    LEFT JOIN tbstore to_s ON t.to_store_id = to_s.store_id
+                    WHERE (t.to_store_id = ? OR t.from_store_id = ?)
+                      AND t.transfer_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
                     ORDER BY t.transfer_id DESC LIMIT 10";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([intval($store_id)]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt->execute([intval($store_id), intval($store_id)]);
+            $transfers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($transfers as &$t) {
+                $trfId = intval($t['transfer_id']);
+                $stmtDet = $pdo->prepare("
+                    SELECT COALESCE(NULLIF(TRIM(d.product_name), ''), p.product_name, 'ສິນຄ້າ') as prod_name,
+                           SUM(d.qty) as total_qty
+                    FROM stock_transfer_details d
+                    LEFT JOIN products p ON d.product_id = p.product_id
+                    WHERE d.transfer_id = ?
+                    GROUP BY d.product_id, prod_name
+                ");
+                $stmtDet->execute([$trfId]);
+                $details = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+
+                $summaryParts = [];
+                foreach ($details as $d) {
+                    $summaryParts[] = $d['prod_name'] . ' x' . $d['total_qty'];
+                }
+
+                $t['total_items'] = count($details);
+                $t['item_summary'] = implode(', ', $summaryParts);
+            }
+            unset($t);
+
+            return $transfers;
         } catch (Exception $e) {
             return [];
         }
@@ -1028,18 +1054,7 @@ if (!function_exists('getNewProductsForStore')) {
                     ORDER BY p.product_id DESC LIMIT 10";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([intval($store_id)]);
-            $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if (empty($list)) {
-                $sql2 = "SELECT p.*, s.store_name 
-                         FROM products p 
-                         JOIN tbstore s ON p.store_id = s.store_id 
-                         WHERE p.store_id = ?
-                         ORDER BY p.product_id DESC LIMIT 5";
-                $stmt2 = $pdo->prepare($sql2);
-                $stmt2->execute([intval($store_id)]);
-                $list = $stmt2->fetchAll(PDO::FETCH_ASSOC);
-            }
-            return $list;
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (Exception $e) {
             return [];
         }

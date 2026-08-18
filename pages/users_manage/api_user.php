@@ -54,7 +54,7 @@ $action = $_POST['action'] ?? $_GET['action'] ?? '';
 // === 0. GET LIVE USER STATUSES (Real-time Polling) ===
 if ($action === 'get_live_user_statuses') {
     try {
-        $stmt = $pdo->query("SELECT Id, status, userstatus, last_activity FROM tbuser");
+        $stmt = $pdo->query("SELECT Id, status, last_activity FROM tbuser");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $result = [];
         $now = time();

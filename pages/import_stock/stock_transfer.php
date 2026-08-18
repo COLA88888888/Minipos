@@ -58,6 +58,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $insTrf->execute([$transfer_code, $from_store_id, $to_store_id, $full_transfer_date, $notes, $_SESSION['user_id']]);
             $transfer_id = $pdo->lastInsertId();
 
+            // Consolidate duplicate products into a single entry with combined quantity
+            $consolidatedItems = [];
+            foreach ($items as $itm) {
+                $pId = intval($itm['product_id'] ?? 0);
+                $q   = intval($itm['quantity'] ?? $itm['qty'] ?? 0);
+                if ($pId <= 0 || $q <= 0) continue;
+                if (!isset($consolidatedItems[$pId])) {
+                    $consolidatedItems[$pId] = $itm;
+                    $consolidatedItems[$pId]['qty'] = $q;
+                    $consolidatedItems[$pId]['quantity'] = $q;
+                } else {
+                    $consolidatedItems[$pId]['qty'] += $q;
+                    $consolidatedItems[$pId]['quantity'] += $q;
+                }
+            }
+            $items = array_values($consolidatedItems);
+
             $transferredCount = 0;
             foreach ($items as $item) {
                 $product_id = intval($item['product_id'] ?? 0);

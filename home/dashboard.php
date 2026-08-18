@@ -108,35 +108,31 @@ if (!hasPermission('dashboard')) {
       height: 0 !important;
     }
 
-    /* Enhanced Top Navbar Icons for Mobile & Desktop */
-    #topNavbarPushMenuBtn i,
+    /* Desktop View: Keep original default sizes */
+    #topNavbarPushMenuBtn i {
+      font-size: 1.2rem;
+    }
     #mainNotifBellIcon,
-    #subNotifBellIcon,
-    .logout-nav-btn i {
-      font-size: 1.55rem !important;
-      transition: transform 0.15s ease;
+    #subNotifBellIcon {
+      font-size: 1.25rem;
     }
-
-    #topNavbarPushMenuBtn:active i,
-    #mainNotifBellIcon:active,
-    #subNotifBellIcon:active,
-    .logout-nav-btn:active i {
-      transform: scale(1.15);
-    }
-
     .logout-nav-btn {
-      font-size: 1.1rem !important;
-      display: flex;
+      font-size: 0.95rem;
+      display: inline-flex;
       align-items: center;
-      padding: 6px 12px !important;
+      padding: 6px 12px;
       background: rgba(255, 255, 255, 0.15);
       border-radius: 8px;
     }
-
+    .logout-nav-btn i {
+      font-size: 1.1rem;
+      margin-right: 4px;
+    }
     .logout-nav-btn:hover {
       background: rgba(255, 255, 255, 0.3) !important;
     }
 
+    /* Mobile View (screen width <= 768px): Only enlarge icons for mobile phone screens */
     @media (max-width: 768px) {
       #topNavbarPushMenuBtn i,
       #mainNotifBellIcon,
@@ -146,8 +142,8 @@ if (!hasPermission('dashboard')) {
       }
       
       .nav-link {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
       }
       
       #mainNotifBadge, #subNotifBadge {
@@ -156,6 +152,15 @@ if (!hasPermission('dashboard')) {
         font-size: 0.72rem !important;
         padding: 3px 6px !important;
       }
+    }
+
+    .notif-dropdown-box {
+      border-radius: 12px !important;
+      min-width: 270px !important;
+      width: 280px !important;
+      max-width: 90vw !important;
+      padding: 0 !important;
+      overflow: hidden !important;
     }
   </style>
 
@@ -256,7 +261,7 @@ if (!hasPermission('dashboard')) {
               </span>
             <?php endif; ?>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 320px; max-width: 90vw; padding: 0; overflow: hidden;">
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
               <span><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ (<?php echo $lowStockCount; ?>)</span>
             </div>
@@ -280,7 +285,7 @@ if (!hasPermission('dashboard')) {
 
                   <!-- ລາຍການສິນຄ້າໃນສາຂານັ້ນ (Single Line Flex Row) -->
                   <?php foreach ($branchGroup['items'] as $alert): ?>
-                    <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                    <div id="notif_item_main_<?php echo $alert['product_id']; ?>" onclick="markItemAsRead('main_<?php echo $alert['product_id']; ?>', 'mainNotifBadge')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;">
                       <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
                         <strong class="text-dark text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($alert['product_name']); ?>"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
                       </div>
@@ -312,7 +317,7 @@ if (!hasPermission('dashboard')) {
           $totalSubNotifications = count($incomingTransfers) + count($subLowStock) + count($subNewProducts);
         ?>
         <li class="nav-item dropdown">
-          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" onclick="markNotifAsRead('subNotifBadge')" title="ແຈ້ງເຕືອນສາຂາຍ່ອຍ" style="font-size: 1.25rem; cursor: pointer;">
+          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສາຂາຍ່ອຍ" style="font-size: 1.25rem; cursor: pointer;">
             <i id="subNotifBellIcon" class="fas fa-bell text-white"></i>
             <?php if ($totalSubNotifications > 0): ?>
               <span id="subNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
@@ -320,26 +325,31 @@ if (!hasPermission('dashboard')) {
               </span>
             <?php endif; ?>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 320px; max-width: 90vw; padding: 0; overflow: hidden;">
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
               <span><i class="fas fa-bell text-white mr-1.5"></i> ແຈ້ງເຕືອນສາຂາ (<?php echo $totalSubNotifications; ?>)</span>
+              <button type="button" class="btn btn-xs btn-outline-light font-weight-bold" onclick="markAllNotifsAsRead('subNotifBadge')" style="border-radius: 6px; font-size: 0.73rem;">ອ່ານທັງໝົດ</button>
             </div>
             <div class="dropdown-divider m-0"></div>
             
-            <div style="max-height: 380px; overflow-y: auto;">
-              <!-- 1. ສາຂາໃຫຍ່ໂອນສິນຄ້າມາ (Incoming Stock Transfers from Main Branch) -->
+            <div id="subNotifDropdownBody" style="max-height: 380px; overflow-y: auto;">
+              <!-- 1. ລາຍການໂອນສິນຄ້າ (Incoming & Outgoing Stock Transfers) -->
               <?php if (!empty($incomingTransfers)): ?>
                 <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #eff6ff; font-size: 0.82rem; white-space: nowrap;">
-                  <span class="text-primary text-truncate"><i class="fas fa-truck-loading mr-1"></i> ສາຂາໃຫຍ່ໂອນສິນຄ້າມາ</span>
+                  <span class="text-primary text-truncate"><i class="fas fa-exchange-alt mr-1"></i> ລາຍການໂອນສິນຄ້າ</span>
                   <span class="badge badge-primary font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($incomingTransfers); ?> ໃບບິນ</span>
                 </div>
                 <?php foreach ($incomingTransfers as $trf): ?>
-                  <div onclick="viewTransferDetailsModal(<?php echo intval($trf['transfer_id']); ?>)" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
+                  <?php 
+                    $isOutgoing = (intval($trf['from_store_id']) === intval($subStoreId));
+                    $targetStoreName = $isOutgoing ? ($trf['to_store_name'] ?: 'ສາຂາຍ່ອຍ') : ($trf['from_store_name'] ?: 'ສາຂາໃຫຍ່');
+                    $directionIcon = $isOutgoing ? 'fa-paper-plane text-success' : 'fa-truck-loading text-primary';
+                    $directionPrefix = $isOutgoing ? 'ໂອນໄປຫາ ' : 'ໂອນມາຈາກ ';
+                  ?>
+                  <div id="notif_item_trf_<?php echo $trf['transfer_id']; ?>" onclick="markItemAsRead('trf_<?php echo $trf['transfer_id']; ?>', 'subNotifBadge'); viewTransferDetailsModal(<?php echo intval($trf['transfer_id']); ?>)" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
                     <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
-                      <i class="fas fa-file-invoice text-info mr-1.5" style="font-size: 0.82rem;"></i>
-                      <strong class="text-dark mr-1" style="font-size: 0.81rem;"><?php echo htmlspecialchars($trf['transfer_code'] ?: ('TRF-'.$trf['transfer_id'])); ?></strong>
-                      <small class="text-muted mr-1.5">(<?php echo htmlspecialchars($trf['from_store_name']); ?>)</small>
-                      <small class="text-muted font-weight-normal"><?php echo date('d/m H:i', strtotime($trf['transfer_date'])); ?></small>
+                      <i class="fas <?php echo $directionIcon; ?> mr-2" style="font-size: 0.82rem;"></i>
+                      <span class="text-dark font-weight-bold" style="font-size: 0.84rem;"><?php echo date('d/m/Y H:i', strtotime($trf['transfer_date'])); ?></span>
                     </div>
                     <div class="d-flex align-items-center text-nowrap flex-shrink-0">
                       <span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;"><?php echo intval($trf['total_items'] ?? 1); ?> ລາຍການ</span>
@@ -355,7 +365,7 @@ if (!hasPermission('dashboard')) {
                   <span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subLowStock); ?> ລາຍການ</span>
                 </div>
                 <?php foreach ($subLowStock as $stk): ?>
-                  <div class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                  <div id="notif_item_stk_<?php echo $stk['product_id']; ?>" onclick="markItemAsRead('stk_<?php echo $stk['product_id']; ?>', 'subNotifBadge')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;">
                     <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
                       <i class="fas fa-exclamation-circle text-warning mr-1.5" style="font-size: 0.82rem;"></i>
                       <span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($stk['product_name']); ?>"><?php echo htmlspecialchars($stk['product_name']); ?></span>
@@ -374,7 +384,7 @@ if (!hasPermission('dashboard')) {
                   <span class="badge badge-success font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subNewProducts); ?> ລາຍການ</span>
                 </div>
                 <?php foreach ($subNewProducts as $np): ?>
-                  <div class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                  <div id="notif_item_np_<?php echo $np['product_id']; ?>" onclick="markItemAsRead('np_<?php echo $np['product_id']; ?>', 'subNotifBadge')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;">
                     <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
                       <i class="fas fa-sparkles text-success mr-1.5" style="font-size: 0.82rem;"></i>
                       <span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($np['product_name']); ?>"><?php echo htmlspecialchars($np['product_name']); ?></span>
@@ -418,32 +428,185 @@ if (!hasPermission('dashboard')) {
   </nav>
 
   <script>
-    function markNotifAsRead(badgeId) {
-      var badge = document.getElementById(badgeId);
-      if (badge) {
-        badge.style.display = 'none';
-      }
-      var iconId = badgeId === 'mainNotifBadge' ? 'mainNotifBellIcon' : 'subNotifBellIcon';
-      var icon = document.getElementById(iconId);
-      if (icon) {
-        icon.classList.remove('fa-bounce', 'text-warning');
-      }
+    // Web Audio API Notification Chime Generator with Browser Autoplay Policy Unlocker
+    var sharedAudioCtx = null;
+    var isAudioUnlocked = false;
+
+    function unlockAudioContext() {
+      if (isAudioUnlocked && sharedAudioCtx && sharedAudioCtx.state === 'running') return;
       try {
-        sessionStorage.setItem('notif_read_' + badgeId, '1');
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!sharedAudioCtx) {
+          sharedAudioCtx = new AudioCtx();
+        }
+        if (sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume();
+        }
+        var buffer = sharedAudioCtx.createBuffer(1, 1, 22050);
+        var source = sharedAudioCtx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(sharedAudioCtx.destination);
+        source.start(0);
+        isAudioUnlocked = true;
       } catch(e) {}
     }
 
+    ['click', 'touchstart', 'touchend', 'keydown'].forEach(function(evtName) {
+      document.addEventListener(evtName, unlockAudioContext, { once: false, capture: true });
+    });
+
+    function playNotificationSound() {
+      try {
+        unlockAudioContext();
+        var AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        
+        var ctx = sharedAudioCtx || new AudioCtx();
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        
+        var now = ctx.currentTime;
+        var notes = [587.33, 739.99, 880.00]; // Loud D-Major Triad Chime
+        notes.forEach(function(freq, idx) {
+          var startTime = now + (idx * 0.12);
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startTime);
+          
+          gain.gain.setValueAtTime(0.5, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.45);
+          
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          
+          osc.start(startTime);
+          osc.stop(startTime + 0.45);
+        });
+      } catch(e) {}
+    }
+
+    function updateBadgeUI(badgeId) {
+      var readKeys = [];
+      try {
+        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+      } catch(e) { readKeys = []; }
+
+      var isAllRead = false;
+      try {
+        isAllRead = localStorage.getItem('notif_read_all_' + badgeId) === '1';
+      } catch(e) {}
+
+      var dropdownBodyId = badgeId === 'mainNotifBadge' ? 'mainNotifDropdownBody' : 'subNotifDropdownBody';
+      var items = $('#' + dropdownBodyId + ' .dropdown-item');
+      
+      var unreadCount = 0;
+      items.each(function() {
+        var itemId = $(this).attr('id');
+        if (itemId) {
+          var key = itemId.replace('notif_item_', '');
+          if (!readKeys.includes(key)) {
+            unreadCount++;
+          }
+        }
+      });
+
+      var badge = $('#' + badgeId);
+      if (unreadCount > 0 && !isAllRead) {
+        if (badge.length > 0) {
+          badge.text(unreadCount).show();
+        } else {
+          var iconId = badgeId === 'mainNotifBadge' ? 'mainNotifBellIcon' : 'subNotifBellIcon';
+          var parentAnchor = $('#' + iconId).parent();
+          parentAnchor.append('<span id="' + badgeId + '" class="badge badge-danger font-weight-bold position-absolute" style="top: -2px; right: -4px; font-size: 0.72rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1.5px solid #ffffff;">' + unreadCount + '</span>');
+        }
+      } else {
+        if (badge.length > 0) badge.hide();
+      }
+    }
+
+    function markItemAsRead(itemKey, badgeId) {
+      if (!itemKey || !badgeId) return;
+
+      var readKeys = [];
+      try {
+        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+      } catch(e) { readKeys = []; }
+
+      if (!readKeys.includes(itemKey)) {
+        readKeys.push(itemKey);
+        try {
+          localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(readKeys));
+        } catch(e) {}
+
+        var el = document.getElementById('notif_item_' + itemKey);
+        if (el) {
+          el.style.opacity = '0.55';
+        }
+
+        updateBadgeUI(badgeId);
+      }
+    }
+
+    function markAllNotifsAsRead(badgeId) {
+      var badge = $('#' + badgeId);
+      if (badge) badge.hide();
+      try {
+        localStorage.setItem('notif_read_all_' + badgeId, '1');
+      } catch(e) {}
+    }
+
+    (function() {
+      ['mainNotifBadge', 'subNotifBadge'].forEach(function(bId) {
+        var readKeys = [];
+        try {
+          readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + bId) || '[]');
+        } catch(e) { readKeys = []; }
+
+        readKeys.forEach(function(k) {
+          var el = document.getElementById('notif_item_' + k);
+          if (el) el.style.opacity = '0.55';
+        });
+
+        var badge = $('#' + bId);
+        if (badge.length > 0) {
+          var totalInit = parseInt(badge.text() || '0');
+          var unreadInit = Math.max(0, totalInit - readKeys.length);
+          var isAllRead = false;
+          try { isAllRead = localStorage.getItem('notif_read_all_' + bId) === '1'; } catch(e) {}
+
+          if (unreadInit > 0 && !isAllRead) {
+            badge.text(unreadInit).show();
+          } else {
+            badge.hide();
+          }
+        }
+      });
+    })();
+
     function viewTransferDetailsModal(transferId) {
       if (!transferId) return;
-      markNotifAsRead('subNotifBadge');
+      markItemAsRead('trf_' + transferId, 'subNotifBadge');
 
-      if (typeof Swal !== 'undefined') {
-        Swal.fire({
-          html: '<div class="lao-dots-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="preloader-text" style="margin-top:10px;">ກຳລັງດຶງຂໍ້ມູນລາຍລະອຽດ...</div>',
-          showConfirmButton: false,
-          allowOutsideClick: false,
-          background: '#ffffff'
-        });
+      // Automatically hide notification dropdown menu when clicking an item
+      $('.dropdown-menu, .nav-item.dropdown, .dropdown').removeClass('show');
+
+      // Reset modal contents and show loading spinner inside modal table
+      $('#trf_modal_code').text('TRF-' + transferId);
+      $('#trf_modal_date').text('ກຳລັງໂຫຼດ...');
+      $('#trf_modal_from').text('-');
+      $('#trf_modal_to').text('-');
+      $('#trf_modal_creator').text('-');
+      $('#trf_modal_item_count').text('0');
+      $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-primary font-weight-bold"><i class="fas fa-spinner fa-spin fa-2x mb-2 d-block"></i>ກຳລັງດຶງຂໍ້ມູນລາຍລະອຽດ...</td></tr>');
+
+      // Move modal to body container to bypass any parent z-index / overflow restrictions
+      var modalEl = $('#notifTransferDetailModal');
+      if (modalEl.length > 0) {
+        modalEl.appendTo('body').modal('show');
       }
 
       $.ajax({
@@ -451,8 +614,7 @@ if (!hasPermission('dashboard')) {
         type: 'GET',
         dataType: 'json',
         success: function(res) {
-          if (typeof Swal !== 'undefined') { Swal.close(); }
-          if (res.success && res.transfer) {
+          if (res && res.success && res.transfer) {
             var trf = res.transfer;
             var details = res.details || [];
 
@@ -483,33 +645,178 @@ if (!hasPermission('dashboard')) {
             }
 
             $('#trf_modal_table_body').html(tbodyHtml);
-            $('#notifTransferDetailModal').modal('show');
           } else {
-            if (typeof Swal !== 'undefined') {
-              Swal.fire({ icon: 'error', title: 'ຜິດພາດ!', text: res.message || 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້', confirmButtonText: 'ຕົກລົງ' });
-            }
+            $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-circle fa-2x mb-2 d-block"></i>' + (res ? res.message : 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້') + '</td></tr>');
           }
         },
-        error: function(err) {
-          if (typeof Swal !== 'undefined') {
-            Swal.close();
-            Swal.fire({ icon: 'error', title: 'ຜິດພາດ!', text: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ລະບົບ', confirmButtonText: 'ຕົກລົງ' });
+        error: function() {
+          $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ລະບົບ</td></tr>');
+        }
+      });
+    }
+
+    window.markItemAsRead = markItemAsRead;
+    window.viewTransferDetailsModal = viewTransferDetailsModal;
+    window.markAllNotifsAsRead = markAllNotifsAsRead;
+
+    // Automatically close notification dropdown when clicking outside on navbar/main document
+    $(document).on('click.notifClose touchstart.notifClose', function (e) {
+      if (!$(e.target).closest('.nav-item.dropdown').length) {
+        $('.dropdown-menu.show').removeClass('show');
+        $('.nav-item.dropdown.show').removeClass('show');
+      }
+    });
+
+    var lastNotifCount = { mainNotifBadge: -1, subNotifBadge: -1 };
+
+    // Real-Time Notification Polling (Every 3 seconds)
+    function pollLiveNotifications() {
+      $.ajax({
+        url: '../api/stock_transfer_backend.php?action=poll_notifications',
+        type: 'GET',
+        dataType: 'json',
+        success: function(res) {
+          if (!res || !res.success) return;
+          
+          var badgeId = res.is_main ? 'mainNotifBadge' : 'subNotifBadge';
+          var badge = $('#' + badgeId);
+          var totalServerCount = res.total_count || 0;
+
+          var readKeys = [];
+          try {
+            readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+          } catch(e) { readKeys = []; }
+
+          var isAllRead = false;
+          try {
+            isAllRead = localStorage.getItem('notif_read_all_' + badgeId) === '1';
+          } catch(e) {}
+
+          var unreadCount = 0;
+          if (res.is_main) {
+            (res.grouped_low_stock || []).forEach(function(grp) {
+              (grp.items || []).forEach(function(item) {
+                if (!readKeys.includes('main_' + item.product_id)) {
+                  unreadCount++;
+                }
+              });
+            });
+          } else {
+            (res.incoming_transfers || []).forEach(function(t) {
+              if (!readKeys.includes('trf_' + t.transfer_id)) unreadCount++;
+            });
+            (res.sub_low_stock || []).forEach(function(s) {
+              if (!readKeys.includes('stk_' + s.product_id)) unreadCount++;
+            });
+            (res.sub_new_products || []).forEach(function(p) {
+              if (!readKeys.includes('np_' + p.product_id)) unreadCount++;
+            });
+          }
+
+          if (lastNotifCount[badgeId] !== -1 && totalServerCount > lastNotifCount[badgeId]) {
+            try { localStorage.removeItem('notif_read_all_' + badgeId); } catch(e) {}
+            isAllRead = false;
+            playNotificationSound();
+          }
+          lastNotifCount[badgeId] = totalServerCount;
+
+          if (unreadCount > 0 && !isAllRead) {
+            if (badge.length > 0) {
+              badge.text(unreadCount).show();
+            } else {
+              var parentAnchor = $('#' + (res.is_main ? 'mainNotifBellIcon' : 'subNotifBellIcon')).parent();
+              parentAnchor.append('<span id="' + badgeId + '" class="badge badge-danger font-weight-bold position-absolute" style="top: -2px; right: -4px; font-size: 0.72rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 1.5px solid #ffffff;">' + unreadCount + '</span>');
+            }
+          } else {
+            badge.hide();
+          }
+
+          // Dynamically update dropdown HTML in real time without page refresh
+          if (!res.is_main) {
+            var bodyEl = $('#subNotifDropdownBody');
+            if (bodyEl.length > 0) {
+              var currentStoreId = <?php echo intval($_SESSION['store_id'] ?? 1); ?>;
+              var html = '';
+              
+              if (res.incoming_transfers && res.incoming_transfers.length > 0) {
+                html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #eff6ff; font-size: 0.82rem; white-space: nowrap;">';
+                html += '<span class="text-primary text-truncate"><i class="fas fa-exchange-alt mr-1"></i> ລາຍການໂອນສິນຄ້າ</span>';
+                html += '<span class="badge badge-primary font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.incoming_transfers.length + ' ໃບບິນ</span>';
+                html += '</div>';
+
+                res.incoming_transfers.forEach(function(trf) {
+                  var isOutgoing = (parseInt(trf.from_store_id) === currentStoreId);
+                  var targetStoreName = isOutgoing ? (trf.to_store_name || 'ສາຂາຍ່ອຍ') : (trf.from_store_name || 'ສາຂາໃຫຍ່');
+                  var directionIcon = isOutgoing ? 'fa-paper-plane text-success' : 'fa-truck-loading text-primary';
+                  var directionPrefix = isOutgoing ? 'ໂອນໄປຫາ ' : 'ໂອນມາຈາກ ';
+                  var trfCode = trf.transfer_code || ('TRF-' + trf.transfer_id);
+                  var itemSummary = trf.item_summary || 'ສິນຄ້າໂອນ';
+                  var isRead = readKeys.includes('trf_' + trf.transfer_id);
+
+                  html += '<div id="notif_item_trf_' + trf.transfer_id + '" onclick="markItemAsRead(\'trf_' + trf.transfer_id + '\', \'subNotifBadge\'); viewTransferDetailsModal(' + trf.transfer_id + ')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
+                  html += '<i class="fas ' + directionIcon + ' mr-2" style="font-size: 0.82rem;"></i>';
+                  html += '<span class="text-dark font-weight-bold" style="font-size: 0.84rem;">' + (trf.formatted_date || '') + '</span>';
+                  html += '</div>';
+                  html += '<div class="d-flex align-items-center text-nowrap flex-shrink-0">';
+                  html += '<span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;">' + (trf.total_items || 1) + ' ລາຍການ</span>';
+                  html += '</div>';
+                  html += '</div>';
+                });
+              }
+
+              if (res.sub_low_stock && res.sub_low_stock.length > 0) {
+                html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #fff7ed; font-size: 0.82rem; white-space: nowrap;">';
+                html += '<span class="text-warning text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃນສາຂາໃກ້ໝົດ</span>';
+                html += '<span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.sub_low_stock.length + ' ລາຍການ</span>';
+                html += '</div>';
+
+                res.sub_low_stock.forEach(function(stk) {
+                  var isRead = readKeys.includes('stk_' + stk.product_id);
+                  html += '<div id="notif_item_stk_' + stk.product_id + '" onclick="markItemAsRead(\'stk_' + stk.product_id + '\', \'subNotifBadge\')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
+                  html += '<i class="fas fa-exclamation-circle text-warning mr-1.5" style="font-size: 0.82rem;"></i>';
+                  html += '<span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="' + (stk.product_name || '') + '">' + (stk.product_name || '') + '</span>';
+                  html += '</div>';
+                  html += '<div class="text-nowrap flex-shrink-0">';
+                  html += '<span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ ' + stk.qty + ' ' + (stk.unit || 'ອັນ') + '</span>';
+                  html += '</div>';
+                  html += '</div>';
+                });
+              }
+
+              if (res.sub_new_products && res.sub_new_products.length > 0) {
+                html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #f0fdf4; font-size: 0.82rem; white-space: nowrap;">';
+                html += '<span class="text-success text-truncate"><i class="fas fa-sparkles mr-1"></i> ສິນຄ້າໃໝ່ເພີ່ມເຂົ້າສາຂາ</span>';
+                html += '<span class="badge badge-success font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.sub_new_products.length + ' ລາຍການ</span>';
+                html += '</div>';
+
+                res.sub_new_products.forEach(function(np) {
+                  var isRead = readKeys.includes('np_' + np.product_id);
+                  html += '<div id="notif_item_np_' + np.product_id + '" onclick="markItemAsRead(\'np_' + np.product_id + '\', \'subNotifBadge\')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
+                  html += '<i class="fas fa-sparkles text-success mr-1.5" style="font-size: 0.82rem;"></i>';
+                  html += '<span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="' + (np.product_name || '') + '">' + (np.product_name || '') + '</span>';
+                  html += '</div>';
+                  html += '<div class="text-nowrap flex-shrink-0">';
+                  html += '<span class="badge badge-light border text-dark font-weight-bold" style="font-size: 0.76rem;">' + (parseInt(np.price || 0).toLocaleString()) + ' ₭</span>';
+                  html += '</div>';
+                  html += '</div>';
+                });
+              }
+
+              if (!html) {
+                html = '<div class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i><span style="font-size: 0.85rem;">ບໍ່ມີການແຈ້ງເຕືອນໃໝ່ໃນສາຂາ</span></div>';
+              }
+
+              bodyEl.html(html);
+            }
           }
         }
       });
     }
 
-    (function() {
-      ['mainNotifBadge', 'subNotifBadge'].forEach(function(bId) {
-        if (sessionStorage.getItem('notif_read_' + bId) === '1') {
-          var badge = document.getElementById(bId);
-          if (badge) badge.style.display = 'none';
-          var iconId = bId === 'mainNotifBadge' ? 'mainNotifBellIcon' : 'subNotifBellIcon';
-          var icon = document.getElementById(iconId);
-          if (icon) icon.classList.remove('fa-bounce', 'text-warning');
-        }
-      });
-    })();
+    setInterval(pollLiveNotifications, 3000);
 
     function switchDashboardBranch(storeId) {
       $.ajax({
@@ -817,6 +1124,10 @@ if (!hasPermission('dashboard')) {
         var iframeWin = this.contentWindow;
         var iframeDoc = this.contentDocument || iframeWin.document;
         if (iframeDoc && window.jQuery) {
+          $(iframeDoc).off('click.notifClose touchstart.notifClose').on('click.notifClose touchstart.notifClose', function() {
+            $('.dropdown-menu.show').removeClass('show');
+            $('.nav-item.dropdown.show').removeClass('show');
+          });
           $(iframeDoc).off('click.sidebarClose touchstart.sidebarClose').on('click.sidebarClose touchstart.sidebarClose', function() {
             if (window.innerWidth <= 992) {
               var isSidebarOpen = $('body').hasClass('sidebar-open') || $('html').hasClass('sidebar-open');

@@ -40,15 +40,20 @@ if ($action === 'get_transfer_details') {
         // Format date
         $transfer['transfer_date'] = date('d/m/Y H:i', strtotime($transfer['transfer_date']));
 
-        // Fetch transfer details directly from stock_transfer_details
+        // Fetch transfer details directly from stock_transfer_details (preventing duplicate product store JOINs)
         $stmtDet = $pdo->prepare("
-            SELECT d.*, COALESCE(d.barcode, p.barcode) as prod_barcode
+            SELECT 
+                d.product_id,
+                COALESCE(NULLIF(TRIM(d.product_name), ''), p.product_name, 'ສິນຄ້າ') as product_name,
+                COALESCE(NULLIF(TRIM(d.barcode), ''), p.barcode, '') as prod_barcode,
+                COALESCE(NULLIF(TRIM(d.unit), ''), p.unit, 'ອັນ') as unit,
+                d.qty
             FROM stock_transfer_details d
-            LEFT JOIN products p ON d.product_id = p.product_id
+            LEFT JOIN products p ON d.product_id = p.product_id AND p.store_id = ?
             WHERE d.transfer_id = ?
             ORDER BY d.id ASC
         ");
-        $stmtDet->execute([$transfer_id]);
+        $stmtDet->execute([intval($transfer['from_store_id']), $transfer_id]);
         $details = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode([
@@ -60,6 +65,65 @@ if ($action === 'get_transfer_details') {
 
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit();
+    }
+} elseif ($action === 'poll_notifications') {
+    try {
+        $userStoreId = intval($_SESSION['store_id'] ?? 1);
+        $userIsAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+        $userIsMain = isMainBranch($pdo, $userStoreId);
+
+        if (!$userIsMain && !$userIsAdmin) {
+            // Sub-branch notification poll
+            $incomingTransfers = getIncomingTransfersForStore($pdo, $userStoreId);
+            $subLowStock = getLowStockAlerts($pdo, $userStoreId);
+            $subNewProducts = getNewProductsForStore($pdo, $userStoreId);
+
+            foreach ($incomingTransfers as &$t) {
+                $t['formatted_date'] = date('d/m H:i', strtotime($t['transfer_date']));
+            }
+            unset($t);
+
+            $totalCount = count($incomingTransfers) + count($subLowStock) + count($subNewProducts);
+
+            echo json_encode([
+                'success' => true,
+                'is_main' => false,
+                'total_count' => $totalCount,
+                'incoming_transfers' => $incomingTransfers,
+                'sub_low_stock' => $subLowStock,
+                'sub_new_products' => $subNewProducts
+            ]);
+            exit();
+        } else {
+            // Main branch notification poll
+            $lowStockList = getLowStockAlerts($pdo);
+            $totalCount = count($lowStockList);
+
+            $groupedLowStock = [];
+            foreach ($lowStockList as $alert) {
+                $stId = $alert['store_id'];
+                if (!isset($groupedLowStock[$stId])) {
+                    $groupedLowStock[$stId] = [
+                        'store_id' => $alert['store_id'],
+                        'store_name' => $alert['store_name'],
+                        'is_main' => $alert['is_main'] ?? 0,
+                        'items' => []
+                    ];
+                }
+                $groupedLowStock[$stId]['items'][] = $alert;
+            }
+
+            echo json_encode([
+                'success' => true,
+                'is_main' => true,
+                'total_count' => $totalCount,
+                'grouped_low_stock' => array_values($groupedLowStock)
+            ]);
+            exit();
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         exit();
     }
 } else {
