@@ -19,7 +19,7 @@ $site_logo = '../assets/img/logo/logo.png';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS System - Corner Retail</title>
+    <title>POS Wlaodev</title>
     <link rel="shortcut icon" href="<?php echo $site_logo; ?>" type="image/x-icon">
 
     <!-- CSS Plugins & Theme -->
@@ -48,7 +48,7 @@ $site_logo = '../assets/img/logo/logo.png';
             <!-- Title Header -->
             <div class="login-header-text">
                 <h4>ເຂົ້າສູ່ລະບົບ POS System</h4>
-                <p>POS System - Corner Retail</p>
+                <p>POS Wlaodev</p>
                 <!-- <div class="login-hint">ກະລຸນາເຂົ້າສູ່ລະບົບ...</div> -->
             </div>
 

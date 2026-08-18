@@ -5,6 +5,12 @@
       <i class="fas fa-shopping-basket mr-2"></i> ລາຍການຂາຍ
     </h5>
     <div class="d-flex align-items-center" style="gap: 6px;">
+      <!-- Network Status Badge (Online/Offline & Sync Trigger) -->
+      <span class="badge px-2.5 py-1.5 shadow-2xs font-weight-bold" id="netStatusBadge" onclick="syncOfflineSalesToServer(true)" style="font-size: 0.78rem; border-radius: 6px; background-color: rgba(255,255,255,0.22); color: #fff; cursor: pointer;" title="ສະຖານະການເຊື່ອມຕໍ່ (ກົດເພື່ອ Sync)">
+        <i class="fas fa-circle text-success mr-1" id="netStatusIcon" style="font-size: 0.6rem;"></i>
+        <span id="netStatusText">ອອນໄລນ໌</span>
+        <span id="offlineQueueBadge" class="badge badge-warning ml-1 text-dark" style="display: none; font-size: 0.7rem; border-radius: 4px;">0</span>
+      </span>
       <button type="button" class="btn btn-sm btn-light text-primary font-weight-bold shadow-sm" onclick="openCustomerDisplayWindow()" title="ເປີດໜ້າຈໍສະແດງຜົນລູກຄ້າ (Customer Display)" style="border-radius: 8px; font-size: 0.82rem; padding: 4px 10px;">
         <i class="fas fa-desktop mr-1"></i> ຈໍລູກຄ້າ
       </button>

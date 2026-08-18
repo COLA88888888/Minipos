@@ -10,7 +10,7 @@
     <div class="brand-logo-wrap" style="background: #ffffff; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.18); width: 42px; height: 42px; min-width: 42px; flex-shrink: 0;">
       <img src="<?php echo $bp; ?>assets/img/logo/logo.png" alt="POS Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
     </div>
-    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap;">POS System</span>
+    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap;">POS Wlaodev</span>
   <?php if (hasPermission('dashboard')): ?>
     </a>
   <?php else: ?>

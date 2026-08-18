@@ -12,7 +12,8 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ລະບົບບໍລິຫານການຂາຍ ແລະ ຄັງສິນຄ້າ Minimarket</title>
+    <title>POS Wlaodev</title>
+    <link rel="manifest" href="<?php echo $base_path; ?>manifest.json">
     
     <!-- Local Font - Noto Sans Lao Looped -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
@@ -42,6 +43,17 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
     <script src="<?php echo $base_path; ?>plugins/jquery/jquery.min.js"></script>
     <script src="<?php echo $base_path; ?>plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="<?php echo $base_path; ?>plugins/sweetalert2/sweetalert2.all.min.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('<?php echo $base_path; ?>sw.js').then(function(reg) {
+            console.log('MiniPos ServiceWorker registered:', reg.scope);
+          }).catch(function(err) {
+            console.warn('MiniPos ServiceWorker registration failed:', err);
+          });
+        });
+      }
+    </script>
     <style>
       body {
         font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif;

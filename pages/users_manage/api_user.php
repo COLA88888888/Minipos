@@ -51,7 +51,35 @@ function parseLaoDateToSql($rawDate) {
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
-// === 0. GET NEXT USER CODE (GET request) ===
+// === 0. GET LIVE USER STATUSES (Real-time Polling) ===
+if ($action === 'get_live_user_statuses') {
+    try {
+        $stmt = $pdo->query("SELECT Id, status, userstatus, last_activity FROM tbuser");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+        $now = time();
+        foreach ($users as $u) {
+            $isOnline = false;
+            if (!empty($u['last_activity'])) {
+                $lastActiveTime = strtotime($u['last_activity']);
+                if (($now - $lastActiveTime) <= 300) {
+                    $isOnline = true;
+                }
+            }
+            $result[] = [
+                'id' => (int)$u['Id'],
+                'is_online' => $isOnline,
+                'status' => trim($u['status'] ?? $u['userstatus'] ?? 'ພະນັກງານ')
+            ];
+        }
+        echo json_encode(['status' => 'success', 'users' => $result]);
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit();
+}
+
+// === 0.1 GET NEXT USER CODE (GET request) ===
 if ($action === 'get_next_user_code') {
     try {
         $stmt = $pdo->query("SELECT user_code FROM tbuser WHERE user_code LIKE 'USR-%' ORDER BY Id DESC LIMIT 1");

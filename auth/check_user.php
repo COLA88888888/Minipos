@@ -85,6 +85,14 @@ try {
             // ບັນທຶກຂໍ້ມູນ Session
             $_SESSION['checked'] = 1;
             $_SESSION['user_id'] = $user['Id'];
+            $_SESSION['last_activity'] = time();
+
+            // ອັບເດດເວລາເຄື່ອນໄຫວລ້າສຸດໃນຖານຂໍ້ມູນ
+            $nowVientiane = date('Y-m-d H:i:s');
+            try {
+                $pdo->exec("UPDATE tbuser SET last_activity = '{$nowVientiane}' WHERE Id = " . intval($user['Id']));
+            } catch (Throwable $ex) {}
+
             $_SESSION['username'] = $user['username'];
             $_SESSION['user_code'] = $user['user_code'] ?? '';
             $_SESSION['fname'] = $user['username'];

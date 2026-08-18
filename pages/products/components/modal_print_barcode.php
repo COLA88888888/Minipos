@@ -21,13 +21,18 @@ if (!empty($products) && is_array($products)) {
     <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden; max-height: 90vh;">
       
       <!-- HEADER -->
-      <div class="modal-header barcode-modal-header text-white py-3 px-4">
-        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.15rem;">
+      <div class="modal-header barcode-modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+        <h5 class="modal-title font-weight-bold mb-0" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.15rem;">
           <i class="fas fa-barcode mr-2"></i> ປິ່ນສະຕິກເກີບາໂຄ້ດ (ເລືອກລາຍການ ແລະ ຈຳນວນດວງ)
         </h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <div class="d-flex align-items-center" style="gap: 12px;">
+          <button type="button" class="btn btn-sm btn-light font-weight-bold text-primary shadow-xs px-3" style="border-radius: 6px; font-size: 0.85rem;" onclick="executeBarcodePrint()">
+            <i class="fas fa-print mr-1"></i> ປິ່ນບາໂຄ້ດ
+          </button>
+          <button type="button" class="close text-white opacity-100 p-0 m-0" data-dismiss="modal" aria-label="Close" style="font-size: 1.5rem;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
       </div>
 
       <!-- TOOLBAR: Global Controls -->
@@ -35,8 +40,8 @@ if (!empty($products) && is_array($products)) {
         <div class="row align-items-center gy-2">
           
           <!-- Column 1: Search Box -->
-          <div class="col-md-4 col-sm-6 mb-2 mb-md-0">
-            <div class="input-group">
+          <div class="col-md-3 col-sm-6 mb-2 mb-md-0">
+            <div class="input-group input-group-sm">
               <div class="input-group-prepend">
                 <span class="input-group-text bg-white border-right-0" style="border-radius: 8px 0 0 8px;">
                   <i class="fas fa-search text-muted"></i>
@@ -44,37 +49,41 @@ if (!empty($products) && is_array($products)) {
               </div>
               <input type="text" id="modalBarcodeSearch" class="form-control border-left-0" 
                      placeholder="ຄົ້ນຫາຊື່ສິນຄ້າ ຫຼື ບາໂຄ້ດ..." 
-                     style="border-radius: 0 8px 8px 0; font-size: 0.9rem;" 
+                     style="border-radius: 0 8px 8px 0; font-size: 0.88rem; height: 34px;" 
                      onkeyup="filterModalBarcodeBlocks()">
             </div>
           </div>
 
           <!-- Column 2: Selection & Batch Quantity Buttons -->
           <div class="col-md-5 col-sm-6 mb-2 mb-md-0 d-flex flex-wrap align-items-center" style="gap: 6px;">
-            <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius: 6px;" onclick="selectAllBarcodeProducts(true)">
+            <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius: 6px; height: 34px; font-size: 0.82rem;" onclick="selectAllBarcodeProducts(true)">
               <i class="fas fa-check-square mr-1"></i> ເລືອກທັງໝົດ
             </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" style="border-radius: 6px;" onclick="selectAllBarcodeProducts(false)">
+            <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold" style="border-radius: 6px; height: 34px; font-size: 0.82rem;" onclick="selectAllBarcodeProducts(false)">
               <i class="far fa-square mr-1"></i> ຍົກເລີກທັງໝົດ
             </button>
             
             <!-- Quick Batch Quantity Setter -->
             <div class="btn-group btn-group-sm ml-auto ml-md-1">
-              <span class="btn btn-sm btn-light border disabled font-weight-bold text-dark px-2" style="font-size: 0.78rem;">ຕັ້ງດວງ:</span>
-              <button type="button" class="btn btn-sm btn-light border font-weight-bold" onclick="setAllSelectedCopies(1)">1</button>
-              <button type="button" class="btn btn-sm btn-light border font-weight-bold" onclick="setAllSelectedCopies(2)">2</button>
-              <button type="button" class="btn btn-sm btn-light border font-weight-bold" onclick="setAllSelectedCopies(5)">5</button>
-              <button type="button" class="btn btn-sm btn-light border font-weight-bold" onclick="setAllSelectedCopies(10)">10</button>
+              <span class="btn btn-sm btn-light border disabled font-weight-bold text-dark px-2" style="font-size: 0.78rem; height: 34px; display: flex; align-items: center;">ຕັ້ງດວງ:</span>
+              <button type="button" class="btn btn-sm btn-light border font-weight-bold" style="height: 34px;" onclick="setAllSelectedCopies(1)">1</button>
+              <button type="button" class="btn btn-sm btn-light border font-weight-bold" style="height: 34px;" onclick="setAllSelectedCopies(2)">2</button>
+              <button type="button" class="btn btn-sm btn-light border font-weight-bold" style="height: 34px;" onclick="setAllSelectedCopies(5)">5</button>
+              <button type="button" class="btn btn-sm btn-light border font-weight-bold" style="height: 34px;" onclick="setAllSelectedCopies(10)">10</button>
             </div>
           </div>
 
-          <!-- Column 3: Paper Size & Display Options -->
-          <div class="col-md-3 col-12 d-flex align-items-center justify-content-md-end" style="gap: 8px;">
-            <select id="print_size" class="form-control form-control-sm font-weight-bold text-dark" style="border-radius: 6px; height: 34px; max-width: 190px;" onchange="renderModalBarcodeBlocks()">
+          <!-- Column 3: Paper Size & Prominent Print Action Button -->
+          <div class="col-md-4 col-12 d-flex align-items-center justify-content-md-end" style="gap: 8px;">
+            <select id="print_size" class="form-control form-control-sm font-weight-bold text-dark" style="border-radius: 6px; height: 34px; max-width: 170px;" onchange="renderModalBarcodeBlocks()">
               <option value="40x30" selected>40mm x 30mm (ມ້ວນ)</option>
               <option value="50x30">50mm x 30mm (ມ້ວນ)</option>
               <option value="a4">ເຈ້ຍ A4 (ຕາຕະລາງ)</option>
             </select>
+
+            <button type="button" class="btn btn-sm btn-info font-weight-bold shadow-sm px-3 text-white" style="border-radius: 6px; height: 34px; white-space: nowrap; font-size: 0.85rem;" onclick="executeBarcodePrint()">
+              <i class="fas fa-print mr-1"></i> ປິ່ນບາໂຄ້ດ
+            </button>
           </div>
 
         </div>
@@ -105,14 +114,14 @@ if (!empty($products) && is_array($products)) {
       </div>
 
       <!-- BODY: Product Item Blocks Container -->
-      <div class="modal-body p-3 bg-light" style="min-height: 380px;">
+      <div class="modal-body p-3 bg-light" style="min-height: 350px;">
         <div id="modalBarcodeBlocksContainer" class="row">
           <!-- Dynamic product blocks rendered by JavaScript -->
         </div>
       </div>
 
-      <!-- FOOTER -->
-      <div class="modal-footer bg-white border-top py-2 px-4 d-flex justify-content-between align-items-center">
+      <!-- FOOTER (Sticky & Always Visible) -->
+      <div class="modal-footer bg-white border-top py-2.5 px-4 d-flex justify-content-between align-items-center" style="position: sticky; bottom: 0; z-index: 1050; box-shadow: 0 -4px 12px rgba(0,0,0,0.05);">
         <!-- Left: Summary Info -->
         <div id="barcodeSelectionSummary" class="font-weight-bold text-primary" style="font-size: 0.95rem;">
           <i class="fas fa-info-circle mr-1"></i> ເລືອກແລ້ວ: 0 ລາຍການ (ລວມ 0 ດວງ)

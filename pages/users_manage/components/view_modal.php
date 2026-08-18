@@ -49,13 +49,6 @@
                 <span id="view_notes" class="text-muted"></span>
               </div>
             </div>
-
-            <!-- Permissions Badges Bar -->
-            <hr class="my-3">
-            <h6 class="font-weight-bold text-primary mb-2">
-              <i class="fas fa-shield-alt mr-1"></i> ສິດການເຂົ້າເຖິງໂມດູນລະບົບ:
-            </h6>
-            <div id="view_permissions_badges" class="d-flex flex-wrap gap-2"></div>
           </div>
         </div>
       </div>

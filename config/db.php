@@ -31,6 +31,20 @@ if (isset($_SESSION['user_id'])) {
     }
     $_SESSION['last_activity'] = time();
 }
+if (!empty($_SESSION['user_id'])) {
+    $session_user_id = intval($_SESSION['user_id']);
+    $nowVientiane = date('Y-m-d H:i:s');
+    // ອັບເດດເວລາເຄື່ອນໄຫວລ້າສຸດ (Online activity status)
+    if ($conn) {
+        try {
+            $chkCol = @mysqli_query($conn, "SHOW COLUMNS FROM tbuser LIKE 'last_activity'");
+            if ($chkCol && mysqli_num_rows($chkCol) === 0) {
+                @mysqli_query($conn, "ALTER TABLE tbuser ADD COLUMN last_activity DATETIME NULL");
+            }
+            @mysqli_query($conn, "UPDATE tbuser SET last_activity = '$nowVientiane' WHERE Id = '$session_user_id'");
+        } catch (Throwable $ex) {}
+    }
+}
 if ($conn && !empty($_SESSION['user_id'])) {
     $session_user_id = mysqli_real_escape_string($conn, (string)$_SESSION['user_id']);
     // ອັບເດດຂໍ້ມູນສະຖານະ ແລະ ສິດການໃຊ້ງານຈາກຕາຕະລາງ tbuser ຕາມ user_id
@@ -287,6 +301,7 @@ try {
         'address' => "TEXT DEFAULT NULL",
         'notes' => "TEXT DEFAULT NULL",
         'profile_img' => "VARCHAR(255) DEFAULT 'default.png'",
+        'last_activity' => "DATETIME DEFAULT NULL",
         'accounting' => "TINYINT(1) DEFAULT 0",
         'customers' => "TINYINT(1) DEFAULT 1"
     ];
@@ -958,15 +973,73 @@ if (!function_exists('getActiveStoreId')) {
 }
 
 if (!function_exists('getLowStockAlerts')) {
-    function getLowStockAlerts($pdo) {
+    function getLowStockAlerts($pdo, $store_id = null) {
         if (!$pdo) return [];
         try {
-            $sql = "SELECT p.*, s.store_name, s.is_main 
+            if ($store_id !== null && intval($store_id) > 0) {
+                $sql = "SELECT p.*, s.store_name, s.is_main 
+                        FROM products p 
+                        JOIN tbstore s ON p.store_id = s.store_id 
+                        WHERE p.qty <= p.min_qty AND s.status = 'active' AND p.store_id = ?
+                        ORDER BY p.qty ASC";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([intval($store_id)]);
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                $sql = "SELECT p.*, s.store_name, s.is_main 
+                        FROM products p 
+                        JOIN tbstore s ON p.store_id = s.store_id 
+                        WHERE p.qty <= p.min_qty AND s.status = 'active'
+                        ORDER BY s.is_main ASC, p.qty ASC";
+                return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+}
+
+if (!function_exists('getIncomingTransfersForStore')) {
+    function getIncomingTransfersForStore($pdo, $store_id) {
+        if (!$pdo || empty($store_id)) return [];
+        try {
+            $sql = "SELECT t.*, s.store_name as from_store_name 
+                    FROM stock_transfers t
+                    JOIN tbstore s ON t.from_store_id = s.store_id
+                    WHERE t.to_store_id = ? 
+                    ORDER BY t.transfer_id DESC LIMIT 10";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([intval($store_id)]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+}
+
+if (!function_exists('getNewProductsForStore')) {
+    function getNewProductsForStore($pdo, $store_id) {
+        if (!$pdo || empty($store_id)) return [];
+        try {
+            $sql = "SELECT p.*, s.store_name 
                     FROM products p 
                     JOIN tbstore s ON p.store_id = s.store_id 
-                    WHERE p.qty <= p.min_qty AND s.status = 'active'
-                    ORDER BY s.is_main ASC, p.qty ASC";
-            return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                    WHERE p.store_id = ? AND p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                    ORDER BY p.product_id DESC LIMIT 10";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([intval($store_id)]);
+            $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($list)) {
+                $sql2 = "SELECT p.*, s.store_name 
+                         FROM products p 
+                         JOIN tbstore s ON p.store_id = s.store_id 
+                         WHERE p.store_id = ?
+                         ORDER BY p.product_id DESC LIMIT 5";
+                $stmt2 = $pdo->prepare($sql2);
+                $stmt2->execute([intval($store_id)]);
+                $list = $stmt2->fetchAll(PDO::FETCH_ASSOC);
+            }
+            return $list;
         } catch (Exception $e) {
             return [];
         }

@@ -281,22 +281,23 @@ function processCheckout() {
     return;
   }
 
+  var offlinePayload = {
+    cart:            cleanCart,
+    cash_received:   cashReceived,
+    qr_received:     qrReceived,
+    payment_type:    paymentType,
+    pay_mode:        currentPayMode,
+    discount_amount: discount,
+    bank_account_id: activeBankId,
+    bank_name:       activeBankName,
+    customer_id:     selectedCustomer ? selectedCustomer.customer_id : null,
+    customer_name:   selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ'
+  };
+
   $.ajax({
     url: '',
     type: 'POST',
-    data: {
-      action:          'checkout',
-      cart:            JSON.stringify(cleanCart),
-      cash_received:   cashReceived,
-      qr_received:     qrReceived,
-      payment_type:    paymentType,
-      pay_mode:        currentPayMode,
-      discount_amount: discount,
-      bank_account_id: activeBankId,
-      bank_name:       activeBankName,
-      customer_id:     selectedCustomer ? selectedCustomer.customer_id : null,
-      customer_name:   selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ'
-    },
+    data: Object.assign({ action: 'checkout', cart: JSON.stringify(cleanCart) }, offlinePayload),
     dataType: 'json',
     success: function(res) {
       if (res.success) {
@@ -358,25 +359,17 @@ function processCheckout() {
           var pType = res.payment_type || '';
           if (pType === 'ເງິນສົດ') {
             cashAmt = (parseFloat(res.total_amount) || 0) + (parseFloat(res.change) || 0);
-          } else if (pType === 'ໂອນ' || pType === 'QR' || pType === 'ເງິນໂອນ') {
+          } else {
             qrAmt = parseFloat(res.total_amount) || 0;
           }
         }
 
-        var bName = res.bank_name || window.currentSelectedBankName || '';
-        var payRows = '';
-        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cashAmt.toLocaleString() + ' ₭</span></div>';
-        payRows += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qrAmt.toLocaleString() + ' ₭</span></div>';
-        if (qrAmt > 0 || (paymentType && (paymentType.indexOf('ໂອນ') !== -1 || paymentType.indexOf('QR') !== -1))) {
-          var displayBank = bName ? bName : 'BCEL One';
-          payRows += '<div class="d-flex justify-content-between font-weight-bold" style="font-weight:700;"><span>ໂອນຜ່ານທະນາຄານ:</span><span>' + displayBank + '</span></div>';
-        }
-        $('#rc_payment_rows').html(payRows);
+        $('#rc_cash_amt').text(cashAmt.toLocaleString() + ' ₭');
+        $('#rc_qr_amt').text(qrAmt.toLocaleString() + ' ₭');
 
-        // Update Receipt Bank QR & Title
-        var activeBankQr = $('#posActiveBankQrImg').attr('src');
-        if (activeBankQr && (qrAmt > 0 || bName)) {
-          $('#rc_bank_qr_img').attr('src', activeBankQr);
+        var bName = res.bank_name || '';
+        if ((!bName || bName.trim() === '') && (res.bank_account_id || qrAmt > 0)) {
+          bName = 'BCEL One';
         }
         if ((bName || qrAmt > 0)) {
           var labelBank = bName ? bName : 'BCEL One';
@@ -408,7 +401,8 @@ function processCheckout() {
       }
     },
     error: function() {
-      Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: 'ບໍ່ສາມາດເຊື່ອມຕໍ່ກັບເຊີເວີໄດ້!' });
+      // Offline fallback: Handle sale locally via IndexedDB
+      handleOfflineCheckoutFallback(offlinePayload, total, change);
     }
   });
 }
@@ -540,5 +534,240 @@ function selectPosBank(bankId, bankName, qrPath, el) {
 function formatPriceInput(input) {
   var val = input.value.replace(/\D/g, '');
   input.value = val === '' ? '0' : Number(val).toLocaleString('en-US');
+}
+
+// ============================================================
+// INDEXEDDB OFFLINE SALES QUEUE & AUTO-SYNC ENGINE
+// ============================================================
+var dbName = 'minipos_offline_db';
+var dbVersion = 1;
+var dbInstance = null;
+
+function initMiniPosIndexedDB() {
+  if (!('indexedDB' in window)) {
+    console.warn('IndexedDB not supported on this browser.');
+    return;
+  }
+  var request = window.indexedDB.open(dbName, dbVersion);
+  request.onupgradeneeded = function(e) {
+    var db = e.target.result;
+    if (!db.objectStoreNames.contains('offline_sales')) {
+      var store = db.createObjectStore('offline_sales', { keyPath: 'id', autoIncrement: true });
+      store.createIndex('synced', 'synced', { unique: false });
+    }
+  };
+  request.onsuccess = function(e) {
+    dbInstance = e.target.result;
+    updateOfflineQueueCountBadge();
+    setTimeout(function() { syncOfflineSalesToServer(); }, 1500);
+  };
+  request.onerror = function(e) {
+    console.error('IndexedDB open error:', e);
+  };
+}
+
+function updateNetworkStatusUI() {
+  var isOnline = navigator.onLine;
+  var icon = $('#netStatusIcon');
+  var text = $('#netStatusText');
+  var badge = $('#netStatusBadge');
+
+  if (isOnline) {
+    icon.attr('class', 'fas fa-circle text-success mr-1');
+    text.text('ອອນໄລນ໌');
+    badge.css('background-color', 'rgba(255,255,255,0.22)');
+    syncOfflineSalesToServer();
+  } else {
+    icon.attr('class', 'fas fa-exclamation-triangle text-warning mr-1');
+    text.text('ອັອບໄລນ໌ (Offline)');
+    badge.css('background-color', '#d97706');
+  }
+  updateOfflineQueueCountBadge();
+}
+
+window.addEventListener('online', updateNetworkStatusUI);
+window.addEventListener('offline', updateNetworkStatusUI);
+$(document).ready(function() {
+  initMiniPosIndexedDB();
+  updateNetworkStatusUI();
+});
+
+function saveOfflineSaleToIndexedDB(saleData, callback) {
+  if (!dbInstance) {
+    if (callback) callback(null);
+    return;
+  }
+  try {
+    var tx = dbInstance.transaction(['offline_sales'], 'readwrite');
+    var store = tx.objectStore('offline_sales');
+    saleData.synced = 0;
+    saleData.created_at = new Date().toISOString();
+    var req = store.add(saleData);
+    req.onsuccess = function(e) {
+      updateOfflineQueueCountBadge();
+      if (callback) callback(e.target.result);
+    };
+    req.onerror = function(e) {
+      console.error('Save offline sale DB error:', e);
+      if (callback) callback(null);
+    };
+  } catch (err) {
+    console.error('IndexedDB Transaction exception:', err);
+    if (callback) callback(null);
+  }
+}
+
+function updateOfflineQueueCountBadge() {
+  if (!dbInstance) return;
+  try {
+    var tx = dbInstance.transaction(['offline_sales'], 'readonly');
+    var store = tx.objectStore('offline_sales');
+    var req = store.getAll();
+    req.onsuccess = function(e) {
+      var all = e.target.result || [];
+      var unsynced = all.filter(function(item) { return item.synced === 0; });
+      var count = unsynced.length;
+      if (count > 0) {
+        $('#offlineQueueBadge').text(count + ' ຄ້າງ Sync').show();
+      } else {
+        $('#offlineQueueBadge').hide();
+      }
+    };
+  } catch (err) {}
+}
+
+function handleOfflineCheckoutFallback(saleObj, total, change) {
+  var offlineBillNum = 'OFF-' + Date.now().toString().slice(-6);
+  saveOfflineSaleToIndexedDB(saleObj, function(savedId) {
+    $('#checkoutModal').modal('hide');
+
+    $('#rc_bill').text(offlineBillNum);
+    $('#rc_date').text(new Date().toLocaleString());
+    $('#rc_cashier').text('Cashier (Offline)');
+    $('#rc_customer').text(saleObj.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+    $('#rc_subtotal').text((total + saleObj.discount_amount).toLocaleString() + ' ₭');
+    $('#rc_discount').text(saleObj.discount_amount.toLocaleString() + ' ₭');
+    $('#rc_vat_row').hide();
+    $('#rc_total').text(total.toLocaleString() + ' ₭');
+    $('#rc_change').text(change.toLocaleString() + ' ₭');
+
+    $('#rc_cash_amt').text((saleObj.cash_received || 0).toLocaleString() + ' ₭');
+    $('#rc_qr_amt').text((saleObj.qr_received || 0).toLocaleString() + ' ₭');
+
+    var tbody = $('#rc_items');
+    tbody.empty();
+    saleObj.cart.forEach(function(item) {
+      var itemTotal = (item.unit_price * item.quantity);
+      tbody.append(`
+        <tr>
+          <td>${item.product_name}</td>
+          <td class="text-center">x${item.quantity}</td>
+          <td class="text-right">${itemTotal.toLocaleString()}</td>
+        </tr>
+      `);
+    });
+
+    Swal.fire({
+      icon: 'success',
+      title: '🟠 ບັນທຶກບິນອັອບໄລນ໌ (Offline Saved)!',
+      text: 'ບິນອັອບໄລນ໌ສຳເລັດແລ້ວ! ລະບົບຈະ Auto-Sync ເມື່ອມີສັນຍານເຄືອຂ່າຍ.',
+      confirmButtonColor: '#0284c7'
+    }).then(function() {
+      printReceipt();
+      setTimeout(function() { resetPOS(); }, 1000);
+    });
+  });
+}
+
+var isSyncingOfflineSales = false;
+function syncOfflineSalesToServer(userClicked) {
+  if (!navigator.onLine || !dbInstance || isSyncingOfflineSales) {
+    if (userClicked && !navigator.onLine) {
+      Swal.fire({ icon: 'warning', title: 'ອັອບໄລນ໌ຢູ່', text: 'ກະລຸນາເຊື່ອມຕໍ່ອິນເຕີເນັດ/ເຄືອຂ່າຍ ກ່ອນກົດ Sync ບິນ!', confirmButtonColor: '#0284c7' });
+    }
+    return;
+  }
+
+  isSyncingOfflineSales = true;
+  try {
+    var tx = dbInstance.transaction(['offline_sales'], 'readonly');
+    var store = tx.objectStore('offline_sales');
+    var req = store.getAll();
+    req.onsuccess = function(e) {
+      var all = e.target.result || [];
+      var unsynced = all.filter(function(item) { return item.synced === 0; });
+      if (unsynced.length === 0) {
+        isSyncingOfflineSales = false;
+        if (userClicked) {
+          Swal.fire({ icon: 'success', title: 'Sync ຄົບຖ້ວນ', text: 'ບໍ່ມີບິນອັອບໄລນ໌ຄ້າງ Sync ແລ້ວ!', confirmButtonColor: '#0284c7' });
+        }
+        return;
+      }
+
+      var syncedSuccessCount = 0;
+      var processChain = Promise.resolve();
+
+      unsynced.forEach(function(item) {
+        processChain = processChain.then(function() {
+          return new Promise(function(resolve) {
+            $.ajax({
+              url: '',
+              type: 'POST',
+              data: {
+                action:          'checkout',
+                cart:            JSON.stringify(item.cart),
+                cash_received:   item.cash_received,
+                qr_received:     item.qr_received,
+                payment_type:    item.payment_type,
+                pay_mode:        item.pay_mode,
+                discount_amount: item.discount_amount,
+                bank_account_id: item.bank_account_id,
+                bank_name:       item.bank_name,
+                customer_id:     item.customer_id,
+                customer_name:   item.customer_name
+              },
+              dataType: 'json',
+              success: function(res) {
+                if (res && res.success) {
+                  syncedSuccessCount++;
+                  try {
+                    var delTx = dbInstance.transaction(['offline_sales'], 'readwrite');
+                    delTx.objectStore('offline_sales').delete(item.id);
+                  } catch (ex) {}
+                }
+                resolve();
+              },
+              error: function() {
+                resolve();
+              }
+            });
+          });
+        });
+      });
+
+      processChain.then(function() {
+        isSyncingOfflineSales = false;
+        updateOfflineQueueCountBadge();
+        if (syncedSuccessCount > 0) {
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true
+          });
+          Toast.fire({
+            icon: 'success',
+            title: `Sync ບິນອັອບໄລນ໌ສຳເລັດ ${syncedSuccessCount} ລາຍການ!`
+          });
+        }
+      });
+    };
+    req.onerror = function() {
+      isSyncingOfflineSales = false;
+    };
+  } catch (err) {
+    isSyncingOfflineSales = false;
+  }
 }
 </script>

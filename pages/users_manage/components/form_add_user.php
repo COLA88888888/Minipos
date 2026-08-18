@@ -66,14 +66,11 @@
                          placeholder="ກະລຸນາປ້ອນລະຫັດ" required>
                 </div>
                 <div class="col-md-6 form-group mb-3">
-                  <label class="font-weight-bold text-muted mb-1">ສະຖານະ / ຕຳແໜ່ງ: <span class="text-danger">*</span></label>
+                  <label class="font-weight-bold text-muted mb-1">ຕຳແໜ່ງ: <span class="text-danger">*</span></label>
                   <select name="status" class="form-control" required>
-                    <option value="">ເລືອກສະຖານະ</option>
-                    <option value="ພະນັກງານຂາຍ">ພະນັກງານຂາຍ / ຄົນຂາຍ</option>
-                    <option value="ຄົນຈັດການບັນຊີ">ຄົນຈັດການບັນຊີ / ຜູ້ກວດສອບ</option>
-                    <option value="ພະນັກງານຄັງ">ພະນັກງານຄັງສິນຄ້າ</option>
-                    <option value="ຜູ້ບໍລິຫານ">ຜູ້ບໍລິຫານ / ຜູ້ຈັດການ</option>
-                    <option value="ພະນັກງານ">ພະນັກງານທົ່ວໄປ</option>
+                    <option value="">-- ເລືອກຕຳແໜ່ງ --</option>
+                    <option value="ຜູ້ບໍລິຫານ">ຜູ້ບໍລິຫານ</option>
+                    <option value="ພະນັກງານ">ພະນັກງານ</option>
                   </select>
                 </div>
 

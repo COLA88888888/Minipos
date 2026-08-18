@@ -5,8 +5,8 @@ session_start();
 require_once __DIR__ . '/../config/db.php';
 
 // Authorization check
-if (empty($_SESSION['user_id']) || (!hasPermission('stock_transfer') && !hasPermission('transfer_history') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ' && intval($_SESSION['user_id'] ?? 0) !== 1)) {
-    echo json_encode(['success' => false, 'message' => 'Access denied: Insufficient permissions']);
+if (empty($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Access denied: Please log in']);
     exit();
 }
 
@@ -40,15 +40,15 @@ if ($action === 'get_transfer_details') {
         // Format date
         $transfer['transfer_date'] = date('d/m/Y H:i', strtotime($transfer['transfer_date']));
 
-        // Fetch transfer details
+        // Fetch transfer details directly from stock_transfer_details
         $stmtDet = $pdo->prepare("
-            SELECT d.*, p.barcode as prod_barcode
+            SELECT d.*, COALESCE(d.barcode, p.barcode) as prod_barcode
             FROM stock_transfer_details d
-            LEFT JOIN products p ON d.product_id = p.product_id AND p.store_id = ?
+            LEFT JOIN products p ON d.product_id = p.product_id
             WHERE d.transfer_id = ?
             ORDER BY d.id ASC
         ");
-        $stmtDet->execute([$transfer['from_store_id'], $transfer_id]);
+        $stmtDet->execute([$transfer_id]);
         $details = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
         echo json_encode([

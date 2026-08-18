@@ -3,6 +3,14 @@ session_start();
 require_once __DIR__ . '/../config/db.php';
 
 // ເກັບປະຫວັດການອອກຈາກລະບົບກ່ອນການທຳລາຍ session
+if (isset($_SESSION['user_id'])) {
+    $uid = intval($_SESSION['user_id']);
+    if (isset($pdo)) {
+        try {
+            $pdo->exec("UPDATE tbuser SET last_activity = NULL WHERE Id = '$uid'");
+        } catch (Throwable $e) {}
+    }
+}
 if (isset($_SESSION['fname'])) {
     $user_name = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
     logActivity($pdo, "ອອກຈາກລະບົບ", "ຜູ້ໃຊ້: " . $user_name);

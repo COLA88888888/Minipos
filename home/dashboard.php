@@ -13,7 +13,7 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 require_once __DIR__ . '/../config/db.php';
 
 $base_path = '../';
-$site_name = 'POS System - Corner Retail';
+$site_name = 'POS Wlaodev';
 $site_logo = '../assets/img/logo/logo.png';
 
 $display_name = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
@@ -107,6 +107,56 @@ if (!hasPermission('dashboard')) {
       width: 0 !important;
       height: 0 !important;
     }
+
+    /* Enhanced Top Navbar Icons for Mobile & Desktop */
+    #topNavbarPushMenuBtn i,
+    #mainNotifBellIcon,
+    #subNotifBellIcon,
+    .logout-nav-btn i {
+      font-size: 1.55rem !important;
+      transition: transform 0.15s ease;
+    }
+
+    #topNavbarPushMenuBtn:active i,
+    #mainNotifBellIcon:active,
+    #subNotifBellIcon:active,
+    .logout-nav-btn:active i {
+      transform: scale(1.15);
+    }
+
+    .logout-nav-btn {
+      font-size: 1.1rem !important;
+      display: flex;
+      align-items: center;
+      padding: 6px 12px !important;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+    }
+
+    .logout-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    @media (max-width: 768px) {
+      #topNavbarPushMenuBtn i,
+      #mainNotifBellIcon,
+      #subNotifBellIcon,
+      .logout-nav-btn i {
+        font-size: 1.7rem !important;
+      }
+      
+      .nav-link {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+      }
+      
+      #mainNotifBadge, #subNotifBadge {
+        top: -2px !important;
+        right: -3px !important;
+        font-size: 0.72rem !important;
+        padding: 3px 6px !important;
+      }
+    }
   </style>
 
 
@@ -198,15 +248,15 @@ if (!hasPermission('dashboard')) {
       <!-- Notifications Dropdown (Low Stock Warning Grouped by Branch - Only for Main Branch / Admin) -->
       <?php if ($userIsMain || $userIsAdmin): ?>
         <li class="nav-item dropdown">
-          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສິນຄ້າໝົດ" style="font-size: 1.25rem; cursor: pointer;">
-            <i class="fas fa-bell <?php echo ($lowStockCount > 0) ? 'text-warning fa-bounce' : ''; ?>"></i>
+          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" onclick="markNotifAsRead('mainNotifBadge')" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສິນຄ້າໝົດ" style="font-size: 1.25rem; cursor: pointer;">
+            <i id="mainNotifBellIcon" class="fas fa-bell text-white"></i>
             <?php if ($lowStockCount > 0): ?>
-              <span class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+              <span id="mainNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
                 <?php echo $lowStockCount; ?>
               </span>
             <?php endif; ?>
           </a>
-          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 340px; padding: 0; overflow: hidden;">
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 320px; max-width: 90vw; padding: 0; overflow: hidden;">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
               <span><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ (<?php echo $lowStockCount; ?>)</span>
             </div>
@@ -216,29 +266,28 @@ if (!hasPermission('dashboard')) {
               <?php if ($lowStockCount > 0 && !empty($groupedLowStock)): ?>
                 <?php foreach ($groupedLowStock as $stId => $branchGroup): ?>
                   <!-- ຫົວຂໍ້ແຍກຕາມສາຂາ (Branch Section Header) -->
-                  <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between" style="background-color: #f1f5f9; font-size: 0.82rem;">
-                    <span>
+                  <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #f1f5f9; font-size: 0.82rem; white-space: nowrap;">
+                    <span class="text-truncate">
                       <i class="fas fa-store text-primary mr-1"></i> <?php echo htmlspecialchars($branchGroup['store_name']); ?>
                       <?php if (!empty($branchGroup['is_main'])): ?>
                         <small class="text-muted">(ສາງຫຼັກ)</small>
                       <?php endif; ?>
                     </span>
-                    <span class="badge badge-warning text-dark font-weight-bold" style="font-size: 0.7rem; border-radius: 6px;">
+                    <span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">
                       <?php echo count($branchGroup['items']); ?> ລາຍການ
                     </span>
                   </div>
 
-                  <!-- ລາຍການສິນຄ້າໃນສາຂານັ້ນ (Items in Branch Section) -->
+                  <!-- ລາຍການສິນຄ້າໃນສາຂານັ້ນ (Single Line Flex Row) -->
                   <?php foreach ($branchGroup['items'] as $alert): ?>
-                    <a href="#" onclick="openStockTransferModal(<?php echo $alert['store_id']; ?>, '<?php echo addslashes($alert['product_name']); ?>', <?php echo intval($alert['product_id']); ?>)" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom text-wrap" style="transition: background 0.15s; background-color: #ffffff;">
-                      <div style="max-width: 60%;">
-                        <strong class="d-block text-dark text-truncate" style="font-size: 0.84rem;" title="<?php echo htmlspecialchars($alert['product_name']); ?>"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
+                    <div class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                      <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                        <strong class="text-dark text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($alert['product_name']); ?>"><?php echo htmlspecialchars($alert['product_name']); ?></strong>
                       </div>
-                      <div class="text-right">
-                        <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.75rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
-                        <span class="d-block text-primary font-weight-bold mt-1" style="font-size: 0.75rem;"><i class="fas fa-shipping-fast mr-1"></i>ໂອນໃຫ້</span>
+                      <div class="text-nowrap flex-shrink-0">
+                        <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ <?php echo $alert['qty']; ?> <?php echo htmlspecialchars($alert['unit'] ?: 'ອັນ'); ?></span>
                       </div>
-                    </a>
+                    </div>
                   <?php endforeach; ?>
                 <?php endforeach; ?>
               <?php else: ?>
@@ -248,14 +297,103 @@ if (!hasPermission('dashboard')) {
                 </div>
               <?php endif; ?>
             </div>
+          </div>
+        </li>
+      <?php endif; ?>
 
-            <?php if ($lowStockCount > 0): ?>
-              <div class="dropdown-footer p-2 text-center bg-light">
-                <a href="<?php echo $base_path; ?>pages/import_stock/stock_transfer.php" target="frame" class="btn btn-sm btn-primary font-weight-bold btn-block" style="border-radius: 8px;">
-                  <i class="fas fa-exchange-alt mr-1"></i> ໜ້າຈັດການໂອນສິນຄ້າທັງໝົດ
-                </a>
-              </div>
+      <!-- Sub-Branch Notifications Dropdown (Incoming Transfers + Own Low Stock + New Products) -->
+      <?php if (!$userIsMain && !$userIsAdmin): ?>
+        <?php
+          $subStoreId = intval($_SESSION['store_id'] ?? 1);
+          $incomingTransfers = getIncomingTransfersForStore($pdo, $subStoreId);
+          $subLowStock = getLowStockAlerts($pdo, $subStoreId);
+          $subNewProducts = getNewProductsForStore($pdo, $subStoreId);
+          
+          $totalSubNotifications = count($incomingTransfers) + count($subLowStock) + count($subNewProducts);
+        ?>
+        <li class="nav-item dropdown">
+          <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" onclick="markNotifAsRead('subNotifBadge')" title="ແຈ້ງເຕືອນສາຂາຍ່ອຍ" style="font-size: 1.25rem; cursor: pointer;">
+            <i id="subNotifBellIcon" class="fas fa-bell text-white"></i>
+            <?php if ($totalSubNotifications > 0): ?>
+              <span id="subNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                <?php echo $totalSubNotifications; ?>
+              </span>
             <?php endif; ?>
+          </a>
+          <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0" style="border-radius: 12px; min-width: 320px; max-width: 90vw; padding: 0; overflow: hidden;">
+            <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
+              <span><i class="fas fa-bell text-white mr-1.5"></i> ແຈ້ງເຕືອນສາຂາ (<?php echo $totalSubNotifications; ?>)</span>
+            </div>
+            <div class="dropdown-divider m-0"></div>
+            
+            <div style="max-height: 380px; overflow-y: auto;">
+              <!-- 1. ສາຂາໃຫຍ່ໂອນສິນຄ້າມາ (Incoming Stock Transfers from Main Branch) -->
+              <?php if (!empty($incomingTransfers)): ?>
+                <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #eff6ff; font-size: 0.82rem; white-space: nowrap;">
+                  <span class="text-primary text-truncate"><i class="fas fa-truck-loading mr-1"></i> ສາຂາໃຫຍ່ໂອນສິນຄ້າມາ</span>
+                  <span class="badge badge-primary font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($incomingTransfers); ?> ໃບບິນ</span>
+                </div>
+                <?php foreach ($incomingTransfers as $trf): ?>
+                  <div onclick="viewTransferDetailsModal(<?php echo intval($trf['transfer_id']); ?>)" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
+                    <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                      <i class="fas fa-file-invoice text-info mr-1.5" style="font-size: 0.82rem;"></i>
+                      <strong class="text-dark mr-1" style="font-size: 0.81rem;"><?php echo htmlspecialchars($trf['transfer_code'] ?: ('TRF-'.$trf['transfer_id'])); ?></strong>
+                      <small class="text-muted mr-1.5">(<?php echo htmlspecialchars($trf['from_store_name']); ?>)</small>
+                      <small class="text-muted font-weight-normal"><?php echo date('d/m H:i', strtotime($trf['transfer_date'])); ?></small>
+                    </div>
+                    <div class="d-flex align-items-center text-nowrap flex-shrink-0">
+                      <span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;"><?php echo intval($trf['total_items'] ?? 1); ?> ລາຍການ</span>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+
+              <!-- 2. ສິນຄ້າໃນສາຂາໂຕເອງໃກ້ໝົດ (Low Stock Alert in Own Branch) -->
+              <?php if (!empty($subLowStock)): ?>
+                <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #fff7ed; font-size: 0.82rem; white-space: nowrap;">
+                  <span class="text-warning text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃນສາຂາໃກ້ໝົດ</span>
+                  <span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subLowStock); ?> ລາຍການ</span>
+                </div>
+                <?php foreach ($subLowStock as $stk): ?>
+                  <div class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                    <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                      <i class="fas fa-exclamation-circle text-warning mr-1.5" style="font-size: 0.82rem;"></i>
+                      <span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($stk['product_name']); ?>"><?php echo htmlspecialchars($stk['product_name']); ?></span>
+                    </div>
+                    <div class="text-nowrap flex-shrink-0">
+                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ <?php echo $stk['qty']; ?> <?php echo htmlspecialchars($stk['unit'] ?: 'ອັນ'); ?></span>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+
+              <!-- 3. ສິນຄ້າໃໝ່ (New Products Arrived/Added) -->
+              <?php if (!empty($subNewProducts)): ?>
+                <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #f0fdf4; font-size: 0.82rem; white-space: nowrap;">
+                  <span class="text-success text-truncate"><i class="fas fa-sparkles mr-1"></i> ສິນຄ້າໃໝ່ເພີ່ມເຂົ້າສາຂາ</span>
+                  <span class="badge badge-success font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subNewProducts); ?> ລາຍການ</span>
+                </div>
+                <?php foreach ($subNewProducts as $np): ?>
+                  <div class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: default; white-space: nowrap; overflow: hidden;">
+                    <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                      <i class="fas fa-sparkles text-success mr-1.5" style="font-size: 0.82rem;"></i>
+                      <span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($np['product_name']); ?>"><?php echo htmlspecialchars($np['product_name']); ?></span>
+                      <small class="text-muted ml-1.5"><?php echo date('d/m/Y', strtotime($np['created_at'] ?? 'now')); ?></small>
+                    </div>
+                    <div class="text-nowrap flex-shrink-0">
+                      <span class="badge badge-light border text-dark font-weight-bold" style="font-size: 0.76rem;"><?php echo number_format($np['price'], 0); ?> ₭</span>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+
+              <?php if ($totalSubNotifications === 0): ?>
+                <div class="text-center py-4 text-muted">
+                  <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
+                  <span style="font-size: 0.85rem;">ບໍ່ມີການແຈ້ງເຕືອນໃໝ່ໃນສາຂາ</span>
+                </div>
+              <?php endif; ?>
+            </div>
           </div>
         </li>
       <?php endif; ?>
@@ -280,6 +418,99 @@ if (!hasPermission('dashboard')) {
   </nav>
 
   <script>
+    function markNotifAsRead(badgeId) {
+      var badge = document.getElementById(badgeId);
+      if (badge) {
+        badge.style.display = 'none';
+      }
+      var iconId = badgeId === 'mainNotifBadge' ? 'mainNotifBellIcon' : 'subNotifBellIcon';
+      var icon = document.getElementById(iconId);
+      if (icon) {
+        icon.classList.remove('fa-bounce', 'text-warning');
+      }
+      try {
+        sessionStorage.setItem('notif_read_' + badgeId, '1');
+      } catch(e) {}
+    }
+
+    function viewTransferDetailsModal(transferId) {
+      if (!transferId) return;
+      markNotifAsRead('subNotifBadge');
+
+      if (typeof Swal !== 'undefined') {
+        Swal.fire({
+          html: '<div class="lao-dots-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div><div class="preloader-text" style="margin-top:10px;">ກຳລັງດຶງຂໍ້ມູນລາຍລະອຽດ...</div>',
+          showConfirmButton: false,
+          allowOutsideClick: false,
+          background: '#ffffff'
+        });
+      }
+
+      $.ajax({
+        url: '../api/stock_transfer_backend.php?action=get_transfer_details&transfer_id=' + transferId,
+        type: 'GET',
+        dataType: 'json',
+        success: function(res) {
+          if (typeof Swal !== 'undefined') { Swal.close(); }
+          if (res.success && res.transfer) {
+            var trf = res.transfer;
+            var details = res.details || [];
+
+            $('#trf_modal_code').text(trf.transfer_code || ('TRF-' + trf.transfer_id));
+            $('#trf_modal_date').text(trf.transfer_date || '-');
+            $('#trf_modal_from').text(trf.from_store_name || 'ສາຂາໃຫຍ່');
+            $('#trf_modal_to').text(trf.to_store_name || '-');
+            $('#trf_modal_creator').text(trf.creator_name || 'Admin');
+            $('#trf_modal_item_count').text(details.length);
+
+            var tbodyHtml = '';
+            if (details.length > 0) {
+              details.forEach(function(item, idx) {
+                var pName = item.product_name || '-';
+                var barcode = item.prod_barcode || item.barcode || '-';
+                var qty = item.qty || 1;
+                var unit = item.unit || 'ອັນ';
+
+                tbodyHtml += '<tr style="white-space: nowrap;">';
+                tbodyHtml += '<td class="text-center align-middle font-weight-bold text-muted text-nowrap">' + (idx + 1) + '</td>';
+                tbodyHtml += '<td class="align-middle font-weight-bold text-dark text-nowrap" style="white-space: nowrap;">' + pName + '</td>';
+                tbodyHtml += '<td class="text-center align-middle text-muted text-nowrap" style="white-space: nowrap;">' + barcode + '</td>';
+                tbodyHtml += '<td class="text-center align-middle text-nowrap" style="white-space: nowrap;"><span class="badge badge-primary px-3 py-1.5 font-weight-bold" style="font-size:0.82rem; border-radius: 6px;">' + qty + ' ' + unit + '</span></td>';
+                tbodyHtml += '</tr>';
+              });
+            } else {
+              tbodyHtml = '<tr><td colspan="4" class="text-center py-4 text-muted">ບໍ່ພົບລາຍການສິນຄ້າ</td></tr>';
+            }
+
+            $('#trf_modal_table_body').html(tbodyHtml);
+            $('#notifTransferDetailModal').modal('show');
+          } else {
+            if (typeof Swal !== 'undefined') {
+              Swal.fire({ icon: 'error', title: 'ຜິດພາດ!', text: res.message || 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້', confirmButtonText: 'ຕົກລົງ' });
+            }
+          }
+        },
+        error: function(err) {
+          if (typeof Swal !== 'undefined') {
+            Swal.close();
+            Swal.fire({ icon: 'error', title: 'ຜິດພາດ!', text: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ລະບົບ', confirmButtonText: 'ຕົກລົງ' });
+          }
+        }
+      });
+    }
+
+    (function() {
+      ['mainNotifBadge', 'subNotifBadge'].forEach(function(bId) {
+        if (sessionStorage.getItem('notif_read_' + bId) === '1') {
+          var badge = document.getElementById(bId);
+          if (badge) badge.style.display = 'none';
+          var iconId = bId === 'mainNotifBadge' ? 'mainNotifBellIcon' : 'subNotifBellIcon';
+          var icon = document.getElementById(iconId);
+          if (icon) icon.classList.remove('fa-bounce', 'text-warning');
+        }
+      });
+    })();
+
     function switchDashboardBranch(storeId) {
       $.ajax({
         url: '../api/branches_backend.php',
@@ -776,5 +1007,86 @@ if (!hasPermission('dashboard')) {
     }, 5000);
   })();
 </script>
+  <!-- STOCK TRANSFER DETAILS MODAL POPUP -->
+  <div class="modal fade" id="notifTransferDetailModal" tabindex="-1" role="dialog" aria-hidden="true" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;">
+        
+        <!-- Modal Header -->
+        <div class="modal-header bg-primary text-white py-3 px-4" style="border-radius: 16px 16px 0 0;">
+          <h5 class="modal-title font-weight-bold" style="font-size: 1.15rem;">
+            <i class="fas fa-truck-loading mr-2"></i> ລາຍລະອຽດການໂອນສິນຄ້າຈາກສາຂາໃຫຍ່
+          </h5>
+          <button type="button" class="close text-white opacity-90" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body p-4" style="background-color: #f8fafc;">
+          <!-- Header Info Card -->
+          <div class="card border-0 shadow-sm mb-3" style="border-radius: 12px;">
+            <div class="card-body p-3">
+              <div class="row" style="font-size: 0.92rem;">
+                <div class="col-md-6 mb-2">
+                  <span class="text-muted"><i class="fas fa-file-invoice text-primary mr-1"></i> ລະຫັດໃບບິນໂອນ:</span>
+                  <strong id="trf_modal_code" class="text-primary font-weight-bold ml-1"></strong>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <span class="text-muted"><i class="far fa-clock text-info mr-1"></i> ວັນທີ-ເວລາໂອນ:</span>
+                  <strong id="trf_modal_date" class="text-dark ml-1"></strong>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <span class="text-muted"><i class="fas fa-store text-success mr-1"></i> ຈາກສາຂາ:</span>
+                  <span id="trf_modal_from" class="font-weight-bold text-dark ml-1"></span>
+                </div>
+                <div class="col-md-6 mb-2">
+                  <span class="text-muted"><i class="fas fa-arrow-right text-muted mr-1"></i> ຫາສາຂາ:</span>
+                  <span id="trf_modal_to" class="font-weight-bold text-dark ml-1"></span>
+                </div>
+                <div class="col-md-12 mt-1">
+                  <span class="text-muted"><i class="fas fa-user-edit text-secondary mr-1"></i> ຜູ້ດຳເນີນການ:</span>
+                  <span id="trf_modal_creator" class="font-weight-bold text-dark ml-1"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Products Table Card -->
+          <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+            <div class="card-header bg-white py-2.5 px-3 border-0 d-flex justify-content-between align-items-center">
+              <h6 class="m-0 font-weight-bold text-dark" style="font-size: 0.95rem;">
+                <i class="fas fa-boxes text-primary mr-1"></i> ລາຍການສິນຄ້າທີ່ໂອນມາ (<span id="trf_modal_item_count">0</span>)
+              </h6>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive" style="max-height: 260px; overflow-y: auto; overflow-x: auto;">
+                <table class="table table-hover table-striped align-middle mb-0 text-nowrap" style="white-space: nowrap;">
+                  <thead class="bg-light text-secondary" style="font-size: 0.85rem; white-space: nowrap;">
+                    <tr style="white-space: nowrap;">
+                      <th class="text-center py-2.5 text-nowrap" style="width: 50px;">ລຳດັບ</th>
+                      <th class="py-2.5 text-nowrap">ຊື່ສິນຄ້າ</th>
+                      <th class="text-center py-2.5 text-nowrap">ບາໂຄດ</th>
+                      <th class="text-center py-2.5 text-nowrap" style="width: 130px;">ຈຳນວນໂອນ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="trf_modal_table_body" style="font-size: 0.9rem;">
+                    <!-- Filled via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer bg-light py-2.5 px-4" style="border-radius: 0 0 16px 16px;">
+          <button type="button" class="btn btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">ປິດ</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>

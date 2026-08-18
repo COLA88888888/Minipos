@@ -1,4 +1,36 @@
+// Real-Time Polling for User Online/Offline Status (no page refresh required)
+function pollLiveUserStatuses() {
+  var apiUrl = typeof API_URL !== 'undefined' ? API_URL : 'api_user.php';
+  $.ajax({
+    url: apiUrl + '?action=get_live_user_statuses',
+    type: 'GET',
+    dataType: 'json',
+    success: function(res) {
+      if (res.status === 'success' && Array.isArray(res.users)) {
+        res.users.forEach(function(u) {
+          var statusTd = $('td.user-online-status-td[data-user-id="' + u.id + '"]');
+          if (statusTd.length > 0) {
+            var html = '';
+            if (u.is_online) {
+              html = '<span class="badge badge-success px-2.5 py-1.5 shadow-sm" style="border-radius: 6px; font-size: 0.82rem;"><i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ໃຊ້ງານຢູ່</span>';
+            } else {
+              html = '<span class="badge badge-danger px-2.5 py-1.5 shadow-sm" style="border-radius: 6px; font-size: 0.82rem;"><i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ບໍ່ໄດ້ໃຊ້ງານ</span>';
+            }
+            if (statusTd.html().trim() !== html) {
+              statusTd.html(html);
+            }
+          }
+        });
+      }
+    }
+  });
+}
+
 $(document).ready(function() {
+  // Start Real-Time Live Polling (Every 3 seconds)
+  pollLiveUserStatuses();
+  setInterval(pollLiveUserStatuses, 3000);
+
   $('#addUserModal').on('show.bs.modal', function() {
     removeAvatar('add_profile_img', 'add_avatar_preview', 'btn_remove_add_avatar');
     // ລະຫັດຜູ້ນຳໃຊ້: ປ້ອນດ້ວຍຕົນເອງ
@@ -198,38 +230,27 @@ function openViewModal(user) {
   document.getElementById('view_avatar').src = basePath + 'assets/img/users/' + imgName;
 
   var st = (user.status || user.userstatus || 'ພະນັກງານ').trim();
-  var badgeHtml = '<span class="badge badge-secondary px-3 py-1">' + st + '</span>';
-  if (st === 'ຜູ້ບໍລິຫານ' || st === 'Admin') {
-    badgeHtml = '<span class="badge badge-primary px-3 py-1"><i class="fas fa-user-shield mr-1"></i> ຜູ້ບໍລິຫານ</span>';
-  } else if (st === 'ຄົນຈັດການບັນຊີ' || st === 'ຜູ້ກວດສອບ') {
-    badgeHtml = '<span class="badge px-3 py-1" style="background-color: #8b5cf6; color: white;"><i class="fas fa-calculator mr-1"></i> ' + st + '</span>';
-  } else if (st === 'ພະນັກງານຂາຍ' || st === 'ຄົນຂາຍ') {
-    badgeHtml = '<span class="badge px-3 py-1" style="background-color: #10b981; color: white;"><i class="fas fa-cash-register mr-1"></i> ' + st + '</span>';
-  } else if (st === 'ພະນັກງານຄັງ') {
-    badgeHtml = '<span class="badge px-3 py-1" style="background-color: #0284c7; color: white;"><i class="fas fa-boxes mr-1"></i> ' + st + '</span>';
+  var isOnline = !!user.is_online;
+  var badgeHtml = '';
+  
+  // Online/Offline status badge
+  if (isOnline) {
+    badgeHtml += '<span class="badge badge-success px-3 py-1 mr-1 shadow-sm" style="border-radius: 6px;"><i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ໃຊ້ງານຢູ່</span> ';
+  } else {
+    badgeHtml += '<span class="badge badge-danger px-3 py-1 mr-1 shadow-sm" style="border-radius: 6px;"><i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ບໍ່ໄດ້ໃຊ້ງານ</span> ';
   }
-  document.getElementById('view_status_badge').innerHTML = badgeHtml;
 
-  var isAdmin = (st === 'ຜູ້ບໍລິຫານ' || st === 'Admin');
-  var perms = [
-    { label: 'ຂາຍ POS', active: isAdmin || parseInt(user.sale) === 1 },
-    { label: 'ຄັງສິນຄ້າ', active: isAdmin || parseInt(user.stock) === 1 },
-    { label: 'ລາຍງານ', active: isAdmin || parseInt(user.report) === 1 },
-    { label: 'ຈັດການບັນຊີ', active: isAdmin || parseInt(user.accounting) === 1 },
-    { label: 'ຕັ້ງຄ່າ', active: isAdmin || parseInt(user.setup) === 1 },
-    { label: 'ຈັດການຜູ້ໃຊ້', active: isAdmin || parseInt(user.users) === 1 },
-    { label: 'ສິດແກ້ໄຂ', active: isAdmin || parseInt(user.edit) === 1 }
-  ];
-
-  var permHtml = '';
-  perms.forEach(function(p) {
-    if (p.active) {
-      permHtml += '<span class="badge badge-success px-2 py-1 mr-1 mb-1" style="font-size:0.8rem;"><i class="fas fa-check mr-1"></i> ' + p.label + '</span>';
-    } else {
-      permHtml += '<span class="badge badge-light text-muted px-2 py-1 mr-1 mb-1" style="font-size:0.8rem; border: 1px solid #e2e8f0;"><i class="fas fa-times mr-1"></i> ' + p.label + '</span>';
-    }
-  });
-  document.getElementById('view_permissions_badges').innerHTML = permHtml;
+  // Role badge (ຜູ້ບໍລິຫານ / ພະນັກງານ)
+  if (st === 'ຜູ້ບໍລິຫານ' || st.toLowerCase() === 'admin') {
+    badgeHtml += '<span class="badge badge-primary px-3 py-1" style="border-radius: 6px;"><i class="fas fa-user-shield mr-1"></i> ຜູ້ບໍລິຫານ</span>';
+  } else {
+    badgeHtml += '<span class="badge badge-secondary px-3 py-1" style="border-radius: 6px;"><i class="fas fa-user mr-1"></i> ພະນັກງານ</span>';
+  }
+  
+  var statusBadgeEl = document.getElementById('view_status_badge');
+  if (statusBadgeEl) {
+    statusBadgeEl.innerHTML = badgeHtml;
+  }
 
   document.getElementById('btn_edit_from_view').onclick = function() {
     var savedUser = user;
@@ -296,12 +317,6 @@ function openEditModal(user) {
 
   if (st === 'admin' || st === 'administrator' || rawStatus === 'ຜູ້ບໍລິຫານ') {
     selectEl.value = 'ຜູ້ບໍລິຫານ';
-  } else if (st === 'accountant' || rawStatus === 'ຄົນຈັດການບັນຊີ' || rawStatus === 'ຜູ້ກວດສອບ') {
-    selectEl.value = 'ຄົນຈັດການບັນຊີ';
-  } else if (st === 'cashier' || st === 'seller' || rawStatus === 'ພະນັກງານຂາຍ' || rawStatus === 'ຄົນຂາຍ') {
-    selectEl.value = 'ພະນັກງານຂາຍ';
-  } else if (st === 'stock' || st === 'stock_keeper' || rawStatus === 'ພະນັກງານຄັງ') {
-    selectEl.value = 'ພະນັກງານຄັງ';
   } else {
     selectEl.value = 'ພະນັກງານ';
   }

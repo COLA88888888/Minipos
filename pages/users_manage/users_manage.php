@@ -64,7 +64,8 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <th class="py-3">ຊື່ຜູ້ໃຊ້ງານ</th>
                   <th class="py-3">ປະຈຳສາຂາ</th>
                   <th class="py-3">ເບີໂທລະສັບ</th>
-                  <th class="text-center py-3">ສະຖານະ / ຕຳແໜ່ງ</th>
+                  <th class="text-center py-3">ສະຖານະ</th>
+                  <th class="text-center py-3">ຕຳແໜ່ງ</th>
                   <th class="text-center py-3" style="width: 140px;">ຈັດການ</th>
                 </tr>
               </thead>
@@ -75,6 +76,16 @@ require_once __DIR__ . '/../../layouts/header.php';
                   foreach ($allUsers as $u): 
                     $imgName = !empty($u['profile_img']) ? $u['profile_img'] : 'default.png';
                     $imgPath = $base_path . 'assets/img/users/' . $imgName;
+                    
+                    // Check if online (active within 5 mins / 300 seconds)
+                    $isOnline = false;
+                    if (!empty($u['last_activity'])) {
+                        $lastActiveTime = strtotime($u['last_activity']);
+                        if ((time() - $lastActiveTime) <= 300) {
+                            $isOnline = true;
+                        }
+                    }
+                    $u['is_online'] = $isOnline;
                     $userJson = htmlspecialchars(json_encode($u), ENT_QUOTES, 'UTF-8');
                     $userStatus = trim($u['status'] ?? $u['userstatus'] ?? 'ພະນັກງານ');
                   ?>
@@ -93,19 +104,29 @@ require_once __DIR__ . '/../../layouts/header.php';
                         </span>
                       </td>
                       <td class="align-middle text-muted"><?php echo htmlspecialchars($u['tel'] ?: '-'); ?></td>
-                      <td class="text-center align-middle">
-                        <?php if ($userStatus === 'ຜູ້ບໍລິຫານ' || $userStatus === 'Admin'): ?>
-                          <span class="badge badge-primary px-3 py-1" style="border-radius: 6px;"><i class="fas fa-user-shield mr-1"></i> ຜູ້ບໍລິຫານ</span>
-                        <?php elseif ($userStatus === 'ຄົນຈັດການບັນຊີ' || $userStatus === 'ຜູ້ກວດສອບ'): ?>
-                          <span class="badge px-3 py-1" style="background-color: #8b5cf6; color: white; border-radius: 6px;"><i class="fas fa-calculator mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
-                        <?php elseif ($userStatus === 'ພະນັກງານຂາຍ' || $userStatus === 'ຄົນຂາຍ'): ?>
-                          <span class="badge px-3 py-1" style="background-color: #10b981; color: white; border-radius: 6px;"><i class="fas fa-cash-register mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
-                        <?php elseif ($userStatus === 'ພະນັກງານຄັງ'): ?>
-                          <span class="badge px-3 py-1" style="background-color: #0284c7; color: white; border-radius: 6px;"><i class="fas fa-boxes mr-1"></i> <?php echo htmlspecialchars($userStatus); ?></span>
+                      
+                      <!-- COLUMN 1: ສະຖານະ (Online / Offline) -->
+                      <td class="text-center align-middle user-online-status-td" data-user-id="<?php echo $u['Id']; ?>">
+                        <?php if ($isOnline): ?>
+                          <span class="badge badge-success px-2.5 py-1.5 shadow-sm" style="border-radius: 6px; font-size: 0.82rem;">
+                            <i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ໃຊ້ງານຢູ່
+                          </span>
                         <?php else: ?>
-                          <span class="badge badge-secondary px-3 py-1" style="border-radius: 6px;"><?php echo htmlspecialchars($userStatus); ?></span>
+                          <span class="badge badge-danger px-2.5 py-1.5 shadow-sm" style="border-radius: 6px; font-size: 0.82rem;">
+                            <i class="fas fa-circle mr-1" style="font-size: 0.55rem; vertical-align: middle;"></i> ບໍ່ໄດ້ໃຊ້ງານ
+                          </span>
                         <?php endif; ?>
                       </td>
+
+                      <!-- COLUMN 2: ຕຳແໜ່ງ (Role / Position) -->
+                      <td class="text-center align-middle">
+                        <?php if ($userStatus === 'ຜູ້ບໍລິຫານ' || strtolower($userStatus) === 'admin'): ?>
+                          <span class="badge badge-primary px-2.5 py-1.5" style="border-radius: 6px; font-size: 0.82rem;"><i class="fas fa-user-shield mr-1"></i> ຜູ້ບໍລິຫານ</span>
+                        <?php else: ?>
+                          <span class="badge badge-secondary px-2.5 py-1.5" style="border-radius: 6px; font-size: 0.82rem;"><i class="fas fa-user mr-1"></i> ພະນັກງານ</span>
+                        <?php endif; ?>
+                      </td>
+                      
                       <td class="text-center align-middle">
                         <div class="btn-group btn-group-sm">
                           <!-- View Details Button -->
@@ -130,7 +151,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <?php endforeach; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">
+                    <td colspan="9" class="text-center py-5 text-muted">
                       <i class="fas fa-users-slash fa-3x mb-3 text-secondary d-block"></i>
                       ບໍ່ພົບຂໍ້ມູນຜູ້ໃຊ້ງານໃນລະບົບ
                     </td>
