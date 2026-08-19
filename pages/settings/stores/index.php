@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $com_email           = trim($_POST['com_email'] ?? '');
         $tax_id              = trim($_POST['tax_id'] ?? '');
         $receipt_footer      = trim($_POST['receipt_footer'] ?? '');
-        $tax_type            = trim($_POST['tax_type'] ?? 'inclusive');
-        $vat_percent         = floatval($_POST['vat_percent'] ?? 7.00);
+        $tax_type            = trim($_POST['tax_type'] ?? 'none');
+        $vat_percent         = ($tax_type === 'none') ? 0.00 : floatval($_POST['vat_percent'] ?? 0);
         $license_start_date  = trim($_POST['license_start_date'] ?? '2026-01-01');
         $license_expire_date = trim($_POST['license_expire_date'] ?? '2026-12-31');
 
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ext = strtolower(pathinfo($_FILES['qr_img']['name'], PATHINFO_EXTENSION));
                     if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
                         $newQrName = 'qr_' . time() . '.' . $ext;
-                        $targetDir = __DIR__ . '/../../../assets/img/logo/';
+                        $targetDir = __DIR__ . '/../../../assets/img/qr/';
                         if (!is_dir($targetDir)) {
                             mkdir($targetDir, 0777, true);
                         }
@@ -189,8 +189,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bank_id = intval($_POST['bank_id'] ?? 0);
         if ($bank_id > 0) {
             try {
-                $stmt = $pdo->prepare("DELETE FROM bank_accounts WHERE id = ?");
-                $stmt->execute([$bank_id]);
+                // Fetch image filenames before deleting
+                $bankRow = $pdo->prepare("SELECT bank_logo, qr_code_img FROM bank_accounts WHERE id = ?");
+                $bankRow->execute([$bank_id]);
+                $bankData = $bankRow->fetch(PDO::FETCH_ASSOC);
+
+                $pdo->prepare("DELETE FROM bank_accounts WHERE id = ?")->execute([$bank_id]);
+
+                // Delete image files from filesystem
+                if ($bankData) {
+                    $bankLogoDir = __DIR__ . '/../../../assets/img/banks/';
+                    $qrDir       = __DIR__ . '/../../../assets/img/qr/';
+
+                    if (!empty($bankData['bank_logo']) && file_exists($bankLogoDir . $bankData['bank_logo'])) {
+                        @unlink($bankLogoDir . $bankData['bank_logo']);
+                    }
+                    if (!empty($bankData['qr_code_img']) && file_exists($qrDir . $bankData['qr_code_img'])) {
+                        @unlink($qrDir . $bankData['qr_code_img']);
+                    }
+                }
+
                 $message = "ລົບບັນຊີທະນາຄານສຳເລັດແລ້ວ!";
                 $message_type = "success";
             } catch (Exception $e) {
@@ -211,8 +229,17 @@ if (!$company) {
     $company = [];
 }
 
-$logoImg = !empty($company['img_url']) ? $company['img_url'] : 'logo.png';
-$logoPath = $base_path . 'assets/img/logo/' . $logoImg;
+// Determine logo path — verify file exists on disk; fall back to default image
+$logoImg  = !empty($company['img_url']) ? $company['img_url'] : '';
+$logoDir  = __DIR__ . '/../../../assets/img/logo/';
+if (!is_dir($logoDir)) {
+    mkdir($logoDir, 0777, true);
+}
+if ($logoImg && file_exists($logoDir . $logoImg)) {
+    $logoPath = $base_path . 'assets/img/logo/' . $logoImg;
+} else {
+    $logoPath = $base_path . 'assets/img/image.jpg';
+}
 
 require_once __DIR__ . '/../../../layouts/header.php';
 ?>
@@ -250,7 +277,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <i class="fas fa-edit text-primary mr-2"></i> ແກ້ໄຂຂໍ້ມູນຮ້ານ / ບໍລິສັດ
         </h6>
 
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form id="storeInfoForm" action="" method="POST" enctype="multipart/form-data" novalidate>
           <input type="hidden" name="action" value="save_store_info">
 
           <!-- Logo Upload Section -->
@@ -262,7 +289,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
                   <img id="logo_preview" src="<?php echo htmlspecialchars($logoPath); ?>" 
                        style="width: 100px; height: 100px; object-fit: contain; border-radius: 50%; border: 2px solid #93c5fd; background: #f8fafc; padding: 4px; cursor: pointer;"
                        onclick="document.getElementById('logo_input').click();"
-                       onerror="this.src='<?php echo $base_path; ?>assets/img/logo/logo.png';">
+                       onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'><circle cx=\'50\' cy=\'50\' r=\'50\' fill=\'%23e2e8f0\'/><text x=\'50\' y=\'58\' text-anchor=\'middle\' font-size=\'38\' fill=\'%2394a3b8\'>&#128722;</text></svg>'">
                   <button type="button" class="btn btn-sm btn-primary position-absolute shadow-sm" 
                           style="right: -2px; bottom: -2px; border-radius: 50%; width: 32px; height: 32px; border: 2px solid #fff;"
                           onclick="document.getElementById('logo_input').click();"
@@ -314,9 +341,9 @@ require_once __DIR__ . '/../../../layouts/header.php';
           </div>
 
           <!-- Taxpayer ID / Tax Number -->
-          <div class="form-group mb-3">
+          <div class="form-group mb-3" id="tax_id_wrap">
             <label class="font-weight-bold text-dark small mb-1">
-              <i class="fas fa-id-card text-primary mr-1"></i> ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ (Taxpayer ID):
+              <i class="fas fa-id-card text-primary mr-1"></i> ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:
             </label>
             <input type="text" name="tax_id" class="form-control font-weight-bold" 
                    value="<?php echo htmlspecialchars($company['tax_id'] ?? ''); ?>" 
@@ -327,34 +354,34 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <!-- Tax / VAT Configuration Section -->
           <div class="form-group mb-4 p-3 bg-light rounded border">
             <label class="font-weight-bold text-dark small mb-2 d-block">
-              <i class="fas fa-percent text-danger mr-1"></i> ການຕັ້ງຄ່າພາສີອາກອນ:
+              <i class="fas fa-percent text-danger mr-1"></i> ການຕັ້ງຄ່າອາກອນມູນຄ່າເພີ່ມ (ອມພ):
             </label>
             <div class="row align-items-center">
               <div class="col-md-7 mb-2 mb-md-0">
                 <div class="custom-control custom-radio custom-control-inline">
                   <input type="radio" id="tax_inc" name="tax_type" value="inclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'inclusive') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_inc">
-                    ພາສີອາກອນພາຍໃນ <span class="text-muted">(Inclusive - ລາຄາລວມ VAT ແລ້ວ)</span>
+                    ອາກອນພາຍໃນ <span class="text-muted">(Inclusive - ລາຄາລວມ ອມພ ແລ້ວ)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
                   <input type="radio" id="tax_exc" name="tax_type" value="exclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'exclusive') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_exc">
-                    ພາສີອາກອນພາຍນອກ <span class="text-muted">(Exclusive - ບວກເພີ່ມ VAT %)</span>
+                    ອາກອນພາຍນອກ <span class="text-muted">(Exclusive - ບວກເພີ່ມ ອມພ %)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
                   <input type="radio" id="tax_none" name="tax_type" value="none" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'none') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-muted small" for="tax_none">
-                    ບໍ່ມີພາສີອາກອນ (0%)
+                    ບໍ່ມີອາກອນມູນຄ່າເພີ່ມ (0%)
                   </label>
                 </div>
               </div>
-              <div class="col-md-5">
-                <label class="font-weight-bold text-dark small mb-1">ອັດຕາພາສີ (%):</label>
+              <div class="col-md-5" id="vat_percent_wrap">
+                <label class="font-weight-bold text-dark small mb-1">ອັດຕາ ອມພ (%):</label>
                 <div class="input-group">
                   <input type="number" step="any" min="0" max="100" name="vat_percent" class="form-control font-weight-bold text-primary" 
-                         value="<?php echo htmlspecialchars($company['vat_percent'] ?? ''); ?>" placeholder="ກະລຸນາປ້ອນອັດຕາພາສີ %">
+                         value="<?php echo htmlspecialchars($company['vat_percent'] ?? ''); ?>" placeholder="ກະລຸນາປ້ອນອັດຕາ ອມພ %">
                   <div class="input-group-append">
                     <span class="input-group-text font-weight-bold">%</span>
                   </div>
@@ -388,11 +415,30 @@ require_once __DIR__ . '/../../../layouts/header.php';
 <script>
 function previewStoreLogo(input) {
   if (input.files && input.files[0]) {
+    var file = input.files[0];
+    // Validate file type
+    var allowed = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ໄຟລ໌ບໍ່ຖືກຕ້ອງ',
+        text: 'ກະລຸນາເລືອກຮູບທີ່ເປັນ JPG, PNG ຫຼື WEBP ເທົ່ານັ້ນ!',
+        confirmButtonColor: '#2563eb'
+      });
+      input.value = '';
+      return;
+    }
     var reader = new FileReader();
     reader.onload = function(e) {
-      document.getElementById('logo_preview').src = e.target.result;
-    }
-    reader.readAsDataURL(input.files[0]);
+      var img = document.getElementById('logo_preview');
+      img.style.opacity = '0.3';
+      img.src = e.target.result;
+      img.onload = function() {
+        img.style.transition = 'opacity 0.4s ease';
+        img.style.opacity = '1';
+      };
+    };
+    reader.readAsDataURL(file);
   }
 }
 
@@ -417,6 +463,61 @@ function updateReceiptPreview() {
   document.getElementById('receipt_address').textContent = address;
   document.getElementById('receipt_footer').textContent = footer;
 }
+
+function handleTaxTypeChange() {
+  var taxType = $('input[name="tax_type"]:checked').val();
+  var $vatWrap = $('#vat_percent_wrap');
+  var $taxIdWrap = $('#tax_id_wrap');
+  var $vatInput = $('input[name="vat_percent"]');
+  if (taxType === 'none') {
+    $vatInput.val('0').prop('readonly', true);
+    if ($vatWrap.length) $vatWrap.hide();
+    if ($taxIdWrap.length) $taxIdWrap.hide();
+  } else {
+    $vatInput.prop('readonly', false);
+    if ($vatWrap.length) $vatWrap.show();
+    if ($taxIdWrap.length) $taxIdWrap.show();
+  }
+}
+
+$(document).ready(function() {
+  $('input[name="tax_type"]').on('change', handleTaxTypeChange);
+  handleTaxTypeChange();
+
+  // SweetAlert Validation
+  $('#storeInfoForm').on('submit', function(e) {
+    var storeName = $.trim($('#input_store_name').val());
+    var storeTel  = $.trim($('#input_store_tel').val());
+
+    if (storeName === '') {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+        text: 'ກະລຸນາປ້ອນ "ຊື່ຮ້ານຄ້າ / ບໍລິສັດ" ກ່ອນບັນທຶກ!',
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'ຕົກລົງ'
+      }).then(function() {
+        $('#input_store_name').focus();
+      });
+      return false;
+    }
+
+    if (storeTel === '') {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+        text: 'ກະລຸນາປ້ອນ "ເບີໂທລະສັບຕິດຕໍ່" ກ່ອນບັນທຶກ!',
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'ຕົກລົງ'
+      }).then(function() {
+        $('#input_store_tel').focus();
+      });
+      return false;
+    }
+  });
+});
 </script>
 
 <?php require_once __DIR__ . '/../../../layouts/footer.php'; ?>

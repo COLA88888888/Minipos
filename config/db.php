@@ -224,11 +224,24 @@ try {
         }
     } catch (Throwable $ex) {}
 
+    // Add performance indexes if missing for lightning-fast queries
+    try {
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_products_store ON products (store_id, category_id)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_sales_store_date ON sales (store_id, created_at)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_sales_invoice ON sales (invoice_number)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_customers_store ON customers (store_id, customer_id)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_price_adj_branch ON price_adjustments (branch_id, adjust_id)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_promotions_branch ON promotions (branch_id, status)");
+        $pdo->exec("CREATE INDEX IF NOT EXISTS idx_transfers_stores ON stock_transfers (from_store_id, to_store_id, status)");
+    } catch (Throwable $ex) {}
+
     // Clean up unused/deprecated database tables
     $unusedTables = [
         'tbbranch', 'tbunit', 'tbsale', 'tbsale_detail', 'category', 'tbsupplier', 'tbcurrency',
         'customer', 'tb_expenses', 'tb_queue_daily', 'tbdeposit_beer', 'tbfinancial_report',
-        'tbreceive', 'tbreceive_detail', 'tbsale_save_data', 'stock_adjustments', 'stock_adjustment_items'
+        'tbreceive', 'tbreceive_detail', 'tbsale_save_data', 'stock_adjustments', 'stock_adjustment_items',
+        'price_adjustment_items', 'promotion_items', 'tb_delete_bill_log'
     ];
     foreach ($unusedTables as $uTbl) {
         try {
@@ -282,8 +295,10 @@ try {
         if (!in_array('member_card', $custCols)) {
             $pdo->exec("ALTER TABLE `customers` ADD COLUMN `member_card` VARCHAR(50) NULL AFTER `phone`");
         }
-
-
+        if (!in_array('store_id', $custCols)) {
+            $pdo->exec("ALTER TABLE `customers` ADD COLUMN `store_id` INT DEFAULT 1 AFTER `notes`");
+            $pdo->exec("UPDATE `customers` SET `store_id` = 1 WHERE `store_id` IS NULL OR `store_id` = 0");
+        }
     } catch (Throwable $ex) {}
 
     // Auto Migration for User Detail Columns
@@ -979,7 +994,9 @@ if (!function_exists('getLowStockAlerts')) {
                 $sql = "SELECT p.*, s.store_name, s.is_main 
                         FROM products p 
                         JOIN tbstore s ON p.store_id = s.store_id 
-                        WHERE p.qty <= p.min_qty AND s.status = 'active' AND p.store_id = ?
+                        WHERE (p.qty <= 10 OR (p.min_qty IS NOT NULL AND p.min_qty > 0 AND p.qty <= p.min_qty) OR p.qty <= 0) 
+                          AND s.status = 'active' 
+                          AND p.store_id = ?
                         ORDER BY p.qty ASC";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([intval($store_id)]);
@@ -988,7 +1005,8 @@ if (!function_exists('getLowStockAlerts')) {
                 $sql = "SELECT p.*, s.store_name, s.is_main 
                         FROM products p 
                         JOIN tbstore s ON p.store_id = s.store_id 
-                        WHERE p.qty <= p.min_qty AND s.status = 'active'
+                        WHERE (p.qty <= 10 OR (p.min_qty IS NOT NULL AND p.min_qty > 0 AND p.qty <= p.min_qty) OR p.qty <= 0) 
+                          AND s.status = 'active'
                         ORDER BY s.is_main ASC, p.qty ASC";
                 return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
             }
@@ -1055,6 +1073,34 @@ if (!function_exists('getNewProductsForStore')) {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([intval($store_id)]);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+}
+
+if (!function_exists('getSubBranchStockImportsForMain')) {
+    function getSubBranchStockImportsForMain($pdo) {
+        if (!$pdo) return [];
+        try {
+            $sql = "SELECT id.import_detail_id, id.import_id, id.product_id, id.unit_name, id.quantity, id.cost_price, id.total_cost,
+                           COALESCE(p.product_name, 'ສິນຄ້າ') as product_name, s.store_id, s.store_name, i.import_date, i.invoice_number, i.supplier_name, i.notes,
+                           COALESCE(NULLIF(u.fname, ''), u.username, 'Admin') as creator_name
+                    FROM import_details id
+                    JOIN imports i ON id.import_id = i.import_id
+                    JOIN tbstore s ON (
+                        CASE 
+                            WHEN i.store_id > 0 THEN i.store_id
+                            ELSE (SELECT store_id FROM products WHERE product_id = id.product_id LIMIT 1)
+                        END
+                    ) = s.store_id
+                    LEFT JOIN products p ON (id.product_id = p.product_id AND p.store_id = s.store_id)
+                    LEFT JOIN tbuser u ON i.created_by = u.Id
+                    WHERE (s.is_main = 0 OR s.store_id != 1)
+                      AND i.import_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                    ORDER BY id.import_detail_id DESC LIMIT 20";
+            $stmt = $pdo->query($sql);
+            return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
         } catch (Exception $e) {
             return [];
         }

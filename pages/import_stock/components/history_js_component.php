@@ -163,7 +163,7 @@ function viewTransferDetails(transferId) {
             '<tr>' +
               '<td class="text-center align-middle font-weight-bold text-muted">' + (idx + 1) + '</td>' +
               '<td class="align-middle"><strong>' + escapeHtml(item.product_name) + '</strong></td>' +
-              '<td class="text-center align-middle font-weight-bold text-secondary">' + escapeHtml(item.barcode || '-') + '</td>' +
+              '<td class="text-center align-middle font-weight-bold text-secondary">' + escapeHtml(item.barcode || item.prod_barcode || '-') + '</td>' +
               '<td class="text-center align-middle font-weight-bold text-dark">' + item.qty + '</td>' +
               '<td class="text-center align-middle">' + escapeHtml(item.unit || 'ອັນ') + '</td>' +
             '</tr>'
@@ -193,8 +193,27 @@ function confirmCancelTransfer(transferId, transferCode) {
     cancelButtonText: 'ປິດ'
   }).then(function(result) {
     if (result.isConfirmed) {
-      $('#cancel_transfer_id_input').val(transferId);
-      $('#cancelTransferForm').submit();
+      $.post('transfer_history.php', { action: 'cancel_transfer', transfer_id: transferId, is_ajax: 1 }, function(res) {
+        if (res.success) {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: res.message || 'ຍົກເລີກໃບໂອນສຳເລັດ!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+          $.get('transfer_history.php?fetch_table=1', function(html) {
+            var $tableCard = $('#historyTableBody').closest('.card');
+            if ($tableCard.length) {
+              $tableCard.replaceWith($(html));
+              filterTransferHistory();
+            }
+          });
+        } else {
+          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+        }
+      }, 'json');
     }
   });
 }

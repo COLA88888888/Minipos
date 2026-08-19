@@ -305,9 +305,12 @@
           <div class="receipt-header-tel" style="font-size:12px;font-weight:600;color:#000;line-height:1.4;">ໂທ: <?php echo htmlspecialchars($company['com_tel']); ?></div>
         </div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <?php if (!empty($company['tax_id'])): ?>
-          <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span><span id="rc_tax_id" style="font-weight:700;"><?php echo htmlspecialchars($company['tax_id']); ?></span></div>
-        <?php endif; ?>
+        <?php 
+          $cTaxType = !empty($company['tax_type']) ? $company['tax_type'] : 'none';
+          $cTaxId = !empty($company['tax_id']) ? $company['tax_id'] : '';
+          $showTaxId = ($cTaxType !== 'none' && !empty($cTaxId));
+        ?>
+        <div class="d-flex justify-content-between" id="rc_tax_id_row" style="color:#000;font-weight:600;<?php echo $showTaxId ? '' : 'display:none;'; ?>"><span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span><span id="rc_tax_id" style="font-weight:700;"><?php echo htmlspecialchars($cTaxId); ?></span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກບິນ:</span><span id="rc_bill" style="font-weight:700;">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ວັນທີ:</span><span id="rc_date">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ຜູ້ຂາຍ:</span><span id="rc_cashier">-</span></div>
@@ -325,13 +328,13 @@
         </table>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div id="rc_payment_rows" style="color:#000;font-weight:600;">
-          <div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>0 ₭</span></div>
-          <div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>0 ₭</span></div>
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span id="rc_cash_amt">0 ₭</span></div>
+          <div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span id="rc_qr_amt">0 ₭</span></div>
         </div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ລວມ:</span><span id="rc_subtotal">0 ₭</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ສ່ວນຫຼຸດ:</span><span id="rc_discount">0 ₭</span></div>
-        <div class="d-flex justify-content-between" id="rc_vat_row" style="color:#000;font-weight:600;display:none;"><span id="rc_vat_label">ພາສີ (VAT):</span><span id="rc_vat">0 ₭</span></div>
+        <div class="d-flex justify-content-between" id="rc_vat_row" style="color:#000;font-weight:600;display:none;"><span id="rc_vat_label">ອມພ (VAT):</span><span id="rc_vat">0 ₭</span></div>
         <div class="d-flex justify-content-between font-weight-bold" style="font-size:13.5px;color:#000;font-weight:700;"><span>ຍອດສຸດທິ:</span><span id="rc_total">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span>ເງິນທອນ:</span><span id="rc_change">0 ₭</span></div>

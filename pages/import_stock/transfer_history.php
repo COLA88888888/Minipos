@@ -95,6 +95,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
+if (!empty($_POST['is_ajax'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => ($message_type === 'success'),
+        'message' => $message
+    ]);
+    exit();
+}
+
 // Fetch all branches for filtering
 $stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -153,6 +162,11 @@ $sqlTransfers = "
 $stmtTrf = $pdo->prepare($sqlTransfers);
 $stmtTrf->execute($params);
 $transfers = $stmtTrf->fetchAll(PDO::FETCH_ASSOC);
+
+if (!empty($_GET['fetch_table'])) {
+    require_once __DIR__ . '/components/history_table_component.php';
+    exit();
+}
 
 require_once __DIR__ . '/../../layouts/header.php';
 ?>

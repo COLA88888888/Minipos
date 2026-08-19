@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $com_tel        = trim($_POST['com_tel'] ?? '');
         $com_email      = trim($_POST['com_email'] ?? '');
         $receipt_footer = trim($_POST['receipt_footer'] ?? '');
-        $tax_type       = trim($_POST['tax_type'] ?? 'inclusive');
-        $vat_percent    = floatval($_POST['vat_percent'] ?? 7.00);
+        $tax_type       = trim($_POST['tax_type'] ?? 'none');
+        $vat_percent    = ($tax_type === 'none') ? 0.00 : floatval($_POST['vat_percent'] ?? 0);
 
         if ($com_name_la !== '') {
             try {
@@ -208,8 +208,16 @@ if (!$company) {
     $company = [];
 }
 
-$logoImg = !empty($company['img_url']) ? $company['img_url'] : 'logo.png';
-$logoPath = $base_path . 'assets/img/logo/' . $logoImg;
+$logoImg  = !empty($company['img_url']) ? $company['img_url'] : '';
+$logoDir  = __DIR__ . '/../../../assets/img/logo/';
+if (!is_dir($logoDir)) {
+    mkdir($logoDir, 0777, true);
+}
+if ($logoImg && file_exists($logoDir . $logoImg)) {
+    $logoPath = $base_path . 'assets/img/logo/' . $logoImg;
+} else {
+    $logoPath = $base_path . 'assets/img/image.jpg';
+}
 
 require_once __DIR__ . '/../../../layouts/header.php';
 ?>
@@ -247,7 +255,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <i class="fas fa-edit text-primary mr-2"></i> ແກ້ໄຂຂໍ້ມູນຮ້ານ
         </h6>
 
-        <form action="" method="POST" enctype="multipart/form-data">
+        <form id="storeInfoForm" action="" method="POST" enctype="multipart/form-data" novalidate>
           <input type="hidden" name="action" value="save_store_info">
 
           <!-- Logo Upload Section -->
@@ -313,31 +321,31 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <!-- Tax / VAT Configuration Section -->
           <div class="form-group mb-4 p-3 bg-light rounded border">
             <label class="font-weight-bold text-dark small mb-2 d-block">
-              <i class="fas fa-percent text-danger mr-1"></i> ການຕັ້ງຄ່າພາສີອາກອນ (Tax / VAT Settings):
+              <i class="fas fa-percent text-danger mr-1"></i> ການຕັ້ງຄ່າອາກອນມູນຄ່າເພີ່ມ (ອມພ):
             </label>
             <div class="row align-items-center">
               <div class="col-md-7 mb-2 mb-md-0">
                 <div class="custom-control custom-radio custom-control-inline">
                   <input type="radio" id="tax_inc" name="tax_type" value="inclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'inclusive') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_inc">
-                    ພາສີອາກອນພາຍໃນ <span class="text-muted">(Inclusive - ລາຄາລວມ VAT ແລ້ວ)</span>
+                    ອາກອນພາຍໃນ <span class="text-muted">(Inclusive - ລາຄາລວມ ອມພ ແລ້ວ)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
                   <input type="radio" id="tax_exc" name="tax_type" value="exclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'exclusive') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_exc">
-                    ພາສີອາກອນພາຍນອກ <span class="text-muted">(Exclusive - ບວກເພີ່ມ VAT %)</span>
+                    ອາກອນພາຍນອກ <span class="text-muted">(Exclusive - ບວກເພີ່ມ ອມພ %)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
                   <input type="radio" id="tax_none" name="tax_type" value="none" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'none') ? 'checked' : ''; ?>>
                   <label class="custom-control-label font-weight-bold text-muted small" for="tax_none">
-                    ບໍ່ມີພາສີອາກອນ (0%)
+                    ບໍ່ມີອາກອນມູນຄ່າເພີ່ມ (0%)
                   </label>
                 </div>
               </div>
-              <div class="col-md-5">
-                <label class="font-weight-bold text-dark small mb-1">ອັດຕາພາສີ (%):</label>
+              <div class="col-md-5" id="vat_percent_wrap">
+                <label class="font-weight-bold text-dark small mb-1">ອັດຕາ ອມພ (%):</label>
                 <div class="input-group">
                   <input type="number" step="any" min="0" max="100" name="vat_percent" class="form-control font-weight-bold text-primary" 
                          value="<?php echo htmlspecialchars($company['vat_percent'] ?? ''); ?>" placeholder="0.00">
@@ -351,7 +359,7 @@ require_once __DIR__ . '/../../../layouts/header.php';
 
           <!-- Receipt Footer Message -->
           <div class="form-group mb-4">
-            <label class="font-weight-bold text-dark small mb-1">ຂໍ້ຄວາມທ້າຍໃບບິນ (Footer Message):</label>
+            <label class="font-weight-bold text-dark small mb-1">ຂໍ້ຄວາມທ້າຍໃບບິນ:</label>
             <input type="text" name="receipt_footer" id="input_store_footer" class="form-control" 
                    value="<?php echo htmlspecialchars($company['barcode'] ?? 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?>" 
                    placeholder="ເຊັ່ນ: ຂອບໃຈທີ່ມາອຸດໜູນ, ສິນຄ້າຊື້ແລ້ວບໍ່ຮັບປ່ຽນຄືນ...">
@@ -401,6 +409,61 @@ function updateReceiptPreview() {
   document.getElementById('receipt_address').textContent = address;
   document.getElementById('receipt_footer').textContent = footer;
 }
+
+function handleTaxTypeChange() {
+  var taxType = $('input[name="tax_type"]:checked').val();
+  var $vatWrap = $('#vat_percent_wrap');
+  var $taxIdWrap = $('#tax_id_wrap');
+  var $vatInput = $('input[name="vat_percent"]');
+  if (taxType === 'none') {
+    $vatInput.val('0').prop('readonly', true);
+    if ($vatWrap.length) $vatWrap.hide();
+    if ($taxIdWrap.length) $taxIdWrap.hide();
+  } else {
+    $vatInput.prop('readonly', false);
+    if ($vatWrap.length) $vatWrap.show();
+    if ($taxIdWrap.length) $taxIdWrap.show();
+  }
+}
+
+$(document).ready(function() {
+  $('input[name="tax_type"]').on('change', handleTaxTypeChange);
+  handleTaxTypeChange();
+
+  // SweetAlert Validation
+  $('#storeInfoForm').on('submit', function(e) {
+    var storeName = $.trim($('#input_store_name').val());
+    var storeTel  = $.trim($('#input_store_tel').val());
+
+    if (storeName === '') {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+        text: 'ກະລຸນາປ້ອນ "ຊື່ຮ້ານຄ້າ / ບໍລິສັດ" ກ່ອນບັນທຶກ!',
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'ຕົກລົງ'
+      }).then(function() {
+        $('#input_store_name').focus();
+      });
+      return false;
+    }
+
+    if (storeTel === '') {
+      e.preventDefault();
+      Swal.fire({
+        icon: 'warning',
+        title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+        text: 'ກະລຸນາປ້ອນ "ເບີໂທລະສັບຕິດຕໍ່" ກ່ອນບັນທຶກ!',
+        confirmButtonColor: '#2563eb',
+        confirmButtonText: 'ຕົກລົງ'
+      }).then(function() {
+        $('#input_store_tel').focus();
+      });
+      return false;
+    }
+  });
+});
 </script>
 
 <?php require_once __DIR__ . '/../../../layouts/footer.php'; ?>

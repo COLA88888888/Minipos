@@ -111,6 +111,31 @@ if (isset($_GET['toggle_status_id'])) {
     }
 }
 
+// Handle GET Delete Branch
+if (isset($_GET['delete_branch_id'])) {
+    $del_id = intval($_GET['delete_branch_id']);
+    if ($del_id > 0) {
+        try {
+            $branch = $pdo->query("SELECT store_name, is_main FROM tbstore WHERE store_id = {$del_id}")->fetch(PDO::FETCH_ASSOC);
+            if (!$branch) {
+                $message = 'ບໍ່ພົບຂໍ້ມູນສາຂານີ້!';
+                $message_type = 'danger';
+            } elseif ($branch['is_main']) {
+                $message = 'ບໍ່ສາມາດລົບສາຂາໃຫຍ່ໄດ້!';
+                $message_type = 'warning';
+            } else {
+                $pdo->prepare("DELETE FROM tbstore WHERE store_id = ?")->execute([$del_id]);
+                $message = "ລົບສາຂາ \"{$branch['store_name']}\" ສຳເລັດແລ້ວ!";
+                $message_type = 'success';
+                logActivity($pdo, "ລົບສາຂາ", $branch['store_name']);
+            }
+        } catch (Exception $e) {
+            $message = 'ຜິດພາດ: ' . $e->getMessage();
+            $message_type = 'danger';
+        }
+    }
+}
+
 // Fetch all branch stores
 $all_branches = $pdo->query("SELECT * FROM tbstore ORDER BY is_main DESC, store_id ASC")->fetchAll();
 $branches = $all_branches;

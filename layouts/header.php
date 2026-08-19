@@ -12,7 +12,7 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>POS Wlaodev</title>
+    <title>Wlaodev POS</title>
     <link rel="manifest" href="<?php echo $base_path; ?>manifest.json">
     
     <!-- Local Font - Noto Sans Lao Looped -->

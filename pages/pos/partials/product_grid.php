@@ -90,3 +90,15 @@
     </div>
   <?php endforeach; ?>
 </div>
+
+<script>
+(function() {
+  try {
+    var localStocks = {};
+    <?php foreach ($products as $p): ?>
+      localStocks[<?php echo intval($p['product_id']); ?>] = <?php echo floatval($p['qty']); ?>;
+    <?php endforeach; ?>
+    localStorage.setItem('pos_local_stocks', JSON.stringify(localStocks));
+  } catch(e) {}
+})();
+</script>

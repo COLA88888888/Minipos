@@ -10,7 +10,7 @@
     <div class="brand-logo-wrap" style="background: #ffffff; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.18); width: 42px; height: 42px; min-width: 42px; flex-shrink: 0;">
       <img src="<?php echo $bp; ?>assets/img/logo/logo.png" alt="POS Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
     </div>
-    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap;">POS Wlaodev</span>
+    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap;"> Wlaodev POS</span>
   <?php if (hasPermission('dashboard')): ?>
     </a>
   <?php else: ?>
@@ -330,7 +330,7 @@
                 <?php if (hasPermission('stores')): ?>
                 <!-- 1. ຂໍ້ມູນຮ້ານ (pages/settings/stores/) -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/stores/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/stores/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-store text-primary"></i>
                     <p>ຂໍ້ມູນຮ້ານ</p>
                   </a>
@@ -340,7 +340,7 @@
                 <?php if (hasPermission('print_barcode')): ?>
                 <!-- 2. ພິມບາໂຄ້ດ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/print_barcode/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/print_barcode/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-barcode text-info"></i>
                     <p>ພິມບາໂຄ້ດ</p>
                   </a>
@@ -350,7 +350,7 @@
                 <?php if (hasPermission('exchange_rate')): ?>
                 <!-- 3. ອັດຕາແລກປ່ຽນເງິນ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/exchange_rate/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/exchange_rate/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-exchange-alt text-success"></i>
                     <p>ອັດຕາເເລກປ່ຽນເງິນ</p>
                   </a>
@@ -360,7 +360,7 @@
                 <?php if (hasPermission('promotions')): ?>
                 <!-- 4. ໂປຣໂມຊັ່ນ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/promotions/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/promotions/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-percent text-danger"></i>
                     <p>ໂປຣໂມຊັ່ນ</p>
                   </a>
@@ -370,7 +370,7 @@
                 <?php if (hasPermission('price_adjustment')): ?>
                 <!-- 5. ປັບລາຄາສິນຄ້າ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/price_adjustment/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/price_adjustment/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-tags text-warning"></i>
                     <p>ປັບລາຄາສິນຄ້າ</p>
                   </a>
@@ -380,7 +380,7 @@
                 <?php if (hasPermission('printers')): ?>
                 <!-- 6. ຕັ້ງຄ່າປິ່ນເຕີ -->
                 <li class="nav-item">
-                  <a href="<?php echo $bp; ?>pages/settings/printers/" target="frame" class="nav-link">
+                  <a href="<?php echo $bp; ?>pages/settings/printers/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-print text-teal"></i>
                     <p>ຕັ້ງຄ່າປິ່ນເຕີ</p>
                   </a>

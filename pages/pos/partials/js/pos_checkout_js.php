@@ -1,4 +1,79 @@
 <script>
+// ==========================================
+// REAL-TIME CROSS-WINDOW STOCK BROADCAST SYNC
+// ==========================================
+var posStockChannel = (typeof BroadcastChannel !== 'undefined') ? new BroadcastChannel('pos_stock_channel') : null;
+
+function broadcastStockUpdate(updatedStocks) {
+  if (!updatedStocks || !updatedStocks.length) return;
+  try {
+    if (posStockChannel) {
+      posStockChannel.postMessage({ type: 'stock_updated', updated_stocks: updatedStocks });
+    }
+  } catch(e) {}
+  try {
+    localStorage.setItem('pos_live_stock_update', JSON.stringify({ timestamp: Date.now(), updated_stocks: updatedStocks }));
+  } catch(e) {}
+}
+
+function applyStockUpdateFromBroadcast(updatedStocks) {
+  if (!updatedStocks || !updatedStocks.length) return;
+
+  var localStocks = {};
+  try {
+    localStocks = JSON.parse(localStorage.getItem('pos_local_stocks') || '{}');
+  } catch(e) {}
+
+  updatedStocks.forEach(function(st) {
+    var pid = st.product_id;
+    var newQty = parseFloat(st.new_qty);
+
+    // Persist to localStocks
+    localStocks[pid] = newQty;
+
+    var stockValEl = $('.product-stock-val-' + pid);
+    if (stockValEl.length) {
+      stockValEl.attr('data-initial-stock', newQty);
+      stockValEl.data('initial-stock', newQty);
+      stockValEl.text(newQty.toLocaleString());
+    }
+
+    if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
+      var pItem = allProducts.find(function(item) { return String(item.product_id) === String(pid); });
+      if (pItem) {
+        pItem.qty = newQty;
+      }
+    }
+  });
+
+  try {
+    localStorage.setItem('pos_local_stocks', JSON.stringify(localStocks));
+  } catch(e) {}
+
+  if (typeof recalculateLiveStock === 'function') {
+    recalculateLiveStock();
+  }
+}
+
+if (posStockChannel) {
+  posStockChannel.onmessage = function(ev) {
+    if (ev && ev.data && ev.data.type === 'stock_updated') {
+      applyStockUpdateFromBroadcast(ev.data.updated_stocks);
+    }
+  };
+}
+
+window.addEventListener('storage', function(e) {
+  if (e.key === 'pos_live_stock_update' && e.newValue) {
+    try {
+      var data = JSON.parse(e.newValue);
+      if (data && data.updated_stocks) {
+        applyStockUpdateFromBroadcast(data.updated_stocks);
+      }
+    } catch(err) {}
+  }
+});
+
 // ============================
 // PAYMENT MODE & TYPE STATE
 // ============================
@@ -256,17 +331,28 @@ function processCheckout() {
 
   // Validate & clean cart items payload before sending to server
   var cleanCart = cart.filter(function(item) {
-    return item && parseInt(item.product_id, 10) > 0;
+    if (!item) return false;
+    var pid = parseInt(item.product_id, 10);
+    return !isNaN(pid) || item.is_free_gift || (typeof item.product_id === 'string' && item.product_id.indexOf('GIFT_') === 0);
   }).map(function(item) {
+    var pid = parseInt(item.product_id, 10);
+    if (isNaN(pid)) {
+      if (item.parent_product_id) {
+        pid = parseInt(item.parent_product_id, 10);
+      } else {
+        pid = 999999;
+      }
+    }
     return {
-      product_id:   parseInt(item.product_id, 10),
-      product_name: item.product_name || '',
-      unit_name:    item.unit_name || 'ອັນ',
-      unit_price:   parseFloat(item.unit_price) || 0,
-      cost_price:   parseFloat(item.cost_price) || 0,
-      multiplier:   parseInt(item.multiplier, 10) || 1,
-      quantity:     parseFloat(item.quantity) || 1,
-      is_free_gift: !!item.is_free_gift,
+      product_id:     pid,
+      product_name:   item.product_name || '',
+      unit_name:      item.unit_name || 'ອັນ',
+      unit_price:     parseFloat(item.unit_price) || 0,
+      original_price: parseFloat(item.original_price || item.base_price || item.unit_price) || 0,
+      cost_price:     parseFloat(item.cost_price) || 0,
+      multiplier:     parseInt(item.multiplier, 10) || 1,
+      quantity:       parseFloat(item.quantity) || 1,
+      is_free_gift:   !!item.is_free_gift,
       parent_product_id: item.parent_product_id ? parseInt(item.parent_product_id, 10) : null
     };
   });
@@ -295,116 +381,187 @@ function processCheckout() {
   };
 
   $.ajax({
-    url: '',
+    url: (window.POS_BACKEND_URL || '../../api/pos_backend.php'),
     type: 'POST',
     data: Object.assign({ action: 'checkout', cart: JSON.stringify(cleanCart) }, offlinePayload),
     dataType: 'json',
     success: function(res) {
-      if (res.success) {
-        $('#checkoutModal').modal('hide');
-
-        // ອັບເດດຍອດສະຕັອກຄົງເຫຼືອທີ່ຕັດແລ້ວເຂົ້າໃນ DOM ແລະ memory ທັນທີ (ບໍ່ໃຫ້ເດັ້ງກັບເປັນຍອດເກົ່າ)
-        if (res.updated_stocks && res.updated_stocks.length > 0) {
-          res.updated_stocks.forEach(function(st) {
-            var pid = st.product_id;
-            var newQty = parseFloat(st.new_qty);
-
-            // 1. ອັບເດດ attribute data-initial-stock
-            var stockValEl = $('.product-stock-val-' + pid);
-            if (stockValEl.length) {
-              stockValEl.attr('data-initial-stock', newQty);
-            }
-
-            // 2. ອັບເດດ allProducts array
-            if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
-              var pItem = allProducts.find(function(item) { return String(item.product_id) === String(pid); });
-              if (pItem) {
-                pItem.qty = newQty;
-              }
-            }
-          });
-        }
-
-        $('#rc_bill').text(res.invoice_number);
-        $('#rc_date').text(res.date);
-        $('#rc_cashier').text(res.cashier);
-        $('#rc_customer').text(res.customer_name || 'ລູກຄ້າທົ່ວໄປ');
-        $('#rc_subtotal').text(res.subtotal.toLocaleString() + ' ₭');
-        $('#rc_discount').text(res.discount_amount.toLocaleString() + ' ₭');
-
-        var rTaxType = res.tax_type || 'none';
-        var rVatRate = parseFloat(res.vat_rate) || 0;
-        var rVatAmt  = parseFloat(res.vat_amount) || 0;
-
-        if (rTaxType === 'exclusive' && rVatAmt > 0) {
-          $('#rc_vat_label').text('ພາສີ (VAT ' + rVatRate + '%):');
-          $('#rc_vat').text('+' + rVatAmt.toLocaleString() + ' ₭');
-          $('#rc_vat_row').show();
-        } else if (rTaxType === 'inclusive' && rVatAmt > 0) {
-          $('#rc_vat_label').text('ລວມ ພາສີ (VAT ' + rVatRate + '%):');
-          $('#rc_vat').text(rVatAmt.toLocaleString() + ' ₭');
-          $('#rc_vat_row').show();
-        } else {
-          $('#rc_vat_row').hide();
-        }
-
-        $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
-        $('#rc_change').text(res.change.toLocaleString() + ' ₭');
-
-        // Payment rows (Always display Cash & Transfer amounts, showing 0 ₭ if unreceived)
-        var cashAmt = parseFloat(res.cash_received) || 0;
-        var qrAmt   = parseFloat(res.qr_received) || 0;
-
-        if (cashAmt === 0 && qrAmt === 0) {
-          var pType = res.payment_type || '';
-          if (pType === 'ເງິນສົດ') {
-            cashAmt = (parseFloat(res.total_amount) || 0) + (parseFloat(res.change) || 0);
-          } else {
-            qrAmt = parseFloat(res.total_amount) || 0;
-          }
-        }
-
-        $('#rc_cash_amt').text(cashAmt.toLocaleString() + ' ₭');
-        $('#rc_qr_amt').text(qrAmt.toLocaleString() + ' ₭');
-
-        var bName = res.bank_name || '';
-        if ((!bName || bName.trim() === '') && (res.bank_account_id || qrAmt > 0)) {
-          bName = 'BCEL One';
-        }
-        if ((bName || qrAmt > 0)) {
-          var labelBank = bName ? bName : 'BCEL One';
-          $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')');
-        } else {
-          $('#rc_bank_name_lbl').text('ສະແກນ QR Code ເພື່ອຊຳລະເງິນ');
-        }
-
-        // Items
-        var tbody = $('#rc_items');
-        tbody.empty();
-        res.details.forEach(function(d) {
-          tbody.append(`
-            <tr>
-              <td>${d.proname}</td>
-              <td class="text-center">x${d.qty}</td>
-              <td class="text-right">${d.total.toLocaleString()}</td>
-            </tr>
-          `);
-        });
-
-        if (typeof broadcastCustomerDisplay === 'function') {
-          broadcastCustomerDisplay('payment_success', { cashReceived: res.cash_received, qrReceived: res.qr_received, changeAmount: res.change });
-        }
-        printReceipt();
-        setTimeout(function() { resetPOS(); }, 1200);
+      if (res && res.success) {
+        handleOnlineCheckoutReceiptUI(res);
       } else {
-        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message });
+        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: (res && res.message) ? res.message : 'ບໍ່ສາມາດຊຳລະເງິນໄດ້!' });
       }
     },
-    error: function() {
-      // Offline fallback: Handle sale locally via IndexedDB
+    error: function(xhr, status, err) {
+      var parsedRes = null;
+      try {
+        if (xhr.responseJSON) {
+          parsedRes = xhr.responseJSON;
+        } else if (xhr.responseText) {
+          var match = xhr.responseText.match(/\{[\s\S]*\}/);
+          if (match) {
+            parsedRes = JSON.parse(match[0]);
+          }
+        }
+      } catch(e) {}
+
+      if (parsedRes && parsedRes.success) {
+        handleOnlineCheckoutReceiptUI(parsedRes);
+        return;
+      }
+
+      if (parsedRes && !parsedRes.success && parsedRes.message) {
+        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: parsedRes.message, confirmButtonColor: '#ef4444' });
+        return;
+      }
+
+      console.warn('POS Checkout connection blip/error, executing seamless fallback:', status, err);
       handleOfflineCheckoutFallback(offlinePayload, total, change);
     }
   });
+}
+
+function handleOnlineCheckoutReceiptUI(res) {
+  $('#checkoutModal').modal('hide');
+
+  // ອັບເດດຍອດສະຕັອກຄົງເຫຼືອທີ່ຕັດແລ້ວເຂົ້າໃນ DOM ແລະ memory ທັນທີ
+  if (res.updated_stocks && res.updated_stocks.length > 0) {
+    applyStockUpdateFromBroadcast(res.updated_stocks);
+    broadcastStockUpdate(res.updated_stocks);
+  }
+
+  // Reset cart memory and recalculate live stock
+  cart = [];
+  if (typeof renderCart === 'function') renderCart();
+  if (typeof recalculateLiveStock === 'function') recalculateLiveStock();
+
+  var cashierName = res.cashier || window.CURRENT_USER_NAME || 'Admin';
+  if (!cashierName || cashierName === 'Cashier (Offline)') cashierName = 'Admin';
+
+  $('#rc_bill').text(res.invoice_number);
+  $('#rc_date').text(res.date);
+  $('#rc_cashier').text(cashierName);
+  $('#rc_customer').text(res.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+  $('#rc_subtotal').text(res.subtotal.toLocaleString() + ' ₭');
+  $('#rc_discount').text(res.discount_amount.toLocaleString() + ' ₭');
+
+  var rTaxType = res.tax_type || window.STORE_TAX_TYPE || 'none';
+  var rTaxId   = res.tax_id || window.STORE_TAX_ID || '';
+  if (rTaxType === 'none' || !rTaxId || rTaxId.trim() === '') {
+    $('#rc_tax_id_row').attr('style', 'display: none !important;').hide();
+  } else {
+    $('#rc_tax_id').text(rTaxId);
+    $('#rc_tax_id_row').attr('style', 'color:#000;font-weight:600;display:flex !important;').show();
+  }
+
+  var rVatRate = parseFloat(res.vat_rate) || parseFloat(window.STORE_VAT_PERCENT) || 0;
+  var rVatAmt  = parseFloat(res.vat_amount);
+
+  if (isNaN(rVatAmt) || (rVatAmt === 0 && rVatRate > 0 && rTaxType !== 'none')) {
+    var subAmt = parseFloat(res.subtotal) || 0;
+    var discAmt = parseFloat(res.discount_amount) || 0;
+    var amtAfterDisc = Math.max(0, subAmt - discAmt);
+    if (rTaxType === 'exclusive' && rVatRate > 0) {
+      rVatAmt = Math.round(amtAfterDisc * (rVatRate / 100));
+    } else if (rTaxType === 'inclusive' && rVatRate > 0) {
+      rVatAmt = Math.round(amtAfterDisc - (amtAfterDisc / (1 + (rVatRate / 100))));
+    } else {
+      rVatAmt = 0;
+    }
+  }
+
+  if (rTaxType === 'none' || rVatRate <= 0 || rVatAmt <= 0) {
+    $('#rc_vat_row').attr('style', 'display: none !important;').hide();
+  } else if (rTaxType === 'exclusive' && (rVatAmt > 0 || rVatRate > 0)) {
+    $('#rc_vat_label').text('ອມພ (' + rVatRate + '%):');
+    $('#rc_vat').text(rVatAmt.toLocaleString() + ' ₭');
+    $('#rc_vat_row').attr('style', 'color:#000;font-weight:600;display:flex !important;').show();
+  } else if (rTaxType === 'inclusive' && (rVatAmt > 0 || rVatRate > 0)) {
+    $('#rc_vat_label').text('ລວມ ອມພ (' + rVatRate + '%):');
+    $('#rc_vat').text(rVatAmt.toLocaleString() + ' ₭');
+    $('#rc_vat_row').attr('style', 'color:#000;font-weight:600;display:flex !important;').show();
+  } else if (rVatAmt > 0) {
+    $('#rc_vat_label').text('ອມພ (' + (rVatRate > 0 ? rVatRate + '%' : '') + '):');
+    $('#rc_vat').text(rVatAmt.toLocaleString() + ' ₭');
+    $('#rc_vat_row').attr('style', 'color:#000;font-weight:600;display:flex !important;').show();
+  } else {
+    $('#rc_vat_row').attr('style', 'display: none !important;').hide();
+  }
+
+  $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
+  $('#rc_change').text(res.change.toLocaleString() + ' ₭');
+
+  var cashAmt = parseFloat(res.cash_received) || 0;
+  var qrAmt   = parseFloat(res.qr_received) || 0;
+
+  if (cashAmt === 0 && qrAmt === 0) {
+    var pType = res.payment_type || '';
+    if (pType === 'ເງິນສົດ') {
+      cashAmt = (parseFloat(res.total_amount) || 0) + (parseFloat(res.change) || 0);
+    } else {
+      qrAmt = parseFloat(res.total_amount) || 0;
+    }
+  }
+
+  $('#rc_cash_amt').text(cashAmt.toLocaleString() + ' ₭');
+  $('#rc_qr_amt').text(qrAmt.toLocaleString() + ' ₭');
+
+  var bName = res.bank_name || '';
+  if ((!bName || bName.trim() === '') && (res.bank_account_id || qrAmt > 0)) {
+    bName = 'BCEL One';
+  }
+  if ((bName || qrAmt > 0)) {
+    var labelBank = bName ? bName : 'BCEL One';
+    $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')');
+  } else {
+    $('#rc_bank_name_lbl').text('ສະແກນ QR Code ເພື່ອຊຳລະເງິນ');
+  }
+
+  var tbody = $('#rc_items');
+  tbody.empty();
+  if (res.details && res.details.length > 0) {
+    res.details.forEach(function(d) {
+      var uName = d.unit_name || '';
+      var displayName = d.proname || '';
+      if (uName && !displayName.includes('(')) {
+        displayName += ' (' + uName + ')';
+      }
+
+      var isGift = !!d.is_free_gift || d.price === 0 || displayName.includes('(ແຖມ)');
+      var origUnitPrice = parseFloat(d.original_price || d.price) || 0;
+      var curUnitPrice = parseFloat(d.price) || 0;
+      var totalAmt = parseFloat(d.total) || (curUnitPrice * d.qty);
+
+      var nameHtml = displayName;
+      var priceHtml = '';
+
+      if (isGift) {
+        if (!nameHtml.includes('ແຖມ')) {
+          nameHtml = `<span style="font-weight:bold; color:#059669;">[ແຖມຟຣີ]</span> ${nameHtml}`;
+        }
+        priceHtml = '<span style="font-weight:bold; color:#059669;">0 ₭ (ແຖມຟຣີ)</span>';
+      } else if (origUnitPrice > curUnitPrice && curUnitPrice >= 0) {
+        var origTotal = origUnitPrice * d.qty;
+        priceHtml = `<del style="color:#64748b; font-size:0.85em;">${origTotal.toLocaleString()} ₭</del><br><span style="font-weight:bold;">${totalAmt.toLocaleString()} ₭</span>`;
+      } else {
+        priceHtml = `${totalAmt.toLocaleString()} ₭`;
+      }
+
+      tbody.append(`
+        <tr>
+          <td>${nameHtml}</td>
+          <td class="text-center">x${d.qty}</td>
+          <td class="text-right">${priceHtml}</td>
+        </tr>
+      `);
+    });
+  }
+
+  if (typeof broadcastCustomerDisplay === 'function') {
+    broadcastCustomerDisplay('payment_success', { cashReceived: res.cash_received, qrReceived: res.qr_received, changeAmount: res.change });
+  }
+  printReceipt();
+  setTimeout(function() { resetPOS(); }, 1200);
 }
 
 // ============================
@@ -434,7 +591,8 @@ function printReceipt() {
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
       .small { font-size: 11.5px !important; color: #000 !important; font-weight: 600 !important; }
-      .d-flex { display: flex !important; } .justify-content-between { justify-content: space-between !important; }
+      .d-flex { display: flex; } .justify-content-between { justify-content: space-between; }
+      [style*="display: none"], [style*="display:none"], .d-none { display: none !important; }
       .mb-0{margin-bottom:0!important}.mb-1{margin-bottom:4px!important}.mb-2{margin-bottom:8px!important}
       .mt-2{margin-top:8px!important} 
       .text-muted { color: #000 !important; font-weight: 600 !important; }
@@ -573,16 +731,15 @@ function updateNetworkStatusUI() {
   var badge = $('#netStatusBadge');
 
   if (isOnline) {
-    icon.attr('class', 'fas fa-circle text-success mr-1');
-    text.text('ອອນໄລນ໌');
-    badge.css('background-color', 'rgba(255,255,255,0.22)');
+    badge.hide();
+    $('#offlineQueueBadge').hide();
     syncOfflineSalesToServer();
   } else {
     icon.attr('class', 'fas fa-exclamation-triangle text-warning mr-1');
     text.text('ອັອບໄລນ໌ (Offline)');
-    badge.css('background-color', '#d97706');
+    badge.css({'background-color': '#d97706', 'display': 'inline-flex'}).show();
+    updateOfflineQueueCountBadge();
   }
-  updateOfflineQueueCountBadge();
 }
 
 window.addEventListener('online', updateNetworkStatusUI);
@@ -618,6 +775,12 @@ function saveOfflineSaleToIndexedDB(saleData, callback) {
 }
 
 function updateOfflineQueueCountBadge() {
+  var isOnline = navigator.onLine;
+  if (isOnline) {
+    $('#netStatusBadge').hide();
+    $('#offlineQueueBadge').hide();
+    return;
+  }
   if (!dbInstance) return;
   try {
     var tx = dbInstance.transaction(['offline_sales'], 'readonly');
@@ -627,9 +790,16 @@ function updateOfflineQueueCountBadge() {
       var all = e.target.result || [];
       var unsynced = all.filter(function(item) { return item.synced === 0; });
       var count = unsynced.length;
-      if (count > 0) {
-        $('#offlineQueueBadge').text(count + ' ຄ້າງ Sync').show();
+
+      if (!navigator.onLine) {
+        $('#netStatusBadge').css('display', 'inline-flex').show();
+        if (count > 0) {
+          $('#offlineQueueBadge').text(count + ' ຄ້າງ Sync').show();
+        } else {
+          $('#offlineQueueBadge').hide();
+        }
       } else {
+        $('#netStatusBadge').hide();
         $('#offlineQueueBadge').hide();
       }
     };
@@ -637,45 +807,154 @@ function updateOfflineQueueCountBadge() {
 }
 
 function handleOfflineCheckoutFallback(saleObj, total, change) {
-  var offlineBillNum = 'OFF-' + Date.now().toString().slice(-6);
+  var now = new Date();
+  var dateStr = now.getFullYear().toString() + (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
+  window.POS_TODAY_SALE_COUNT = (parseInt(window.POS_TODAY_SALE_COUNT) || 0) + 1;
+  var seqStr = String(window.POS_TODAY_SALE_COUNT).padStart(4, '0');
+  var offlineBillNum = dateStr + '-' + seqStr;
+  var cashierName = window.CURRENT_USER_NAME || 'Admin';
+
   saveOfflineSaleToIndexedDB(saleObj, function(savedId) {
     $('#checkoutModal').modal('hide');
 
+    // 1. ຕັດສະຕັອກເຣວທາມໃນ DOM ແລະ memory ສຳລັບບິນອັອບໄລນ໌ທັນທີ (ບໍ່ຕ້ອງຣີເຟສ)
+    var offlineUpdatedStocks = [];
+    if (saleObj.cart && saleObj.cart.length > 0) {
+      saleObj.cart.forEach(function(item) {
+        var pid = item.product_id;
+        var deductQty = (parseFloat(item.quantity) || 1) * (parseInt(item.multiplier) || 1);
+
+        var newStock = 0;
+        var stockValEl = $('.product-stock-val-' + pid);
+        if (stockValEl.length) {
+          var currentStock = parseFloat(stockValEl.attr('data-initial-stock')) || 0;
+          newStock = Math.max(0, currentStock - deductQty);
+          stockValEl.attr('data-initial-stock', newStock);
+          stockValEl.text(newStock.toLocaleString());
+        }
+
+        if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
+          var pItem = allProducts.find(function(p) { return String(p.product_id) === String(pid); });
+          if (pItem) {
+            pItem.qty = Math.max(0, (parseFloat(pItem.qty) || 0) - deductQty);
+            newStock = pItem.qty;
+          }
+        }
+
+        offlineUpdatedStocks.push({ product_id: pid, new_qty: newStock });
+      });
+
+      applyStockUpdateFromBroadcast(offlineUpdatedStocks);
+      broadcastStockUpdate(offlineUpdatedStocks);
+    }
+
+    // 2. ເຄຼຍກະຕ່າ ແລະ ຄຳນວນສະຕັອກຄົງເຫຼືອທັນທີ
+    cart = [];
+    if (typeof renderCart === 'function') renderCart();
+    if (typeof recalculateLiveStock === 'function') recalculateLiveStock();
+
+    var offTaxType = window.STORE_TAX_TYPE || 'none';
+    var offVatRate = parseFloat(window.STORE_VAT_PERCENT) || 0;
+    var offSubtotal = total + (saleObj.discount_amount || 0);
+    var offAmtAfterDisc = Math.max(0, offSubtotal - (saleObj.discount_amount || 0));
+    var offVatAmt = 0;
+
+    if (offTaxType === 'exclusive' && offVatRate > 0) {
+      offVatAmt = Math.round(offAmtAfterDisc * (offVatRate / 100));
+    } else if (offTaxType === 'inclusive' && offVatRate > 0) {
+      offVatAmt = Math.round(offAmtAfterDisc - (offAmtAfterDisc / (1 + (offVatRate / 100))));
+    }
+
+    saleObj.tax_type = offTaxType;
+    saleObj.vat_rate = offVatRate;
+    saleObj.vat_amount = offVatAmt;
+
+    // 3. ສະແດງໃບບິນ
     $('#rc_bill').text(offlineBillNum);
-    $('#rc_date').text(new Date().toLocaleString());
-    $('#rc_cashier').text('Cashier (Offline)');
+    $('#rc_date').text(now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+    $('#rc_cashier').text(cashierName);
     $('#rc_customer').text(saleObj.customer_name || 'ລູກຄ້າທົ່ວໄປ');
-    $('#rc_subtotal').text((total + saleObj.discount_amount).toLocaleString() + ' ₭');
+    $('#rc_subtotal').text(offSubtotal.toLocaleString() + ' ₭');
     $('#rc_discount').text(saleObj.discount_amount.toLocaleString() + ' ₭');
-    $('#rc_vat_row').hide();
+
+    if (offTaxType === 'none' || offVatRate <= 0) {
+      $('#rc_vat_row').hide();
+    } else if (offTaxType === 'exclusive' && (offVatAmt > 0 || offVatRate > 0)) {
+      $('#rc_vat_label').text('ອມພ (' + offVatRate + '%):');
+      $('#rc_vat').text(offVatAmt.toLocaleString() + ' ₭');
+      $('#rc_vat_row').show();
+    } else if (offTaxType === 'inclusive' && (offVatAmt > 0 || offVatRate > 0)) {
+      $('#rc_vat_label').text('ລວມ ອມພ (' + offVatRate + '%):');
+      $('#rc_vat').text(offVatAmt.toLocaleString() + ' ₭');
+      $('#rc_vat_row').show();
+    } else if (offVatAmt > 0) {
+      $('#rc_vat_label').text('ອມພ (' + (offVatRate > 0 ? offVatRate + '%' : '') + '):');
+      $('#rc_vat').text(offVatAmt.toLocaleString() + ' ₭');
+      $('#rc_vat_row').show();
+    } else {
+      $('#rc_vat_row').hide();
+    }
     $('#rc_total').text(total.toLocaleString() + ' ₭');
     $('#rc_change').text(change.toLocaleString() + ' ₭');
 
-    $('#rc_cash_amt').text((saleObj.cash_received || 0).toLocaleString() + ' ₭');
-    $('#rc_qr_amt').text((saleObj.qr_received || 0).toLocaleString() + ' ₭');
+    var offCashAmt = parseFloat(saleObj.cash_received) || 0;
+    var offQrAmt   = parseFloat(saleObj.qr_received) || 0;
+
+    if (offCashAmt === 0 && offQrAmt === 0) {
+      var pType = saleObj.payment_type || saleObj.pay_mode || '';
+      if (pType === 'ເງິນສົດ' || pType === 'cash') {
+        offCashAmt = (parseFloat(saleObj.total_amount) || 0) + (parseFloat(saleObj.change) || 0);
+      } else {
+        offQrAmt = parseFloat(saleObj.total_amount) || 0;
+      }
+    }
+
+    $('#rc_cash_amt').text(offCashAmt.toLocaleString() + ' ₭');
+    $('#rc_qr_amt').text(offQrAmt.toLocaleString() + ' ₭');
 
     var tbody = $('#rc_items');
     tbody.empty();
     saleObj.cart.forEach(function(item) {
       var itemTotal = (item.unit_price * item.quantity);
+      var uName = item.unit_name || '';
+      var displayName = item.product_name || '';
+      if (uName && !displayName.includes('(')) {
+        displayName += ' (' + uName + ')';
+      }
+
+      var isGift = !!item.is_free_gift || item.unit_price === 0 || displayName.includes('(ແຖມ)');
+      var origUnitPrice = parseFloat(item.original_price || item.unit_price) || 0;
+      var curUnitPrice = parseFloat(item.unit_price) || 0;
+
+      var nameHtml = displayName;
+      var priceHtml = '';
+
+      if (isGift) {
+        if (!nameHtml.includes('ແຖມ')) {
+          nameHtml = `<span style="font-weight:bold; color:#059669;">[ແຖມຟຣີ]</span> ${nameHtml}`;
+        }
+        priceHtml = '<span style="font-weight:bold; color:#059669;">0 ₭ (ແຖມຟຣີ)</span>';
+      } else if (origUnitPrice > curUnitPrice && curUnitPrice >= 0) {
+        var origTotal = origUnitPrice * item.quantity;
+        priceHtml = `<del style="color:#64748b; font-size:0.85em;">${origTotal.toLocaleString()} ₭</del><br><span style="font-weight:bold;">${itemTotal.toLocaleString()} ₭</span>`;
+      } else {
+        priceHtml = `${itemTotal.toLocaleString()} ₭`;
+      }
+
       tbody.append(`
         <tr>
-          <td>${item.product_name}</td>
+          <td>${nameHtml}</td>
           <td class="text-center">x${item.quantity}</td>
-          <td class="text-right">${itemTotal.toLocaleString()}</td>
+          <td class="text-right">${priceHtml}</td>
         </tr>
       `);
     });
 
-    Swal.fire({
-      icon: 'success',
-      title: '🟠 ບັນທຶກບິນອັອບໄລນ໌ (Offline Saved)!',
-      text: 'ບິນອັອບໄລນ໌ສຳເລັດແລ້ວ! ລະບົບຈະ Auto-Sync ເມື່ອມີສັນຍານເຄືອຂ່າຍ.',
-      confirmButtonColor: '#0284c7'
-    }).then(function() {
-      printReceipt();
-      setTimeout(function() { resetPOS(); }, 1000);
-    });
+    if (typeof broadcastCustomerDisplay === 'function') {
+      broadcastCustomerDisplay('payment_success', { cashReceived: saleObj.cash_received, qrReceived: saleObj.qr_received, changeAmount: change });
+    }
+    printReceipt();
+    setTimeout(function() { resetPOS(); }, 1000);
   });
 }
 
@@ -710,12 +989,13 @@ function syncOfflineSalesToServer(userClicked) {
       unsynced.forEach(function(item) {
         processChain = processChain.then(function() {
           return new Promise(function(resolve) {
+            var cartParam = (typeof item.cart === 'string') ? item.cart : JSON.stringify(item.cart || []);
             $.ajax({
-              url: '',
+              url: '../../api/pos_backend.php',
               type: 'POST',
               data: {
                 action:          'checkout',
-                cart:            JSON.stringify(item.cart),
+                cart:            cartParam,
                 cash_received:   item.cash_received,
                 qr_received:     item.qr_received,
                 payment_type:    item.payment_type,
@@ -734,10 +1014,17 @@ function syncOfflineSalesToServer(userClicked) {
                     var delTx = dbInstance.transaction(['offline_sales'], 'readwrite');
                     delTx.objectStore('offline_sales').delete(item.id);
                   } catch (ex) {}
+                } else if (res && !res.success) {
+                  // Server responded but rejected item (e.g. empty cart or duplicate), delete to unblock queue
+                  try {
+                    var delTx = dbInstance.transaction(['offline_sales'], 'readwrite');
+                    delTx.objectStore('offline_sales').delete(item.id);
+                  } catch (ex) {}
                 }
                 resolve();
               },
               error: function() {
+                // On error, retain bill in IndexedDB for retry on next sync
                 resolve();
               }
             });
@@ -748,7 +1035,7 @@ function syncOfflineSalesToServer(userClicked) {
       processChain.then(function() {
         isSyncingOfflineSales = false;
         updateOfflineQueueCountBadge();
-        if (syncedSuccessCount > 0) {
+        if (userClicked && syncedSuccessCount > 0) {
           const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',

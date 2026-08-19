@@ -134,7 +134,7 @@
     <!-- Table Pagination Bar: Displays when > 10 items -->
     <div id="cart_pagination_row" class="px-3 py-2 bg-light border-top d-none align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
       <div class="text-muted font-weight-bold" style="font-size: 0.88rem;">
-        ສະແດງ <span id="cart_page_start" class="text-dark">1</span> - <span id="cart_page_end" class="text-dark">10</span> ຈາກທັງໝົດ <span id="cart_page_total" class="text-primary">0</span> ລາຍການ
+        <span id="cart_page_start" class="text-dark">1</span> - <span id="cart_page_end" class="text-dark">10</span> <span id="cart_page_total" class="text-primary">0</span> ລາຍການ
       </div>
       <div>
         <ul class="pagination pagination-circle mb-0 justify-content-end" id="cartTablePagination">

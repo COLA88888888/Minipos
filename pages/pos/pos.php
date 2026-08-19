@@ -6,6 +6,17 @@ $pos_page = true;
 require_once __DIR__ . '/../../layouts/header.php';
 ?>
 
+<?php
+$todayDate = date('Y-m-d');
+$stmtSeq = $pdo->prepare("SELECT COUNT(*) FROM tbsale_save WHERE sale_date = ?");
+$stmtSeq->execute([$todayDate]);
+$todaySaleCount = intval($stmtSeq->fetchColumn() ?? 0);
+?>
+<script>
+window.POS_BACKEND_URL = '../../api/pos_backend.php';
+window.CURRENT_USER_NAME = "<?php echo htmlspecialchars($_SESSION['fname'] ?? $_SESSION['username'] ?? 'Admin'); ?>";
+window.POS_TODAY_SALE_COUNT = <?php echo $todaySaleCount; ?>;
+</script>
 <link rel="stylesheet" href="../../themes/pos.css?v=<?php echo filemtime(__DIR__ . '/../../themes/pos.css'); ?>">
 
 <div class="pos-wrapper">

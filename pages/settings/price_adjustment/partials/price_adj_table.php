@@ -13,6 +13,7 @@
           <th class="text-center" style="white-space: nowrap;">ລະຫັດ</th>
           <th style="white-space: nowrap;">ບາໂຄ້ດ</th>
           <th>ຊື່ສິນຄ້າ</th>
+          <th>ສາຂາ</th>
           <th class="text-right">ລາຄາເກົ່າ</th>
           <th class="text-right">ລາຄາໃໝ່</th>
           <th class="text-right">ຜົນຕ່າງ</th>
@@ -25,7 +26,7 @@
       <tbody>
         <?php if (empty($adjustments)): ?>
           <tr>
-            <td colspan="11" class="text-center py-5 text-muted">
+            <td colspan="12" class="text-center py-5 text-muted">
               <i class="fas fa-tags fa-2x mb-2 d-block text-secondary opacity-50"></i>
               ບໍ່ມີປະຫວັດການປັບລາຄາ
             </td>
@@ -72,6 +73,13 @@
                 <?php else: ?>
                   <?php echo htmlspecialchars($adj['product_name'] ?? ('ສິນຄ້າ ID: ' . $adj['product_id'])); ?>
                 <?php endif; ?>
+              </td>
+
+              <!-- 5. ສາຂາ -->
+              <td class="font-weight-bold">
+                <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.78rem;">
+                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($adj['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                </span>
               </td>
 
               <!-- 5. ລາຄາເກົ່າ -->
@@ -125,16 +133,12 @@
                 </small>
               </td>
 
-              <!-- 11. ຈັດການ (ໄອຄອນລຶບ) -->
+              <!-- 11. ຈັດການ (ໄອຄອນລຶບ - Real-time AJAX) -->
               <td class="text-center">
                 <?php if (hasPermission('price_adjustment', 'del')): ?>
-                  <form action="" method="POST" onsubmit="return confirm('ຕ້ອງການລຶບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?');" style="display:inline;">
-                    <input type="hidden" name="action" value="delete_log">
-                    <input type="hidden" name="adjust_id" value="<?php echo $adj['adjust_id']; ?>">
-                    <button type="submit" class="btn btn-outline-danger btn-sm px-2 py-1" title="ລຶບປະຫວັດ" style="border-radius: 6px;">
-                      <i class="fas fa-trash-alt" style="font-size: 0.84rem;"></i>
-                    </button>
-                  </form>
+                  <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" title="ລຶບປະຫວັດ" style="border-radius: 6px;" onclick="deletePriceAdjLog(<?php echo $adj['adjust_id']; ?>, this)">
+                    <i class="fas fa-trash-alt" style="font-size: 0.84rem;"></i>
+                  </button>
                 <?php else: ?>
                   <span class="badge badge-light text-muted" style="font-size: 0.75rem;">-</span>
                 <?php endif; ?>

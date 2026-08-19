@@ -124,29 +124,34 @@ function updateCartUI() {
   });
 
   <?php
-    $storeTaxType = $company['tax_type'] ?? 'inclusive';
-    $storeVatPercent = floatval($company['vat_percent'] ?? 7.00);
+    $storeTaxType = !empty($company['tax_type']) ? $company['tax_type'] : 'none';
+    $storeVatPercent = ($storeTaxType === 'none') ? 0 : (isset($company['vat_percent']) ? floatval($company['vat_percent']) : 0);
   ?>
+  window.STORE_TAX_TYPE = '<?php echo $storeTaxType; ?>';
+  window.STORE_VAT_PERCENT = <?php echo $storeVatPercent; ?>;
+  window.STORE_TAX_ID = '<?php echo htmlspecialchars($company['tax_id'] ?? ''); ?>';
   var discountStr  = $('#cartDiscount').val() || '0';
   var discountVal  = parseFloat(discountStr.replace(/\D/g, '')) || 0;
-  var taxType      = '<?php echo $storeTaxType; ?>';
-  var vatPercent   = <?php echo $storeVatPercent; ?>;
+  var taxType      = window.STORE_TAX_TYPE;
+  var vatPercent   = window.STORE_VAT_PERCENT;
   var amtAfterDisc = Math.max(0, subtotal - discountVal);
   var vatVal       = 0;
   var netTotal     = amtAfterDisc;
 
-  if (taxType === 'exclusive' && vatPercent > 0) {
-    vatVal = Math.round(amtAfterDisc * (vatPercent / 100));
-    netTotal = amtAfterDisc + vatVal;
-    $('#cartVatRow').attr('style', 'display: flex !important;');
-    $('#cartVatLabel').text('ພາສີ VAT (' + vatPercent + '%):');
-    $('#cartVat').text('+' + vatVal.toLocaleString() + ' ₭');
-  } else if (taxType === 'inclusive' && vatPercent > 0) {
-    vatVal = Math.round(amtAfterDisc - (amtAfterDisc / (1 + (vatPercent / 100))));
-    netTotal = amtAfterDisc;
-    $('#cartVatRow').attr('style', 'display: flex !important;');
-    $('#cartVatLabel').text('ລວມ ພາສີ VAT (' + vatPercent + '%):');
-    $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
+  if (vatPercent > 0 && taxType !== 'none') {
+    if (taxType === 'exclusive') {
+      vatVal = Math.round(amtAfterDisc * (vatPercent / 100));
+      netTotal = amtAfterDisc + vatVal;
+      $('#cartVatRow').attr('style', 'display: flex !important;');
+      $('#cartVatLabel').text('ອມພ (' + vatPercent + '%):');
+      $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
+    } else {
+      vatVal = Math.round(amtAfterDisc - (amtAfterDisc / (1 + (vatPercent / 100))));
+      netTotal = amtAfterDisc;
+      $('#cartVatRow').attr('style', 'display: flex !important;');
+      $('#cartVatLabel').text('ລວມ ອມພ (' + vatPercent + '%):');
+      $('#cartVat').text(vatVal.toLocaleString() + ' ₭');
+    }
   } else {
     vatVal = 0;
     netTotal = amtAfterDisc;
@@ -220,15 +225,48 @@ function getProductRemainingStock(productId) {
   return initialStock - inCartDeduct;
 }
 
+function triggerAudioSoundAlert() {
+  try {
+    if (typeof window.playNotificationSound === 'function') {
+      window.playNotificationSound();
+    } else if (window.parent && typeof window.parent.playNotificationSound === 'function') {
+      window.parent.playNotificationSound();
+    } else {
+      var AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        var ctx = new AudioCtx();
+        var now = ctx.currentTime;
+        [880, 1108.73, 1318.51].forEach(function(freq, i) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.8, now + (i * 0.12));
+          gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.12) + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + (i * 0.12));
+          osc.stop(now + (i * 0.12) + 0.35);
+        });
+      }
+    }
+  } catch(e) {}
+}
+
 function showLowStockToast(productName, remainingQty, unitName) {
+  triggerAudioSoundAlert();
+
+  var isZero = (remainingQty <= 0);
   Swal.fire({
-    icon: 'warning',
-    title: 'ເຕືອນ: ສິນຄ້າໃກ້ຈະໝົດ!',
-    text: 'ສິນຄ້າ "' + productName + '" ໃກ້ຈະໝົດແລ້ວ! (ເຫຼືອພຽງ ' + remainingQty.toLocaleString() + ' ' + (unitName || 'ອັນ') + ')',
+    icon: isZero ? 'error' : 'warning',
+    title: isZero ? '⚠️ ເຕືອນ: ສິນຄ້າໝົດແລ້ວ!' : 'ເຕືອນ: ສິນຄ້າໃກ້ຈະໝົດ!',
+    text: isZero 
+      ? 'ສິນຄ້າ "' + productName + '" ໝົດແລ້ວ! (ເຫຼືອ 0 ' + (unitName || 'ອັນ') + ')'
+      : 'ສິນຄ້າ "' + productName + '" ໃກ້ຈະໝົດແລ້ວ! (ເຫຼືອພຽງ ' + remainingQty.toLocaleString() + ' ' + (unitName || 'ອັນ') + ')',
     toast: true,
     position: 'top-end',
     showConfirmButton: false,
-    timer: 4000,
+    timer: 4500,
     timerProgressBar: true
   });
 }
@@ -254,6 +292,11 @@ function updateProductGridBadges() {
   }
 
   // 3. Update every product card stock & badges dynamically
+  var localStocks = {};
+  try {
+    localStocks = JSON.parse(localStorage.getItem('pos_local_stocks') || '{}');
+  } catch(e) {}
+
   $('.product-stock-val').each(function() {
     var stockValEl = $(this);
     var pidStr = stockValEl.attr('class').match(/product-stock-val-(\d+)/);
@@ -261,6 +304,17 @@ function updateProductGridBadges() {
     var pid = pidStr[1];
 
     var initialStock = parseFloat(stockValEl.attr('data-initial-stock')) || 0;
+    if (typeof localStocks[pid] !== 'undefined') {
+      initialStock = parseFloat(localStocks[pid]);
+    } else if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
+      var pItem = allProducts.find(function(item) { return String(item.product_id) === String(pid); });
+      if (pItem) {
+        initialStock = parseFloat(pItem.qty) || 0;
+      }
+    }
+    stockValEl.attr('data-initial-stock', initialStock);
+    stockValEl.data('initial-stock', initialStock);
+
     var totalStockDeducted = productStockDeductMap[pid] || 0;
     var remainingStock = Math.max(0, initialStock - totalStockDeducted);
 
@@ -313,6 +367,11 @@ function updateProductGridBadges() {
     }
   });
 }
+
+function recalculateLiveStock() {
+  updateProductGridBadges();
+}
+window.recalculateLiveStock = recalculateLiveStock;
 
 function incCartQty(cartKey, delta) {
   var item = cart.find(function(i) { return i.cartKey === cartKey; });
@@ -468,6 +527,7 @@ function _doAddToCart(product, unitObj) {
 
   var unitName = unitObj ? unitObj.unit_name : (product.unit || 'ອັນ');
   var unitPrice = unitObj ? parseFloat(unitObj.price) : parseFloat(product.price);
+  var origPrice = (unitObj && unitObj.original_price) ? parseFloat(unitObj.original_price) : (parseFloat(product.original_price) || unitPrice);
   var costPrice = unitObj ? parseFloat(unitObj.bprice) : parseFloat(product.bprice);
   var multiplier = unitObj ? (parseInt(unitObj.multiplier) || 1) : 1;
 
@@ -515,6 +575,7 @@ function _doAddToCart(product, unitObj) {
       product_name: product.product_name,
       unit_name: unitName,
       unit_price: unitPrice,
+      original_price: origPrice,
       cost_price: costPrice,
       multiplier: multiplier,
       quantity: 1,
@@ -565,7 +626,7 @@ function _doAddToCart(product, unitObj) {
       cart.push({
         cartKey: giftCartKey,
         product_id: 'GIFT_' + product.product_id,
-        product_name: '🎁 ' + giftName + ' (ແຖມ' + (targetUnit !== 'all' ? ' ສະເພາະ ' + targetUnit : '') + ')',
+        product_name: giftName + ' (ແຖມ' + (targetUnit !== 'all' ? ' ສະເພາະ ' + targetUnit : '') + ')',
         unit_name: 'ຊິ້ນ',
         unit_price: 0,
         cost_price: 0,
@@ -627,4 +688,38 @@ function switchMobilePosTab(tab) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
+
+// Live Stock Automatic Sync Polling
+function pollPOSLiveStock() {
+  $.ajax({
+    url: (window.POS_BACKEND_URL || '../../api/pos_backend.php') + '?action=get_live_stocks',
+    type: 'GET',
+    dataType: 'json',
+    success: function(res) {
+      if (res && res.success && res.stocks && res.stocks.length > 0) {
+        var localStocks = {};
+        try {
+          localStocks = JSON.parse(localStorage.getItem('pos_local_stocks') || '{}');
+        } catch(e) {}
+
+        var updated = [];
+        res.stocks.forEach(function(s) {
+          var serverQty = parseFloat(s.qty);
+          var pid = s.product_id;
+          var curLocalQty = (typeof localStocks[pid] !== 'undefined') ? parseFloat(localStocks[pid]) : null;
+          if (curLocalQty === null || serverQty !== curLocalQty) {
+            updated.push({ product_id: pid, new_qty: serverQty });
+          }
+        });
+        if (updated.length > 0 && typeof applyStockUpdateFromBroadcast === 'function') {
+          applyStockUpdateFromBroadcast(updated);
+        }
+      }
+    }
+  });
+}
+
+$(document).ready(function() {
+  setInterval(pollPOSLiveStock, 5000);
+});
 </script>

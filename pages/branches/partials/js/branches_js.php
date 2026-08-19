@@ -39,4 +39,21 @@ function confirmToggleBranchStatus(id, name, status) {
     }
   });
 }
+
+function confirmDeleteBranch(id, name) {
+  Swal.fire({
+    title: 'ລົບສາຂາ?',
+    text: 'ທ່ານຕ້ອງການລົບສາຂາ "' + name + '" ຫຼືບໍ່? ການກະທຳນີ້ບໍ່ສາມາດຍົກເລີກໄດ້!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
+    cancelButtonText: 'ຍົກເລີກ'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = '?delete_branch_id=' + id;
+    }
+  });
+}
 </script>

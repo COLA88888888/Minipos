@@ -7,6 +7,7 @@
           <th class="py-3 text-center" style="width: 60px;">ລຳດັບ</th>
           <th class="py-3 text-center" style="width: 120px;">ລະຫັດ</th>
           <th class="py-3">ຊື່</th>
+          <th class="py-3">ສາຂາ</th>
           <th class="py-3">ເບີໂທ</th>
           <th class="py-3 text-center" style="width: 150px;">ເລກບັດສະມາຊິກ</th>
           <th class="py-3 text-center" style="width: 160px;">ເວລາທີ່ສະໝັກ</th>
@@ -15,7 +16,7 @@
       </thead>
       <tbody style="font-size: 0.95rem;">
         <tr id="noCustomerDataRow" style="<?php echo empty($allCustomers) ? '' : 'display: none;'; ?>">
-          <td colspan="7" class="text-center py-5 text-muted">
+          <td colspan="8" class="text-center py-5 text-muted">
             <i class="fas fa-user-slash fa-2x mb-2 text-secondary d-block"></i>
             <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;">ບໍ່ມີຂໍ້ມູນລູກຄ້າໃນລະບົບ</span>
           </td>
@@ -27,7 +28,7 @@
             $createdAt = !empty($cust['created_at']) ? date('d/m/Y H:i', strtotime($cust['created_at'])) : '-';
             $createdDateIso = !empty($cust['created_at']) ? date('Y-m-d', strtotime($cust['created_at'])) : date('Y-m-d');
             $memberCard = !empty($cust['member_card']) ? $cust['member_card'] : '-';
-            $searchData = strtolower($cust['customer_code'] . ' ' . $cust['customer_name'] . ' ' . ($cust['phone'] ?? '') . ' ' . ($cust['member_card'] ?? '') . ' ' . ($cust['email'] ?? '') . ' ' . ($cust['address'] ?? ''));
+            $searchData = strtolower($cust['customer_code'] . ' ' . $cust['customer_name'] . ' ' . ($cust['phone'] ?? '') . ' ' . ($cust['member_card'] ?? '') . ' ' . ($cust['email'] ?? '') . ' ' . ($cust['store_name'] ?? '') . ' ' . ($cust['address'] ?? ''));
           ?>
             <tr class="cust-row" data-search="<?php echo htmlspecialchars($searchData); ?>" data-date="<?php echo $createdDateIso; ?>">
               <td class="align-middle text-center text-muted font-weight-bold row-index"><?php echo $idx++; ?></td>
@@ -38,6 +39,12 @@
 
               <td class="align-middle font-weight-bold text-dark cust-name-cell">
                 <?php echo htmlspecialchars($cust['customer_name']); ?>
+              </td>
+
+              <td class="align-middle font-weight-bold">
+                <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.82rem;">
+                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($cust['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                </span>
               </td>
 
               <td class="align-middle text-dark cust-phone-cell">

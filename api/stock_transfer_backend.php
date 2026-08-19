@@ -96,9 +96,16 @@ if ($action === 'get_transfer_details') {
             ]);
             exit();
         } else {
-            // Main branch notification poll (Low stock & Out of stock across all stores)
+            // Main branch notification poll (Low stock & Out of stock across all stores + Sub-branch Stock Imports)
             $lowStockList = getLowStockAlerts($pdo);
-            $totalCount = count($lowStockList);
+            $subBranchImports = getSubBranchStockImportsForMain($pdo);
+
+            foreach ($subBranchImports as &$imp) {
+                $imp['formatted_date'] = date('d/m H:i', strtotime($imp['import_date']));
+            }
+            unset($imp);
+
+            $totalCount = count($lowStockList) + count($subBranchImports);
 
             $groupedLowStock = [];
             foreach ($lowStockList as $alert) {
@@ -118,7 +125,8 @@ if ($action === 'get_transfer_details') {
                 'success' => true,
                 'is_main' => true,
                 'total_count' => $totalCount,
-                'grouped_low_stock' => array_values($groupedLowStock)
+                'grouped_low_stock' => array_values($groupedLowStock),
+                'sub_branch_imports' => $subBranchImports
             ]);
             exit();
         }

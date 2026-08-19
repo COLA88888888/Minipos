@@ -48,9 +48,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $total_bill_cost += ($q * $c);
                 }
 
-                // Insert master `imports` record with selected import_date
-                $insImp = $pdo->prepare("INSERT INTO imports (invoice_number, supplier_name, import_date, total_cost, created_by, notes) VALUES (?, ?, ?, ?, ?, ?)");
-                $insImp->execute([$invoice_number, $supplier_name, $import_date, $total_bill_cost, $_SESSION['user_id'], $notes]);
+                $activeStoreId = getActiveStoreId($pdo);
+
+                // Insert master `imports` record with selected import_date and store_id
+                $insImp = $pdo->prepare("INSERT INTO imports (invoice_number, supplier_name, import_date, total_cost, created_by, notes, store_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $insImp->execute([$invoice_number, $supplier_name, $import_date, $total_bill_cost, $_SESSION['user_id'], $notes, $activeStoreId]);
                 $import_id = $pdo->lastInsertId();
 
                 $insertedCount = 0;
@@ -307,10 +309,11 @@ $historyQuery = "
         pb.quantity AS batch_rem_qty
     FROM import_details id
     JOIN imports i ON id.import_id = i.import_id
-    JOIN products p ON id.product_id = p.product_id
+    LEFT JOIN products p ON (id.product_id = p.product_id AND (p.store_id = i.store_id OR i.store_id <= 1))
     LEFT JOIN tbuser u ON i.created_by = u.Id
     LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
     {$historyWhere}
+    GROUP BY id.import_detail_id
     ORDER BY id.import_detail_id DESC
 ";
 $histStmt = $pdo->prepare($historyQuery);

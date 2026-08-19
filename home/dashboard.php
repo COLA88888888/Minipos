@@ -145,6 +145,41 @@ if (!hasPermission('dashboard')) {
       background: rgba(255, 255, 255, 0.3) !important;
     }
 
+    /* Slim & Modern Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 5px !important;
+      height: 5px !important;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9 !important;
+      border-radius: 8px !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1 !important;
+      border-radius: 8px !important;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8 !important;
+    }
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: #cbd5e1 #f1f5f9 !important;
+    }
+
+    #mainNotifDropdownBody::-webkit-scrollbar,
+    #subNotifDropdownBody::-webkit-scrollbar,
+    .notif-dropdown-box::-webkit-scrollbar,
+    .dropdown-menu::-webkit-scrollbar {
+      width: 4px !important;
+    }
+    #mainNotifDropdownBody::-webkit-scrollbar-thumb,
+    #subNotifDropdownBody::-webkit-scrollbar-thumb,
+    .notif-dropdown-box::-webkit-scrollbar-thumb,
+    .dropdown-menu::-webkit-scrollbar-thumb {
+      background: #94a3b8 !important;
+      border-radius: 10px !important;
+    }
+
     /* Mobile View (screen width <= 768px): Only enlarge icons for mobile phone screens */
     @media (max-width: 768px) {
       #topNavbarPushMenuBtn i,
@@ -268,11 +303,9 @@ if (!hasPermission('dashboard')) {
         <li class="nav-item dropdown">
           <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" onclick="markNotifAsRead('mainNotifBadge')" title="ແຈ້ງເຕືອນສິນຄ້າໃກ້ສິນສຸດ/ສິນຄ້າໝົດ" style="font-size: 1.25rem; cursor: pointer;">
             <i id="mainNotifBellIcon" class="fas fa-bell text-white"></i>
-            <?php if ($lowStockCount > 0): ?>
-              <span id="mainNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                <?php echo $lowStockCount; ?>
-              </span>
-            <?php endif; ?>
+            <span id="mainNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); <?php echo ($lowStockCount > 0) ? '' : 'display: none;'; ?>">
+              <?php echo $lowStockCount; ?>
+            </span>
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
@@ -339,11 +372,9 @@ if (!hasPermission('dashboard')) {
         <li class="nav-item dropdown">
           <a class="nav-link text-white position-relative px-2 d-flex align-items-center" data-toggle="dropdown" href="#" title="ແຈ້ງເຕືອນສາຂາຍ່ອຍ" style="font-size: 1.25rem; cursor: pointer;">
             <i id="subNotifBellIcon" class="fas fa-bell text-white"></i>
-            <?php if ($totalSubNotifications > 0): ?>
-              <span id="subNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                <?php echo $totalSubNotifications; ?>
-              </span>
-            <?php endif; ?>
+            <span id="subNotifBadge" class="badge badge-danger font-weight-bold position-absolute" style="top: 2px; right: -2px; font-size: 0.68rem; border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); <?php echo ($totalSubNotifications > 0) ? '' : 'display: none;'; ?>">
+              <?php echo $totalSubNotifications; ?>
+            </span>
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
             <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
@@ -378,20 +409,26 @@ if (!hasPermission('dashboard')) {
                 <?php endforeach; ?>
               <?php endif; ?>
 
-              <!-- 2. ສິນຄ້າໃນສາຂາໂຕເອງໃກ້ໝົດ (Low Stock Alert in Own Branch) -->
+              <!-- 2. ສິນຄ້າໃນສາຂາໂຕເອງໃກ້ໝົດ / ໝົດແລ້ວ (Low Stock & Out of Stock in Sub-Branch) -->
               <?php if (!empty($subLowStock)): ?>
                 <div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #fff7ed; font-size: 0.82rem; white-space: nowrap;">
-                  <span class="text-warning text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃນສາຂາໃກ້ໝົດ</span>
-                  <span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subLowStock); ?> ລາຍການ</span>
+                  <span class="text-danger text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃກ້ໝົດ / ໝົດແລ້ວ</span>
+                  <span class="badge badge-danger font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;"><?php echo count($subLowStock); ?> ລາຍການ</span>
                 </div>
                 <?php foreach ($subLowStock as $stk): ?>
+                  <?php 
+                    $isZero = (intval($stk['qty']) <= 0);
+                    $bClass = $isZero ? 'badge-danger' : 'badge-warning text-dark';
+                    $lbl = $isZero ? 'ໝົດແລ້ວ (0)' : 'ເຫຼືອ ' . $stk['qty'] . ' ' . htmlspecialchars($stk['unit'] ?: 'ອັນ');
+                    $icoClass = $isZero ? 'text-danger' : 'text-warning';
+                  ?>
                   <div id="notif_item_stk_<?php echo $stk['product_id']; ?>" onclick="markItemAsRead('stk_<?php echo $stk['product_id']; ?>', 'subNotifBadge')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;">
                     <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
-                      <i class="fas fa-exclamation-circle text-warning mr-1.5" style="font-size: 0.82rem;"></i>
+                      <i class="fas fa-exclamation-circle <?php echo $icoClass; ?> mr-1.5" style="font-size: 0.82rem;"></i>
                       <span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="<?php echo htmlspecialchars($stk['product_name']); ?>"><?php echo htmlspecialchars($stk['product_name']); ?></span>
                     </div>
                     <div class="text-nowrap flex-shrink-0">
-                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ <?php echo $stk['qty']; ?> <?php echo htmlspecialchars($stk['unit'] ?: 'ອັນ'); ?></span>
+                      <span class="badge <?php echo $bClass; ?> font-weight-bold px-2 py-1" style="font-size: 0.74rem;"><?php echo $lbl; ?></span>
                     </div>
                   </div>
                 <?php endforeach; ?>
@@ -522,11 +559,6 @@ if (!hasPermission('dashboard')) {
         readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
       } catch(e) { readKeys = []; }
 
-      var isAllRead = false;
-      try {
-        isAllRead = localStorage.getItem('notif_read_all_' + badgeId) === '1';
-      } catch(e) {}
-
       var dropdownBodyId = badgeId === 'mainNotifBadge' ? 'mainNotifDropdownBody' : 'subNotifDropdownBody';
       var items = $('#' + dropdownBodyId + ' .dropdown-item');
       
@@ -543,7 +575,7 @@ if (!hasPermission('dashboard')) {
 
       var btnId = badgeId === 'mainNotifBadge' ? '#btnMarkAllMain' : '#btnMarkAllSub';
       var badge = $('#' + badgeId);
-      if (unreadCount > 0 && !isAllRead) {
+      if (unreadCount > 0) {
         if (badge.length > 0) {
           badge.text(unreadCount).show();
         } else {
@@ -614,6 +646,10 @@ if (!hasPermission('dashboard')) {
       if (window.lastNotifResponse) {
         var res = window.lastNotifResponse;
         if (res.is_main) {
+          (res.sub_branch_imports || []).forEach(function(imp) {
+            var k = 'imp_' + imp.import_detail_id;
+            if (!readKeys.includes(k)) readKeys.push(k);
+          });
           (res.grouped_low_stock || []).forEach(function(grp) {
             (grp.items || []).forEach(function(item) {
               var k = 'main_' + item.product_id;
@@ -641,33 +677,9 @@ if (!hasPermission('dashboard')) {
       } catch(e) {}
     }
 
-    (function() {
-      ['mainNotifBadge', 'subNotifBadge'].forEach(function(bId) {
-        var readKeys = [];
-        try {
-          readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + bId) || '[]');
-        } catch(e) { readKeys = []; }
-
-        readKeys.forEach(function(k) {
-          var el = document.getElementById('notif_item_' + k);
-          if (el) el.style.opacity = '0.55';
-        });
-
-        var badge = $('#' + bId);
-        if (badge.length > 0) {
-          var totalInit = parseInt(badge.text() || '0');
-          var unreadInit = Math.max(0, totalInit - readKeys.length);
-          var isAllRead = false;
-          try { isAllRead = localStorage.getItem('notif_read_all_' + bId) === '1'; } catch(e) {}
-
-          if (unreadInit > 0 && !isAllRead) {
-            badge.text(unreadInit).show();
-          } else {
-            badge.hide();
-          }
-        }
-      });
-    })();
+    $(document).ready(function() {
+      pollLiveNotifications();
+    });
 
     function viewTransferDetailsModal(transferId) {
       if (!transferId) return;
@@ -742,6 +754,69 @@ if (!hasPermission('dashboard')) {
     window.viewTransferDetailsModal = viewTransferDetailsModal;
     window.markAllNotifsAsRead = markAllNotifsAsRead;
 
+    function viewSubBranchImportDetail(itemData) {
+      if (!itemData) return;
+      var qtyVal = parseFloat(itemData.quantity || 0);
+      var costVal = parseFloat(itemData.cost_price || 0);
+      var totalVal = parseFloat(itemData.total_cost || 0);
+
+      var htmlContent = `
+        <div class="text-left" style="font-size: 0.9rem; line-height: 1.6; color: #334155;">
+          <div class="p-2.5 mb-3 rounded" style="background-color: #f8fafc; border: 1px solid #cbd5e1;">
+            <div class="mb-1.5"><strong class="text-dark"><i class="fas fa-store text-primary mr-1.5"></i> ສາຂາຍ່ອຍ:</strong> <span class="text-dark font-weight-bold">${itemData.store_name || '-'}</span></div>
+            <div class="mb-1.5"><strong class="text-dark"><i class="fas fa-user-tag text-info mr-1.5"></i> ຜູ້ດຳເນີນການນຳເຂົ້າ:</strong> <span class="badge badge-info px-2 py-1" style="font-size: 0.82rem;">${itemData.creator_name || 'Admin'}</span></div>
+            <div><strong class="text-dark"><i class="fas fa-file-invoice text-secondary mr-1.5"></i> ເລກທີໃບບິນ:</strong> <span class="font-weight-bold text-dark">${itemData.invoice_number || '-'}</span></div>
+          </div>
+          
+          <div class="table-responsive border rounded mb-3">
+            <table class="table table-bordered table-sm mb-0">
+              <thead class="bg-light">
+                <tr>
+                  <th>ຊື່ສິນຄ້າ</th>
+                  <th class="text-center">ຈຳນວນ</th>
+                  <th class="text-right">ຕົ້ນທຶນ/ໜ່ວຍ</th>
+                  <th class="text-right">ມູນຄ່າລວມ</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>${itemData.product_name || '-'}</strong></td>
+                  <td class="text-center"><span class="badge badge-success px-2 py-1">+${qtyVal.toLocaleString()} ${itemData.unit_name || 'ອັນ'}</span></td>
+                  <td class="text-right">${costVal.toLocaleString()} ₭</td>
+                  <td class="text-right font-weight-bold text-success">${totalVal.toLocaleString()} ₭</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="d-flex justify-content-between text-muted pt-1" style="font-size: 0.8rem;">
+            <span><i class="fas fa-truck mr-1"></i> ຜູ້ສະໜອງ: <strong>${itemData.supplier_name || 'ທົ່ວໄປ'}</strong></span>
+            <span><i class="fas fa-clock mr-1"></i> ວັນທີ/ເວລາ: <strong>${itemData.import_date || '-'}</strong></span>
+          </div>
+        </div>
+      `;
+
+      Swal.fire({
+        title: '<i class="fas fa-boxes text-success mr-2"></i>ລາຍລະອຽດການນຳເຂົ້າສິນຄ້າ',
+        html: htmlContent,
+        confirmButtonText: 'ອ່ານແລ້ວ / ປິດ',
+        confirmButtonColor: '#0284c7',
+        width: '520px'
+      });
+    }
+    window.viewSubBranchImportDetail = viewSubBranchImportDetail;
+
+    function goToRestockProduct(productName) {
+      var url = '<?php echo $base_path; ?>pages/import_stock/import_stock.php';
+      if (productName) {
+        url += '?search=' + encodeURIComponent(productName);
+      }
+      $('#mainContentFrame').attr('src', url);
+      $('.dropdown-menu.show').removeClass('show');
+      $('.nav-item.dropdown.show').removeClass('show');
+    }
+    window.goToRestockProduct = goToRestockProduct;
+
     // Automatically close notification dropdown when clicking outside on navbar/main document
     $(document).on('click.notifClose touchstart.notifClose', function (e) {
       if (!$(e.target).closest('.nav-item.dropdown').length) {
@@ -750,9 +825,9 @@ if (!hasPermission('dashboard')) {
       }
     });
 
-    var lastNotifCount = { mainNotifBadge: -1, subNotifBadge: -1 };
+    var lastUnreadCount = { mainNotifBadge: -1, subNotifBadge: -1 };
 
-    // Real-Time Notification Polling (Every 3 seconds)
+    // Real-Time Notification Polling (Every 1.5 seconds)
     function pollLiveNotifications() {
       $.ajax({
         url: '../api/stock_transfer_backend.php?action=poll_notifications',
@@ -771,44 +846,38 @@ if (!hasPermission('dashboard')) {
             readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
           } catch(e) { readKeys = []; }
 
-          var isAllRead = false;
-          try {
-            isAllRead = localStorage.getItem('notif_read_all_' + badgeId) === '1';
-          } catch(e) {}
-
           var unreadCount = 0;
           if (res.is_main) {
+            // Count unread sub-branch stock import items (exactly 1 per imported item detail)
+            (res.sub_branch_imports || []).forEach(function(imp) {
+              if (!readKeys.includes('imp_' + imp.import_detail_id)) unreadCount++;
+            });
+            // Low stock & Out of stock alerts stay active continuously until stock is restocked
             (res.grouped_low_stock || []).forEach(function(grp) {
-              (grp.items || []).forEach(function(item) {
-                if (!readKeys.includes('main_' + item.product_id)) {
-                  unreadCount++;
-                }
-              });
+              unreadCount += (grp.items ? grp.items.length : 0);
             });
           } else {
             (res.incoming_transfers || []).forEach(function(t) {
               if (!readKeys.includes('trf_' + t.transfer_id)) unreadCount++;
             });
             (res.sub_low_stock || []).forEach(function(s) {
-              if (!readKeys.includes('stk_' + s.product_id)) unreadCount++;
+              unreadCount++; // Persistent low stock alert
             });
             (res.sub_new_products || []).forEach(function(p) {
               if (!readKeys.includes('np_' + p.product_id)) unreadCount++;
             });
           }
 
-          if (lastNotifCount[badgeId] !== -1 && totalServerCount > lastNotifCount[badgeId]) {
-            try { localStorage.removeItem('notif_read_all_' + badgeId); } catch(e) {}
-            isAllRead = false;
+          if (lastUnreadCount[badgeId] !== -1 && unreadCount > lastUnreadCount[badgeId]) {
             playNotificationSound();
           }
-          lastNotifCount[badgeId] = totalServerCount;
+          lastUnreadCount[badgeId] = unreadCount;
 
           var btnId = res.is_main ? '#btnMarkAllMain' : '#btnMarkAllSub';
           var titleCountId = res.is_main ? '#mainNotifTitleCount' : '#subNotifTitleCount';
           $(titleCountId).text(totalServerCount);
 
-          if (unreadCount > 0 && !isAllRead) {
+          if (unreadCount > 0) {
             if (badge.length > 0) {
               badge.text(unreadCount).show();
             } else {
@@ -817,7 +886,7 @@ if (!hasPermission('dashboard')) {
             }
             $(btnId).show();
           } else {
-            badge.hide();
+            if (badge.length > 0) badge.hide();
             $(btnId).hide();
           }
 
@@ -826,6 +895,34 @@ if (!hasPermission('dashboard')) {
             var bodyEl = $('#mainNotifDropdownBody');
             if (bodyEl.length > 0) {
               var html = '';
+
+              // 1. Sub-Branch Stock Additions Section
+              if (res.sub_branch_imports && res.sub_branch_imports.length > 0) {
+                html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ecfdf5; font-size: 0.82rem; white-space: nowrap;">';
+                html += '<span class="text-success text-truncate"><i class="fas fa-boxes mr-1"></i> ສາຂາຍ່ອຍເພີ່ມສິນຄ້າເຂົ້າ</span>';
+                html += '<span class="badge badge-success font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.sub_branch_imports.length + ' ລາຍການ</span>';
+                html += '</div>';
+
+                res.sub_branch_imports.forEach(function(imp) {
+                  var isRead = readKeys.includes('imp_' + imp.import_detail_id);
+                  var costVal = parseFloat(imp.total_cost || 0);
+                  var qtyVal = parseFloat(imp.quantity || 0);
+                  var impJsonStr = JSON.stringify(imp).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+
+                  html += '<div id="notif_item_imp_' + imp.import_detail_id + '" onclick="markItemAsRead(\'imp_' + imp.import_detail_id + '\', \'mainNotifBadge\'); viewSubBranchImportDetail(' + impJsonStr + ')" class="dropdown-item py-2 px-3 border-bottom" style="background-color: #ffffff; cursor: pointer; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  html += '<div class="d-flex align-items-center justify-content-between mb-1">';
+                  html += '<strong class="text-dark text-truncate mr-2" style="font-size: 0.82rem;" title="' + (imp.store_name || '') + ' - ' + (imp.product_name || '') + '"><i class="fas fa-store text-info mr-1"></i> ' + (imp.store_name || 'ສາຂາຍ່ອຍ') + ': ' + (imp.product_name || 'ສິນຄ້າ') + '</strong>';
+                  html += '<span class="badge badge-success font-weight-bold px-2 py-0.5" style="font-size: 0.73rem;">+' + qtyVal.toLocaleString() + ' ' + (imp.unit_name || 'ອັນ') + '</span>';
+                  html += '</div>';
+                  html += '<div class="d-flex align-items-center justify-content-between text-muted" style="font-size: 0.76rem;">';
+                  html += '<span><i class="fas fa-user-tag text-info mr-1"></i> ' + (imp.creator_name || 'Admin') + '</span>';
+                  html += '<span class="font-weight-bold text-success"><i class="fas fa-coins mr-1"></i> ' + costVal.toLocaleString() + ' ₭</span>';
+                  html += '</div>';
+                  html += '</div>';
+                });
+              }
+
+              // 2. Low Stock & Out of Stock Section
               if (res.grouped_low_stock && res.grouped_low_stock.length > 0) {
                 res.grouped_low_stock.forEach(function(grp) {
                   html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #f1f5f9; font-size: 0.82rem; white-space: nowrap;">';
@@ -834,12 +931,11 @@ if (!hasPermission('dashboard')) {
                   html += '</div>';
 
                   (grp.items || []).forEach(function(alert) {
-                    var isRead = readKeys.includes('main_' + alert.product_id);
                     var isOutOfStock = (parseInt(alert.qty || 0) <= 0);
                     var badgeClass = isOutOfStock ? 'badge-danger' : 'badge-warning text-dark';
                     var qtyLabel = isOutOfStock ? 'ໝົດແລ້ວ (0)' : ('ເຫຼືອ ' + alert.qty + ' ' + (alert.unit || 'ອັນ'));
 
-                    html += '<div id="notif_item_main_' + alert.product_id + '" onclick="markItemAsRead(\'main_' + alert.product_id + '\', \'mainNotifBadge\')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                    html += '<div id="notif_item_main_' + alert.product_id + '" onclick="goToRestockProduct(' + JSON.stringify(alert.product_name || '') + ')" class="dropdown-item py-2 px-3 d-flex align-items-center justify-content-between border-bottom flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden;" title="ກົດເພື່ອໄປໜ້ານຳເຂົ້າສິນຄ້າ">';
                     html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
                     html += '<i class="fas fa-exclamation-circle ' + (isOutOfStock ? 'text-danger' : 'text-warning') + ' mr-1.5" style="font-size: 0.82rem;"></i>';
                     html += '<strong class="text-dark text-truncate" style="font-size: 0.82rem;" title="' + (alert.product_name || '') + '">' + (alert.product_name || '') + '</strong>';
@@ -850,8 +946,10 @@ if (!hasPermission('dashboard')) {
                     html += '</div>';
                   });
                 });
-              } else {
-                html = '<div class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i><span style="font-size: 0.85rem;">ບໍ່ມີສິນຄ້າໃກ້ໝົດ ຫຼື ໝົດແລ້ວ</span></div>';
+              }
+
+              if (!html) {
+                html = '<div class="text-center py-4 text-muted"><i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i><span style="font-size: 0.85rem;">ບໍ່ມີການແຈ້ງເຕືອນໃໝ່</span></div>';
               }
               bodyEl.html(html);
             }
@@ -890,19 +988,24 @@ if (!hasPermission('dashboard')) {
 
               if (res.sub_low_stock && res.sub_low_stock.length > 0) {
                 html += '<div class="px-3 py-1.5 font-weight-bold text-dark border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #fff7ed; font-size: 0.82rem; white-space: nowrap;">';
-                html += '<span class="text-warning text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃນສາຂາໃກ້ໝົດ</span>';
-                html += '<span class="badge badge-warning text-dark font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.sub_low_stock.length + ' ລາຍການ</span>';
+                html += '<span class="text-danger text-truncate"><i class="fas fa-exclamation-triangle mr-1"></i> ສິນຄ້າໃກ້ໝົດ / ໝົດແລ້ວ</span>';
+                html += '<span class="badge badge-danger font-weight-bold flex-shrink-0 ml-2" style="font-size: 0.7rem; border-radius: 6px;">' + res.sub_low_stock.length + ' ລາຍການ</span>';
                 html += '</div>';
 
                 res.sub_low_stock.forEach(function(stk) {
                   var isRead = readKeys.includes('stk_' + stk.product_id);
+                  var isOutOfStock = (parseInt(stk.qty || 0) <= 0);
+                  var badgeClass = isOutOfStock ? 'badge-danger' : 'badge-warning text-dark';
+                  var qtyLabel = isOutOfStock ? 'ໝົດແລ້ວ (0)' : ('ເຫຼືອ ' + stk.qty + ' ' + (stk.unit || 'ອັນ'));
+                  var iconClass = isOutOfStock ? 'text-danger' : 'text-warning';
+
                   html += '<div id="notif_item_stk_' + stk.product_id + '" onclick="markItemAsRead(\'stk_' + stk.product_id + '\', \'subNotifBadge\')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
                   html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
-                  html += '<i class="fas fa-exclamation-circle text-warning mr-1.5" style="font-size: 0.82rem;"></i>';
+                  html += '<i class="fas fa-exclamation-circle ' + iconClass + ' mr-1.5" style="font-size: 0.82rem;"></i>';
                   html += '<span class="text-dark font-weight-bold text-truncate" style="font-size: 0.82rem;" title="' + (stk.product_name || '') + '">' + (stk.product_name || '') + '</span>';
                   html += '</div>';
                   html += '<div class="text-nowrap flex-shrink-0">';
-                  html += '<span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.74rem;">ເຫຼືອ ' + stk.qty + ' ' + (stk.unit || 'ອັນ') + '</span>';
+                  html += '<span class="badge ' + badgeClass + ' font-weight-bold px-2 py-1" style="font-size: 0.74rem;">' + qtyLabel + '</span>';
                   html += '</div>';
                   html += '</div>';
                 });
@@ -1200,6 +1303,27 @@ if (!hasPermission('dashboard')) {
     // ===== Exclusive Active Menu Highlight =====
     var $sidebar = $('.nav-sidebar');
     
+    // Highlight initial active menu item on DOM ready
+    var currentSrc = sessionStorage.getItem('currentIframeSrc') || $('iframe[name="frame"]').attr('src');
+    if (currentSrc) {
+      var normSrc = currentSrc.replace(/\\/g, '/');
+      $('.nav-sidebar .nav-link[target="frame"]').each(function() {
+        var href = $(this).attr('href');
+        if (!href || href === '#') return;
+        var normHref = href.replace(/\\/g, '/');
+        if (normHref === normSrc || normSrc.endsWith(normHref) || normHref.endsWith(normSrc)) {
+          $('.nav-sidebar .nav-link').removeClass('active');
+          $(this).addClass('active');
+          var $tree = $(this).closest('.has-treeview');
+          if ($tree.length) {
+            $tree.addClass('menu-open');
+            $tree.children('.nav-treeview').show();
+          }
+          return false;
+        }
+      });
+    }
+
     $sidebar.on('click', '.nav-link', function() {
       var href = $(this).attr('href');
       
@@ -1213,7 +1337,17 @@ if (!hasPermission('dashboard')) {
       // Show high-speed 12-dot pulse loader overlay on menu click
       showFastLoader();
 
+      // REALTIME: Highlight clicked menu item immediately with 0ms delay!
       $('.nav-sidebar .nav-link').removeClass('active');
+      $(this).addClass('active');
+
+      // Keep parent treeview dropdown open & expanded if inside a dropdown
+      var $parentTree = $(this).closest('.has-treeview');
+      if ($parentTree.length) {
+        $parentTree.addClass('menu-open');
+        $parentTree.children('.nav-treeview').show();
+      }
+
       sessionStorage.setItem('currentIframeSrc', href);
 
       if (href && (href.indexOf('pos.php') !== -1 || href.indexOf('/pos/') !== -1)) {
@@ -1288,28 +1422,66 @@ if (!hasPermission('dashboard')) {
         }
 
         if (page && page !== 'blank') {
-          var matched = false;
-          $('.nav-sidebar .nav-link[target="frame"]').each(function() {
-            var href = $(this).attr('href');
-            if (href && (href === fullTarget || href.endsWith(fullTarget))) {
-              $('.nav-sidebar .nav-link').removeClass('active');
-              $(this).addClass('active');
-              sessionStorage.setItem('currentIframeSrc', href);
-              matched = true;
-              return false;
-            }
-          });
+          var normPath = path.replace(/\\/g, '/');
+          // Only try to re-match if the current active item doesn't already match the actual loaded path
+          var $currentActive = $('.nav-sidebar .nav-link.active[target="frame"]');
+          var currentActiveHref = $currentActive.length ? $currentActive.attr('href').replace(/\\/g, '/') : '';
 
-          if (!matched) {
+          // Check if the currently highlighted menu already matches the loaded page
+          var alreadyMatches = currentActiveHref && (
+            normPath.endsWith(currentActiveHref) ||
+            currentActiveHref.endsWith(normPath) ||
+            normPath.indexOf(currentActiveHref.replace('/index.php', '')) !== -1
+          );
+
+          if (!alreadyMatches) {
+            var matched = false;
+
+            // Exact path match first
             $('.nav-sidebar .nav-link[target="frame"]').each(function() {
               var href = $(this).attr('href');
-              if (href && (href === page || href.endsWith(page) || href.indexOf(page) !== -1)) {
+              if (!href || href === '#') return;
+              var normHref = href.replace(/\\/g, '/');
+
+              // Must match specifically — use full path ending, not partial indexOf
+              if (normPath.endsWith(normHref) || normHref === normPath) {
                 $('.nav-sidebar .nav-link').removeClass('active');
                 $(this).addClass('active');
+
+                var $tree = $(this).closest('.has-treeview');
+                if ($tree.length) {
+                  $tree.addClass('menu-open');
+                  $tree.children('.nav-treeview').show();
+                }
+
                 sessionStorage.setItem('currentIframeSrc', href);
+                matched = true;
                 return false;
               }
             });
+
+            if (!matched) {
+              // Fallback: match by filename only (no cross-folder matching)
+              $('.nav-sidebar .nav-link[target="frame"]').each(function() {
+                var href = $(this).attr('href');
+                if (!href || href === '#') return;
+                var hrefNorm = href.replace(/\\/g, '/');
+                var hrefPage = hrefNorm.substring(hrefNorm.lastIndexOf('/') + 1);
+                if (hrefPage && hrefPage !== 'index.php' && hrefPage === page) {
+                  $('.nav-sidebar .nav-link').removeClass('active');
+                  $(this).addClass('active');
+
+                  var $tree = $(this).closest('.has-treeview');
+                  if ($tree.length) {
+                    $tree.addClass('menu-open');
+                    $tree.children('.nav-treeview').show();
+                  }
+
+                  sessionStorage.setItem('currentIframeSrc', href);
+                  return false;
+                }
+              });
+            }
           }
         }
       } catch(e) {}

@@ -86,4 +86,74 @@ function formatNumberInput(input) {
   }
   input.value = parts.join('.');
 }
+
+function deletePriceAdjLog(id, btn) {
+  Swal.fire({
+    title: 'ຢືນຢັນການລົບ?',
+    text: 'ຕ້ອງການລົບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ລົບເລີຍ',
+    cancelButtonText: 'ຍົກເລີກ'
+  }).then(function(r) {
+    if (r.isConfirmed) {
+      $.post('price_adjustment.php', { action: 'delete_log', adjust_id: id, is_ajax: 1 }, function(res) {
+        if (res.success) {
+          $(btn).closest('tr').fadeOut(300, function() { $(this).remove(); });
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'ລຶບປະຫວັດສຳເລັດ!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } else {
+          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+        }
+      }, 'json');
+    }
+  });
+}
+
+function refreshPriceAdjTable() {
+  var url = 'price_adjustment.php?fetch_table=1';
+  var storeVal = $('select[name="store_id"]').val();
+  if (storeVal) url += '&store_id=' + storeVal;
+  
+  $.get(url, function(html) {
+    var $newContent = $(html);
+    var $tableCard = $('.card.border-0.shadow-sm');
+    if ($tableCard.length) {
+      $tableCard.replaceWith($newContent);
+    }
+  });
+}
+
+$(document).ready(function() {
+  $('#priceAdjForm').on('submit', function(e) {
+    e.preventDefault();
+    var $form = $(this);
+    var formData = $form.serialize() + '&is_ajax=1';
+    $.post('price_adjustment.php', formData, function(res) {
+      if (res.success) {
+        $('#priceAdjModal').modal('hide');
+        $form[0].reset();
+        refreshPriceAdjTable();
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: res.message || 'ດຳເນີນການສຳເລັດ!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } else {
+        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+      }
+    }, 'json');
+  });
+});
 </script>

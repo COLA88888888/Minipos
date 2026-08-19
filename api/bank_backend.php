@@ -77,26 +77,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         if ($bank_id > 0 && !empty($bank_name)) {
             try {
-                $stmt = $pdo->prepare("UPDATE bank_accounts SET bank_name = ?, account_number = ?, account_name = ?, bank_code = ?, is_active = ? WHERE id = ?");
-                $stmt->execute([$bank_name, $account_number, $account_name, $bank_code, $is_active, $bank_id]);
+                // ດຶງຮູບເກົ່າກ່ອນ update
+                $oldRow = $pdo->prepare("SELECT bank_logo, qr_code_img FROM bank_accounts WHERE id = ?");
+                $oldRow->execute([$bank_id]);
+                $oldData = $oldRow->fetch(PDO::FETCH_ASSOC);
 
+                $pdo->prepare("UPDATE bank_accounts SET bank_name = ?, account_number = ?, account_name = ?, bank_code = ?, is_active = ? WHERE id = ?")
+                    ->execute([$bank_name, $account_number, $account_name, $bank_code, $is_active, $bank_id]);
+
+                // ແກ້ໄຂ bank_logo ຖ້າ upload ໃໝ່
                 if (!empty($_FILES['bank_logo']['name']) && $_FILES['bank_logo']['error'] === UPLOAD_ERR_OK) {
                     $ext = pathinfo($_FILES['bank_logo']['name'], PATHINFO_EXTENSION);
                     $newLogo = 'bank_' . time() . '_' . rand(100,999) . '.' . $ext;
                     $uploadDir = __DIR__ . '/../assets/img/banks/';
                     if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
                     if (move_uploaded_file($_FILES['bank_logo']['tmp_name'], $uploadDir . $newLogo)) {
-                        $pdo->prepare("UPDATE bank_accounts SET bank_logo = ? WHERE id = ?")->execute([$newLogo, $bank_id]);
+                        // ລົບຮູບ bank_logo ເກົ່າ
+                        if (!empty($oldData['bank_logo']) && file_exists($uploadDir . $oldData['bank_logo'])) {
+                            @unlink($uploadDir . $oldData['bank_logo']);
+                        }
+                        $pdo->prepare("UPDATE bank_accounts SET bank_logo = ? WHERE id = ?")
+                            ->execute([$newLogo, $bank_id]);
                     }
                 }
 
+                // ແກ້ໄຂ qr_code_img ຖ້າ upload ໃໝ່
                 if (!empty($_FILES['qr_code_img']['name']) && $_FILES['qr_code_img']['error'] === UPLOAD_ERR_OK) {
                     $ext = pathinfo($_FILES['qr_code_img']['name'], PATHINFO_EXTENSION);
                     $newQr = 'qr_bank_' . time() . '_' . rand(100,999) . '.' . $ext;
                     $uploadDir = __DIR__ . '/../assets/img/qr/';
                     if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
                     if (move_uploaded_file($_FILES['qr_code_img']['tmp_name'], $uploadDir . $newQr)) {
-                        $pdo->prepare("UPDATE bank_accounts SET qr_code_img = ? WHERE id = ?")->execute([$newQr, $bank_id]);
+                        // ລົບ qr_code_img ເກົ່າ
+                        if (!empty($oldData['qr_code_img']) && file_exists($uploadDir . $oldData['qr_code_img'])) {
+                            @unlink($uploadDir . $oldData['qr_code_img']);
+                        }
+                        $pdo->prepare("UPDATE bank_accounts SET qr_code_img = ? WHERE id = ?")
+                            ->execute([$newQr, $bank_id]);
                     }
                 }
 
@@ -115,7 +132,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $bank_id = intval($_POST['bank_id'] ?? 0);
         if ($bank_id > 0) {
             try {
+                // ດຶງຊື່ໄຟລ໌ຮູບກ່ອນລົບ record
+                $delRow = $pdo->prepare("SELECT bank_logo, qr_code_img FROM bank_accounts WHERE id = ?");
+                $delRow->execute([$bank_id]);
+                $delData = $delRow->fetch(PDO::FETCH_ASSOC);
+
                 $pdo->prepare("DELETE FROM bank_accounts WHERE id = ?")->execute([$bank_id]);
+
+                // ລົບຮູບ bank_logo ແລະ QR ອອກຈາກ folder
+                if ($delData) {
+                    if (!empty($delData['bank_logo'])) {
+                        $f = __DIR__ . '/../assets/img/banks/' . $delData['bank_logo'];
+                        if (file_exists($f)) @unlink($f);
+                    }
+                    if (!empty($delData['qr_code_img'])) {
+                        $f = __DIR__ . '/../assets/img/qr/' . $delData['qr_code_img'];
+                        if (file_exists($f)) @unlink($f);
+                    }
+                }
+
                 $message = "ລົບບັນຊີທະນາຄານ ສໍາເລັດແລ້ວ!";
                 $message_type = "success";
                 logActivity($pdo, "ລົບບັນຊີທະນາຄານ", "ID: $bank_id");

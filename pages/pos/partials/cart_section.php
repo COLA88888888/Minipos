@@ -5,8 +5,8 @@
       <i class="fas fa-shopping-basket mr-2"></i> ລາຍການຂາຍ
     </h5>
     <div class="d-flex align-items-center" style="gap: 6px;">
-      <!-- Network Status Badge (Online/Offline & Sync Trigger) -->
-      <span class="badge px-2.5 py-1.5 shadow-2xs font-weight-bold" id="netStatusBadge" onclick="syncOfflineSalesToServer(true)" style="font-size: 0.78rem; border-radius: 6px; background-color: rgba(255,255,255,0.22); color: #fff; cursor: pointer;" title="ສະຖານະການເຊື່ອມຕໍ່ (ກົດເພື່ອ Sync)">
+      <!-- Network Status Badge (Shown ONLY when Offline or when Pending Sync exists) -->
+      <span class="badge px-2.5 py-1.5 shadow-2xs font-weight-bold" id="netStatusBadge" onclick="syncOfflineSalesToServer(true)" style="display: none; font-size: 0.78rem; border-radius: 6px; background-color: rgba(255,255,255,0.22); color: #fff; cursor: pointer;" title="ສະຖານະການເຊື່ອມຕໍ່ (ກົດເພື່ອ Sync)">
         <i class="fas fa-circle text-success mr-1" id="netStatusIcon" style="font-size: 0.6rem;"></i>
         <span id="netStatusText">ອອນໄລນ໌</span>
         <span id="offlineQueueBadge" class="badge badge-warning ml-1 text-dark" style="display: none; font-size: 0.7rem; border-radius: 4px;">0</span>
@@ -15,7 +15,7 @@
         <i class="fas fa-desktop mr-1"></i> ຈໍລູກຄ້າ
       </button>
       <button type="button" class="btn btn-light text-primary font-weight-bold d-lg-none shadow-sm" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.95rem; padding: 6px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-        <i class="fas fa-boxes mr-1.5"></i> + ເລືອກສິນຄ້າ
+        <i class="fas fa-boxes mr-1.5"></i>ເລືອກສິນຄ້າ
       </button>
     </div>
   </div>
@@ -75,8 +75,14 @@
       </div>
     </div>
     
-    <div class="d-flex justify-content-between align-items-center mb-1 small text-muted" id="cartVatRow" style="display: none !important;">
-      <span id="cartVatLabel">ພາສີ (VAT 7%):</span>
+    <?php
+      $cTaxType = !empty($company['tax_type']) ? $company['tax_type'] : 'none';
+      $cVatPercent = ($cTaxType === 'none') ? 0 : (isset($company['vat_percent']) ? floatval($company['vat_percent']) : 0);
+      $showCartVat = ($cVatPercent > 0 && $cTaxType !== 'none');
+      $cLabelText = ($cTaxType === 'exclusive') ? "ອມພ ({$cVatPercent}%):" : "ລວມ ອມພ ({$cVatPercent}%):";
+    ?>
+    <div class="d-flex justify-content-between align-items-center mb-1 small text-muted" id="cartVatRow" style="<?php echo $showCartVat ? 'display: flex !important;' : 'display: none !important;'; ?>">
+      <span id="cartVatLabel"><?php echo $cLabelText; ?></span>
       <span class="font-weight-bold text-dark" id="cartVat">0 ₭</span>
     </div>
     

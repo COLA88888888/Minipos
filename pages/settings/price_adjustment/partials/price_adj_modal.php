@@ -15,8 +15,21 @@
         <div class="modal-body p-4">
           <input type="hidden" name="action" value="adjust_price">
 
-          <!-- Grid Row 1: Target Mode, Scan Input, Product Name Display -->
+          <!-- Grid Row 1: Branch & Target Mode -->
           <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="font-weight-bold text-dark small mb-1">ສາຂາ:</label>
+              <select name="store_id" id="modal_store_id" class="form-control" style="height: 42px;" <?php echo (!$isAdmin && !$isMain) ? 'disabled' : ''; ?>>
+                <?php foreach ($stores as $st): ?>
+                  <option value="<?php echo $st['store_id']; ?>" <?php echo (($filter_store > 0 ? $filter_store : $userStoreId) == $st['store_id']) ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : ''; ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+              <?php if (!$isAdmin && !$isMain): ?>
+                <input type="hidden" name="store_id" value="<?php echo $userStoreId; ?>">
+              <?php endif; ?>
+            </div>
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ຮູບແບບການປັບ: <span class="text-danger">*</span></label>
               <select name="target_mode" id="target_mode" class="form-control" style="height: 42px;" onchange="onTargetModeChange(this.value)">
@@ -24,10 +37,12 @@
                 <option value="category">ຕາມໝວດໝູ່ສິນຄ້າ</option>
               </select>
             </div>
+          </div>
 
-            <div class="col-md-6 mb-3" id="category_select_wrap" style="display: none;">
+          <div class="row">
+            <div class="col-12 mb-3" id="category_select_wrap" style="display: none;">
               <label class="font-weight-bold text-dark small mb-1">ໝວດໝູ່ສິນຄ້າ: <span class="text-danger">*</span></label>
-              <select name="category_id" id="category_id" class="form-control" style="width: 100%;">
+              <select name="category_id" id="category_id" class="form-control" style="width: 100%; height: 42px;">
                 <option value="">-- ເລືອກໝວດໝູ່ --</option>
                 <?php foreach ($categoriesList as $cat): ?>
                   <option value="<?php echo $cat['category_id']; ?>">
@@ -37,7 +52,7 @@
               </select>
             </div>
 
-            <div class="col-md-6 mb-3" id="product_scan_wrap">
+            <div class="col-12 mb-3" id="product_scan_wrap">
               <label class="font-weight-bold text-primary small mb-1"><i class="fas fa-barcode mr-1"></i> ພິມລະຫັດ / ສະແກນບາໂຄ້ດສິນຄ້າ: <span class="text-danger">*</span></label>
               <div class="input-group">
                 <div class="input-group-prepend">

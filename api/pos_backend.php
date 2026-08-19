@@ -10,6 +10,11 @@ require_once __DIR__ . '/../config/db.php';
 
 // Check authorization
 if (empty($_SESSION['user_id'])) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || $_SERVER['REQUEST_METHOD'] === 'POST') {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => 'ເຊດຊັນໝົດອາຍຸ! ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່']);
+        exit();
+    }
     echo "<script>window.top.location.href = '../index.php';</script>";
     exit();
 }
@@ -33,8 +38,20 @@ function getClientIP() {
     }
 }
 
+// Live Stock Polling Handler
+if (isset($_GET['action']) && $_GET['action'] === 'get_live_stocks') {
+    header('Content-Type: application/json');
+    $activeStoreId = getActiveStoreId($pdo);
+    $stmt = $pdo->prepare("SELECT product_id, qty FROM products WHERE store_id = ?");
+    $stmt->execute([$activeStoreId]);
+    $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(['success' => true, 'stocks' => $stocks]);
+    exit();
+}
+
 // 1. AJAX handler for Checkout
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'checkout') {
+    ob_start();
     header('Content-Type: application/json');
     $cart = json_decode($_POST['cart'] ?? '[]', true);
     $cash_received = floatval($_POST['cash_received'] ?? 0.00);
@@ -54,7 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     try {
         $pdo->beginTransaction();
         
-        $user_id = $_SESSION['username'] ?? 'Admin';
+        $user_receive_name = $_SESSION['username'] ?? $_SESSION['fname'] ?? 'Admin';
+        $sold_by_id        = intval($_SESSION['user_id'] ?? 1);
         
         // Calculate totals & Tax/VAT
         $subtotal = 0;
@@ -70,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $total_qty += $qty;
         }
         
-        $tax_type = $company['tax_type'] ?? 'inclusive';
-        $vat_percent = floatval($company['vat_percent'] ?? 7.00);
+        $tax_type = !empty($company['tax_type']) ? $company['tax_type'] : 'none';
+        $vat_percent = ($tax_type === 'none') ? 0.00 : floatval($company['vat_percent'] ?? 0);
 
         $amount_after_discount = max(0, $subtotal - $discount_bill);
         $vat_amount = 0.00;
@@ -129,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ");
         $stmtSave->execute([
             ':invoice_no'      => $invoice_no,
-            ':user_id'         => $user_id,
+            ':user_id'         => $user_receive_name,
             ':customer_id'     => $customer_id,
             ':customer_name'   => $customer_name,
             ':ip_address'      => $client_ip,
@@ -149,12 +167,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             $stmtSalesTable = $pdo->prepare("
                 INSERT INTO sales (invoice_number, sold_by, customer_id, customer_name, subtotal, discount_amount, vat_amount, tax_type, vat_rate, total_amount, cash_received, change_amount, payment_type, bank_account_id, bank_name, status, store_id, created_at)
-                VALUES (:invoice_no, :user_id, :customer_id, :customer_name, :subtotal, :discount_bill, :vat_amount, :tax_type, :vat_rate, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS', :store_id, NOW())
+                VALUES (:invoice_no, :sold_by_id, :customer_id, :customer_name, :subtotal, :discount_bill, :vat_amount, :tax_type, :vat_rate, :net_total, :cash_received, :change, :payment_type, :bank_account_id, :bank_name, 'SUCCESS', :store_id, NOW())
                 ON DUPLICATE KEY UPDATE subtotal = :subtotal, discount_amount = :discount_bill, vat_amount = :vat_amount, tax_type = :tax_type, vat_rate = :vat_rate, total_amount = :net_total, bank_account_id = :bank_account_id, bank_name = :bank_name, store_id = :store_id
             ");
             $stmtSalesTable->execute([
                 ':invoice_no'      => $invoice_no,
-                ':user_id'         => $user_id,
+                ':sold_by_id'      => $sold_by_id,
                 ':customer_id'     => $customer_id,
                 ':customer_name'   => $customer_name,
                 ':subtotal'        => $subtotal,
@@ -199,29 +217,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $total_item = $qty * $price;
             $deduct_stock_qty = $qty * $multiplier;
 
-            // ກວດສອບຍອດເຫຼືອໃນຖານຂໍ້ມູນ
-            $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
-            $pData = $stmtCheckStock->fetch();
-            if (!$pData) {
-                $pdo->rollBack();
-                echo json_encode(['success' => false, 'message' => "ບໍ່ພົບຂໍ້ມູນສິນຄ້າ ID: {$pid} ໃນລະບົບ!"]);
-                exit();
-            }
+            $is_gift = !empty($item['is_free_gift']) || $price == 0 || strpos($item['product_name'], '(ແຖມ)') !== false;
 
-            $shouldCutQty = intval($pData['cut_qty'] ?? 1); // 1=ຕັດ qty, 0=ບໍ່ຕັດ qty
-            $currentDbStock = floatval($pData['qty']);
-
-            if ($shouldCutQty) {
-                if ($currentDbStock <= 0) {
+            if ($is_gift) {
+                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
+                $pData = $stmtCheckStock->fetch();
+                $shouldCutQty = $pData ? intval($pData['cut_qty'] ?? 0) : 0;
+                $currentDbStock = $pData ? floatval($pData['qty']) : 0;
+            } else {
+                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
+                $pData = $stmtCheckStock->fetch();
+                if (!$pData) {
                     $pdo->rollBack();
-                    echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ໝົດແລ້ວ! ບໍ່ສາມາດຂາຍໄດ້"]);
+                    echo json_encode(['success' => false, 'message' => "ບໍ່ພົບຂໍ້ມູນສິນຄ້າ ID: {$pid} ໃນລະບົບ!"]);
                     exit();
                 }
 
-                if ($currentDbStock < $deduct_stock_qty) {
-                    $pdo->rollBack();
-                    echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ເຫຼືອພຽງ {$currentDbStock} ອັນ! ບໍ່ພໍສຳລັບການຂາຍ"]);
-                    exit();
+                $shouldCutQty = intval($pData['cut_qty'] ?? 1); // 1=ຕັດ qty, 0=ບໍ່ຕັດ qty
+                $currentDbStock = floatval($pData['qty']);
+
+                if ($shouldCutQty) {
+                    if ($currentDbStock <= 0) {
+                        $pdo->rollBack();
+                        echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ໝົດແລ້ວ! ບໍ່ສາມາດຂາຍໄດ້"]);
+                        exit();
+                    }
+
+                    if ($currentDbStock < $deduct_stock_qty) {
+                        $pdo->rollBack();
+                        echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ເຫຼືອພຽງ {$currentDbStock} ອັນ! ບໍ່ພໍສຳລັບການຂາຍ"]);
+                        exit();
+                    }
                 }
             }
             
@@ -234,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':cost_price'   => $cost,
                 ':save_money'   => $total_item,
                 ':save_net_money'=> $total_item,
-                ':user_receives'=> $user_id
+                ':user_receives'=> $user_receive_name
             ]);
             
             $newStock = $currentDbStock;
@@ -254,21 +280,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 'cut_qty'    => $shouldCutQty
             ];
 
+            $unit_name = trim($item['unit_name'] ?? '');
+            $proname = $item['product_name'] . ($unit_name !== '' ? ' (' . $unit_name . ')' : '');
+            $orig_price = floatval($item['original_price'] ?? $price);
+            $is_gift = !empty($item['is_free_gift']) || $price == 0 || strpos($item['product_name'], '(ແຖມ)') !== false;
+
             $details_summary[] = [
-                'proname' => $proname,
-                'qty'     => $qty,
-                'price'   => $price,
-                'total'   => $total_item
+                'proname'        => $proname,
+                'unit_name'      => $unit_name,
+                'qty'            => $qty,
+                'price'          => $price,
+                'original_price' => $orig_price,
+                'is_free_gift'   => $is_gift,
+                'total'          => $total_item
             ];
         }
         
         $pdo->commit();
         
+        if (ob_get_length()) ob_clean();
         echo json_encode([
             'success'        => true,
             'invoice_number' => $invoice_no,
             'date'           => date('d/m/Y H:i'),
-            'cashier'        => $_SESSION['username'] ?? 'Admin',
+            'cashier'        => $user_receive_name,
             'customer_name'  => $customer_name,
             'subtotal'       => $subtotal,
             'discount_amount'=> $discount_bill,
@@ -288,7 +323,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ]);
         exit();
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        if (ob_get_length()) ob_clean();
         echo json_encode(['success' => false, 'message' => 'ເກີດຂໍ້ຜິດພາດ: ' . $e->getMessage()]);
         exit();
     }
@@ -308,20 +346,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         exit();
     }
 
+    $activePosStoreId = getActiveStoreId($pdo);
     if (empty($c_code)) {
-        $stmtSeq = $pdo->query("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers");
+        $stmtSeq = $pdo->prepare("SELECT IFNULL(MAX(customer_id), 0) + 1 FROM customers WHERE store_id = ?");
+        $stmtSeq->execute([$activePosStoreId]);
         $maxCusId = (int)$stmtSeq->fetchColumn();
-        $c_code = 'CUST-' . str_pad($maxCusId, 3, '0', STR_PAD_LEFT);
+        $c_code = 'CUST-' . str_pad($activePosStoreId, 2, '0', STR_PAD_LEFT) . '-' . str_pad($maxCusId, 3, '0', STR_PAD_LEFT);
     }
 
     try {
-        $stmtIns = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, member_card, notes, created_at) VALUES (:code, :name, :phone, :card, :notes, NOW())");
+        $stmtIns = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, member_card, notes, store_id, created_at) VALUES (:code, :name, :phone, :card, :notes, :store_id, NOW())");
         $stmtIns->execute([
-            ':code'  => $c_code,
-            ':name'  => $c_name,
-            ':phone' => $c_phone,
-            ':card'  => $c_member_card,
-            ':notes' => $c_notes
+            ':code'     => $c_code,
+            ':name'     => $c_name,
+            ':phone'    => $c_phone,
+            ':card'     => $c_member_card,
+            ':notes'    => $c_notes,
+            ':store_id' => $activePosStoreId
         ]);
         $new_id = $pdo->lastInsertId();
 
@@ -343,16 +384,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Auto-deactivate expired promotions & Fetch active promotions
+// Auto-deactivate expired promotions & Fetch active promotions for current branch/store
 $activePromos = [];
 try {
+    $currentPosStoreId = intval($_SESSION['store_id'] ?? 1);
     $pdo->exec("UPDATE promotions SET status = 0 WHERE status = 1 AND end_date < CURDATE()");
-    $activePromos = $pdo->query("
+    $stmtActivePromos = $pdo->prepare("
         SELECT * FROM promotions 
         WHERE status = 1 
+          AND (branch_id = ? OR branch_id = 0)
           AND CURDATE() BETWEEN start_date AND end_date 
         ORDER BY id DESC
-    ")->fetchAll(PDO::FETCH_ASSOC);
+    ");
+    $stmtActivePromos->execute([$currentPosStoreId]);
+    $activePromos = $stmtActivePromos->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {}
 
 function getProductPromotion($product, $activePromos) {
@@ -504,7 +549,9 @@ $productsStmt = $pdo->prepare("
 $productsStmt->execute([$activeStoreId]);
 $productsRaw = $productsStmt->fetchAll();
 
-$customersList = $pdo->query("SELECT customer_id, customer_code, customer_name, phone, member_card, notes, created_at FROM customers ORDER BY customer_id DESC")->fetchAll();
+$stmtPosCust = $pdo->prepare("SELECT customer_id, customer_code, customer_name, phone, member_card, notes, created_at FROM customers WHERE store_id = ? OR store_id = 0 ORDER BY customer_id DESC");
+$stmtPosCust->execute([$activeStoreId]);
+$customersList = $stmtPosCust->fetchAll();
 
 // Fetch extra units
 $extraUnits = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC, id ASC")->fetchAll();

@@ -73,7 +73,7 @@ function filterCustomersList() {
         <td class="text-center align-middle font-weight-bold" style="white-space: nowrap;">${memberCardBadge}</td>
         <td class="text-center align-middle text-secondary" style="font-size: 0.88rem; white-space: nowrap;"><i class="far fa-clock text-info mr-1"></i>${createdAt}</td>
         <td class="text-center align-middle" style="white-space: nowrap;">
-          <button type="button" class="btn btn-sm btn-success rounded-circle shadow-sm" title="ເລືອກລູກຄ່ານີ້" onclick='selectCustomer(${jsonStr})' style="width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #10b981 !important; color: #ffffff !important; border: none !important; cursor: pointer;">
+          <button type="button" class="btn btn-sm btn-success rounded-circle shadow-sm" title="ເລືອກລູກຄ້ານີ້" onclick='selectCustomer(${jsonStr})' style="width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; background-color: #10b981 !important; color: #ffffff !important; border: none !important; cursor: pointer;">
             <i class="fas fa-check" style="font-size: 0.9rem; color: #ffffff;"></i>
           </button>
         </td>
@@ -184,7 +184,7 @@ function submitQuickAddCustomer() {
   }
 
   $.ajax({
-    url: '',
+    url: '../../api/pos_backend.php',
     type: 'POST',
     data: {
       action: 'add_customer_ajax',

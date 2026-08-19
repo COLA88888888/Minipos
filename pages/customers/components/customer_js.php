@@ -16,7 +16,25 @@
     $('#edit_phone').val(cust.phone);
     $('#edit_member_card').val(cust.member_card || '');
     $('#edit_notes').val(cust.notes);
+    if (document.getElementById('edit_store_id') && cust.store_id) {
+      $('#edit_store_id').val(cust.store_id);
+    }
     $('#editCustomerModal').modal('show');
+  }
+
+  function refreshCustomerTable() {
+    var url = 'customers.php?fetch_table=1';
+    var storeVal = $('select[name="store_id"]').val();
+    if (storeVal) url += '&store_id=' + storeVal;
+    
+    $.get(url, function(html) {
+      var $newContent = $(html);
+      var $tableContainer = $('.card-body.p-0');
+      if ($tableContainer.length) {
+        $tableContainer.replaceWith($newContent);
+        initPagination();
+      }
+    });
   }
 
   // ====== Pagination & Search Filter Logic ======
@@ -196,24 +214,23 @@
       heightAuto: false
     }).then(function(result) {
       if (result.isConfirmed) {
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '';
-        
-        var actInput = document.createElement('input');
-        actInput.type = 'hidden';
-        actInput.name = 'action';
-        actInput.value = 'delete_customer';
-        form.appendChild(actInput);
-
-        var idInput = document.createElement('input');
-        idInput.type = 'hidden';
-        idInput.name = 'customer_id';
-        idInput.value = id;
-        form.appendChild(idInput);
-
-        document.body.appendChild(form);
-        form.submit();
+        $.post('customers.php', { action: 'delete_customer', customer_id: id, is_ajax: 1 }, function(res) {
+          if (res.success) {
+            $('tr.cust-row').filter(function() {
+              return $(this).find('button[onclick*="' + id + '"]').length > 0;
+            }).fadeOut(300, function() { $(this).remove(); initPagination(); });
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'ລົບຂໍ້ມູນລູກຄ້າສຳເລັດ!',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          } else {
+            Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+          }
+        }, 'json');
       }
     });
   }

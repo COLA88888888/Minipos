@@ -12,7 +12,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="font-weight-bold mb-0 text-dark">ລາຍການບິນທີ່ກຳລັງເປີດຢູ່:</h6>
           <button type="button" class="btn btn-sm btn-success font-weight-bold" onclick="createNewBillModal()" data-dismiss="modal">
-            <i class="fas fa-plus-circle mr-1"></i> + ເປີດບິນໃໝ່
+            <i class="fas fa-plus-circle mr-1"></i> ເປີດບິນໃໝ່
           </button>
         </div>
         <div id="activeBillsContainer">

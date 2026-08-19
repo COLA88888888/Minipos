@@ -63,9 +63,6 @@ if (file_exists($backupDir)) {
             <h5 class="card-title font-weight-bold text-dark mb-0">
                 <i class="fas fa-history text-primary mr-2"></i> ລາຍການໄຟລ໌ສຳຮອງຖານຂໍ້ມູນ
             </h5>
-            <span class="badge badge-primary px-3 py-2" style="border-radius: 20px;">
-                ລວມ <?php echo count($backupFiles); ?> ໄຟລ໌
-            </span>
         </div>
         <div class="card-body px-4 pb-4">
             <?php if (!empty($backupFiles)): ?>

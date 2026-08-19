@@ -165,9 +165,41 @@ button.btn-quick-cash:hover {
     background: rgba(255, 255, 255, 0.45);
 }
 
-/* ເຊື່ອງ scrollbar ໃນລັກສະນະ overlay ເມື່ອ content ຍັງຟິດ */
-.main-sidebar .sidebar:not(:hover)::-webkit-scrollbar-thumb {
-    background: transparent;
+/* Custom Slim Scrollbars for all elements & dropdowns */
+::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9 !important;
+    border-radius: 8px !important;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1 !important;
+    border-radius: 8px !important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8 !important;
+}
+* {
+    scrollbar-width: thin !important;
+    scrollbar-color: #cbd5e1 #f1f5f9 !important;
+}
+
+#mainNotifDropdownBody::-webkit-scrollbar,
+#subNotifDropdownBody::-webkit-scrollbar,
+.notif-dropdown-box::-webkit-scrollbar,
+.dropdown-menu::-webkit-scrollbar,
+div[style*="overflow"]::-webkit-scrollbar {
+    width: 4px !important;
+}
+#mainNotifDropdownBody::-webkit-scrollbar-thumb,
+#subNotifDropdownBody::-webkit-scrollbar-thumb,
+.notif-dropdown-box::-webkit-scrollbar-thumb,
+.dropdown-menu::-webkit-scrollbar-thumb,
+div[style*="overflow"]::-webkit-scrollbar-thumb {
+    background: #94a3b8 !important;
+    border-radius: 10px !important;
 }
 
 /* ===== SIDEBAR USER PANEL & BRAND LOGO CENTERING ===== */
@@ -515,4 +547,42 @@ button.btn-quick-cash:hover {
     .logout-nav-btn i {
         font-size: 1.25rem !important;
     }
+}
+
+/* ===== MOBILE RESPONSIVE & HIGH PERFORMANCE OPTIMIZATIONS ===== */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    touch-action: manipulation;
+}
+
+body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Touch targets optimization for mobile phones */
+@media (max-width: 575.98px) {
+    .btn, button, input[type="button"], input[type="submit"] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        border: none !important;
+    }
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    .modal-content {
+        border-radius: 12px !important;
+    }
+}
+
+/* Smooth Hardware Accelerated Transitions */
+.card, .btn, .modal-content, .table-responsive {
+    transform: translateZ(0);
+    will-change: auto;
 }

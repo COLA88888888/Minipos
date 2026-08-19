@@ -20,9 +20,9 @@ function viewBillDetails(billNo) {
       clearTimeout(slowNetTimer);
       if (res.success && res.bill) {
         var b = res.bill;
-        $('#modal_date').text(b.sale_date + ' ' + b.sale_time);
-        $('#modal_cashier').text(b.user_receive || 'Admin');
-        $('#modal_customer').text(b.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+        $('#modal_date').text((b.sale_date || '') + ' ' + (b.sale_time || ''));
+        $('#modal_cashier').text(b.cashier_display_name || b.user_receive || 'Admin');
+        $('#modal_customer').text(b.customer_display_name || b.customer_name || 'ລູກຄ້າທົ່ວໄປ');
 
         if (b.bank_name) {
           $('#modal_bank_wrapper').show();
@@ -114,15 +114,40 @@ function printBill(billNo) {
         $('#rc_rep_discount').text(discount.toLocaleString() + ' ₭');
 
         var bTaxType = b.tax_type || 'none';
-        var bVatRate = parseFloat(b.vat_rate) || 0;
-        var bVatAmt  = parseFloat(b.vat_amount) || 0;
+        var bTaxId   = b.tax_id || b.company_tax_id || '';
+        if (bTaxType === 'none' || !bTaxId || bTaxId.trim() === '') {
+          $('#rc_rep_tax_id_row').hide();
+        } else {
+          $('#rc_rep_tax_id').text(bTaxId);
+          $('#rc_rep_tax_id_row').show();
+        }
 
-        if (bTaxType === 'exclusive' && bVatAmt > 0) {
-          $('#rc_rep_vat_label').text('ພາສີ (VAT ' + bVatRate + '%):');
-          $('#rc_rep_vat').text('+' + bVatAmt.toLocaleString() + ' ₭');
+        var bVatRate = parseFloat(b.vat_rate) || 0;
+        var bVatAmt  = parseFloat(b.vat_amount);
+
+        if (isNaN(bVatAmt) || (bVatAmt === 0 && bVatRate > 0 && bTaxType !== 'none')) {
+          var amtAfterDisc = Math.max(0, subtotal - discount);
+          if (bTaxType === 'exclusive' && bVatRate > 0) {
+            bVatAmt = Math.round(amtAfterDisc * (bVatRate / 100));
+          } else if (bTaxType === 'inclusive' && bVatRate > 0) {
+            bVatAmt = Math.round(amtAfterDisc - (amtAfterDisc / (1 + (bVatRate / 100))));
+          } else {
+            bVatAmt = 0;
+          }
+        }
+
+        if (bTaxType === 'none' || bVatRate <= 0) {
+          $('#rc_rep_vat_row').hide();
+        } else if (bTaxType === 'exclusive' && (bVatAmt > 0 || bVatRate > 0)) {
+          $('#rc_rep_vat_label').text('ອມພ (' + bVatRate + '%):');
+          $('#rc_rep_vat').text(bVatAmt.toLocaleString() + ' ₭');
           $('#rc_rep_vat_row').show();
-        } else if (bTaxType === 'inclusive' && bVatAmt > 0) {
-          $('#rc_rep_vat_label').text('ລວມ ພາສີ (VAT ' + bVatRate + '%):');
+        } else if (bTaxType === 'inclusive' && (bVatAmt > 0 || bVatRate > 0)) {
+          $('#rc_rep_vat_label').text('ລວມ ອມພ (' + bVatRate + '%):');
+          $('#rc_rep_vat').text(bVatAmt.toLocaleString() + ' ₭');
+          $('#rc_rep_vat_row').show();
+        } else if (bVatAmt > 0) {
+          $('#rc_rep_vat_label').text('ອມພ (' + (bVatRate > 0 ? bVatRate + '%' : '') + '):');
           $('#rc_rep_vat').text(bVatAmt.toLocaleString() + ' ₭');
           $('#rc_rep_vat_row').show();
         } else {
@@ -195,7 +220,8 @@ function doPrintReportReceipt() {
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
       .small { font-size: 11.5px !important; color: #000 !important; font-weight: 600 !important; }
-      .d-flex { display: flex !important; } .justify-content-between { justify-content: space-between !important; }
+      .d-flex { display: flex; } .justify-content-between { justify-content: space-between; }
+      [style*="display: none"], [style*="display:none"], .d-none { display: none !important; }
       .mb-0{margin-bottom:0!important}.mb-1{margin-bottom:4px!important}.mb-2{margin-bottom:8px!important}
       .mt-2{margin-top:8px!important} 
       .text-muted { color: #000 !important; font-weight: 600 !important; }

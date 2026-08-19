@@ -40,6 +40,20 @@
             </div>
           </div>
 
+          <div class="form-group mb-3">
+            <label class="font-weight-bold text-dark mb-1">ສາຂາ</label>
+            <select name="store_id" id="edit_store_id" class="form-control" style="border-radius: 8px; height: 42px;" <?php echo (!$isAdmin && !$isMain) ? 'disabled' : ''; ?>>
+              <?php foreach ($stores as $st): ?>
+                <option value="<?php echo $st['store_id']; ?>">
+                  <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : ''; ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <?php if (!$isAdmin && !$isMain): ?>
+              <input type="hidden" name="store_id" value="<?php echo $userStoreId; ?>">
+            <?php endif; ?>
+          </div>
+
           <div class="form-group mb-0">
             <label class="font-weight-bold text-dark mb-1">ໝາຍເຫດ</label>
             <textarea name="notes" id="edit_notes" class="form-control" rows="3" placeholder="ປ້ອນໝາຍເຫດເພີ່ມເຕີມ (ຖ້າມີ)" style="border-radius: 8px;"></textarea>
@@ -73,7 +87,28 @@ function submitEditCustomer() {
     return;
   }
 
-  $('#editCustomerForm').submit();
+  var formData = $('#editCustomerForm').serialize() + '&is_ajax=1';
+  $.post('customers.php', formData, function(res) {
+    if (res.success) {
+      $('#editCustomerModal').modal('hide');
+      refreshCustomerTable();
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: res.message || 'ແກ້ໄຂຂໍ້ມູນລູກຄ້າສຳເລັດ!',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'ຜິດພາດ',
+        text: res.message || 'ຜິດພາດ!',
+        confirmButtonColor: '#2563eb'
+      });
+    }
+  }, 'json');
 }
 
 $(document).ready(function() {

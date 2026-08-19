@@ -1,0 +1,177 @@
+<script>
+function formatNumberInput(input) {
+  let val = input.value.replace(/[^0-9.]/g, '');
+  if (val === '') {
+    input.value = '';
+    return;
+  }
+  let parts = val.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  if (parts.length > 2) {
+    parts = [parts[0], parts.slice(1).join('')];
+  }
+  input.value = parts.join('.');
+}
+
+function formatNumVal(val) {
+  if (val === null || val === undefined || val === '') return '0';
+  let num = Number(val);
+  if (isNaN(num) || num === 0) return '0';
+  return num.toLocaleString('en-US');
+}
+
+function togglePromoType(val, mode) {
+  var giftSec = document.getElementById(mode + '_gift_section');
+  if (giftSec) {
+    giftSec.style.display = (val === 'buy_x_get_y') ? 'flex' : 'none';
+  }
+}
+
+function toggleTargetInput(val, mode) {
+  var inputEl = document.getElementById(mode + '_target_name');
+  if (val === 'all') {
+    inputEl.value = 'ທຸກສິນຄ້າ';
+    inputEl.removeAttribute('list');
+  } else if (val === 'category') {
+    if (inputEl.value === 'ທຸກສິນຄ້າ') inputEl.value = '';
+    inputEl.setAttribute('list', 'category_datalist');
+  } else if (val === 'product') {
+    if (inputEl.value === 'ທຸກສິນຄ້າ') inputEl.value = '';
+    inputEl.setAttribute('list', 'product_datalist');
+  }
+}
+
+function editPromo(p) {
+  document.getElementById('edit_promo_id').value = p.id;
+  document.getElementById('edit_promo_name').value = p.promo_name || '';
+  document.getElementById('edit_promo_type').value = p.promo_type || 'discount';
+  document.getElementById('edit_discount_type').value = p.discount_type || 'percentage';
+  document.getElementById('edit_discount_value').value = formatNumVal(p.discount_value);
+  if (document.getElementById('edit_gift_product_name')) {
+    document.getElementById('edit_gift_product_name').value = p.gift_product_name || '';
+  }
+  if (document.getElementById('edit_gift_qty')) {
+    document.getElementById('edit_gift_qty').value = p.gift_qty || 1;
+  }
+  document.getElementById('edit_start_date').value = p.start_date || '';
+  document.getElementById('edit_end_date').value = p.end_date || '';
+  document.getElementById('edit_min_qty').value = formatNumVal(p.min_qty);
+  document.getElementById('edit_min_amount').value = formatNumVal(p.min_amount);
+  document.getElementById('edit_target_type').value = p.target_type || 'all';
+  document.getElementById('edit_target_name').value = p.target_name || 'ທຸກສິນຄ້າ';
+  if (document.getElementById('edit_target_unit_name')) {
+    document.getElementById('edit_target_unit_name').value = p.target_unit_name || 'all';
+  }
+  if (document.getElementById('edit_branch_id')) {
+    document.getElementById('edit_branch_id').value = (p.branch_id !== undefined && p.branch_id !== null) ? p.branch_id : 1;
+  }
+  toggleTargetInput(p.target_type || 'all', 'edit');
+  togglePromoType(p.promo_type || 'discount', 'edit');
+  $('#editPromoModal').modal('show');
+}
+
+function refreshPromotionsTable() {
+  var url = 'index.php?fetch_table=1';
+  var storeVal = $('select[name="branch_id"]').val();
+  if (storeVal) url += '&branch_id=' + storeVal;
+  
+  $.get(url, function(html) {
+    var $newContent = $(html);
+    var $tableCard = $('.card.border-0.shadow-sm');
+    if ($tableCard.length) {
+      $tableCard.replaceWith($newContent);
+    } else {
+      location.reload();
+    }
+  });
+}
+
+function togglePromoStatus(id, newStatus, btn) {
+  $.post('index.php', { action: 'toggle_status', id: id, status: newStatus, is_ajax: 1 }, function(res) {
+    if (res.success) {
+      var track = btn.querySelector('div');
+      var dot = track ? track.querySelector('div') : null;
+      if (track && dot) {
+        if (newStatus == 1) {
+          track.style.background = '#10b981';
+          dot.style.right = '3px';
+          dot.style.left = 'auto';
+          btn.setAttribute('onclick', 'togglePromoStatus(' + id + ', 0, this)');
+          btn.setAttribute('title', 'ປິດໃຊ້ງານ');
+        } else {
+          track.style.background = '#cbd5e1';
+          dot.style.left = '3px';
+          dot.style.right = 'auto';
+          btn.setAttribute('onclick', 'togglePromoStatus(' + id + ', 1, this)');
+          btn.setAttribute('title', 'ເປີດໃຊ້ງານ');
+        }
+      }
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: res.message || 'ອັບເດດສະຖານະສຳເລັດ!',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    } else {
+      Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: res.message || 'ຜິດພາດ!' });
+    }
+  }, 'json');
+}
+
+function deletePromo(id, btn) {
+  Swal.fire({
+    title: 'ຢືນຢັນການລົບ?',
+    text: 'ຕ້ອງການລົບໂປຣໂມຊັ່ນນີ້ແທ້ຫຼືບໍ່?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#64748b',
+    confirmButtonText: 'ລົບເລີຍ',
+    cancelButtonText: 'ຍົກເລີກ'
+  }).then(function(r) {
+    if (r.isConfirmed) {
+      $.post('index.php', { action: 'delete_promo', id: id, is_ajax: 1 }, function(res) {
+        if (res.success) {
+          $(btn).closest('tr').fadeOut(300, function() { $(this).remove(); });
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'ລົບໂປຣໂມຊັ່ນສຳເລັດ!',
+            showConfirmButton: false,
+            timer: 1500
+          });
+        } else {
+          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+        }
+      }, 'json');
+    }
+  });
+}
+
+$(document).ready(function() {
+  $('#addPromoModal form, #editPromoModal form').on('submit', function(e) {
+    e.preventDefault();
+    var $form = $(this);
+    var formData = $form.serialize() + '&is_ajax=1';
+    $.post('index.php', formData, function(res) {
+      if (res.success) {
+        $form.closest('.modal').modal('hide');
+        refreshPromotionsTable();
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: res.message || 'ດຳເນີນການສຳເລັດ!',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      } else {
+        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+      }
+    }, 'json');
+  });
+});
+</script>

@@ -7,17 +7,21 @@ $base_path = (basename($scriptDir) === 'pages') ? '../' : '../../';
 
 require_once dirname(__DIR__, 3) . '/config/db.php';
 
-// Check permissions (Item sales & All sales reports check specific sub-permissions)
+// Check permissions (Skip for read-only get_bill_details action)
 $currentReportType = trim($_GET['type'] ?? 'all_sales');
-if ($currentReportType === 'item_sales') {
-    if (!hasPermission('item_sales') && !hasPermission('sale') && !hasPermission('report') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
-        echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
-        exit();
-    }
-} else {
-    if (!hasPermission($currentReportType) && !hasPermission('all_sales') && !hasPermission('report') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
-        echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
-        exit();
+$reqAction = $_REQUEST['action'] ?? '';
+
+if ($reqAction !== 'get_bill_details') {
+    if ($currentReportType === 'item_sales') {
+        if (!hasPermission('item_sales') && !hasPermission('sale') && !hasPermission('report') && !hasPermission('pos') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
+            echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+            exit();
+        }
+    } else {
+        if (!hasPermission($currentReportType) && !hasPermission('all_sales') && !hasPermission('report') && !hasPermission('sale') && !hasPermission('pos') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ') {
+            echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
+            exit();
+        }
     }
 }
 
@@ -110,9 +114,12 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
 
     try {
         $stmtB = $pdo->prepare("
-            SELECT s.*, sl.vat_amount, sl.tax_type, sl.vat_rate 
+            SELECT s.*, sl.vat_amount, sl.tax_type, sl.vat_rate,
+                   COALESCE(NULLIF(u.fname, ''), s.user_receive, 'Admin') AS cashier_display_name,
+                   COALESCE(NULLIF(s.customer_name, ''), 'ລູກຄ້າທົ່ວໄປ') AS customer_display_name
             FROM tbsale_save s 
             LEFT JOIN sales sl ON s.sale_save_bill = sl.invoice_number 
+            LEFT JOIN tbuser u ON (s.user_receive = u.username OR s.user_receive = u.fname)
             WHERE s.sale_save_bill = :bill
         ");
         $stmtB->execute([':bill' => $billNo]);
@@ -123,12 +130,39 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
             exit();
         }
 
+        $companyTax = $pdo->query("SELECT tax_type, vat_percent FROM tbcompanyinfo LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        if ($companyTax) {
+            if (empty($billData['tax_type']) || $billData['tax_type'] === 'none') {
+                if (!empty($companyTax['tax_type']) && $companyTax['tax_type'] !== 'none') {
+                    $billData['tax_type'] = $companyTax['tax_type'];
+                }
+            }
+            if (empty($billData['vat_rate']) || floatval($billData['vat_rate']) == 0) {
+                if (!empty($companyTax['vat_percent'])) {
+                    $billData['vat_rate'] = floatval($companyTax['vat_percent']);
+                }
+            }
+        }
+
+        $amountAfterDisc = max(0, floatval($billData['sale_amount'] ?? 0) - floatval($billData['sale_discount_bill'] ?? 0));
+        if ((empty($billData['vat_amount']) || floatval($billData['vat_amount']) == 0) && !empty($billData['vat_rate']) && floatval($billData['vat_rate']) > 0) {
+            $taxT = $billData['tax_type'] ?? 'inclusive';
+            $vatR = floatval($billData['vat_rate']);
+            if ($taxT === 'exclusive') {
+                $billData['vat_amount'] = round($amountAfterDisc * ($vatR / 100), 2);
+            } elseif ($taxT === 'inclusive') {
+                $billData['vat_amount'] = round($amountAfterDisc - ($amountAfterDisc / (1 + ($vatR / 100))), 2);
+            }
+        }
+
         $stmtD = $pdo->prepare("
             SELECT d.*, p.product_name, cat.category_name 
             FROM tbsale_save_detail d
-            LEFT JOIN products p ON d.save_proid = p.product_id
+            LEFT JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+            LEFT JOIN products p ON (d.save_proid = p.product_id AND (p.store_id = s.store_id OR s.store_id IS NULL OR s.store_id <= 1))
             LEFT JOIN categories cat ON p.category_id = cat.category_id
             WHERE d.save_bill = :bill
+            GROUP BY d.Id
             ORDER BY d.Id ASC
         ");
         $stmtD->execute([':bill' => $billNo]);
@@ -482,10 +516,11 @@ if ($view_mode === 'item') {
                p.product_name, cat.category_name, COALESCE(st.store_name, 'ສາຂາ') AS store_name
         FROM tbsale_save_detail d
         INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
-        LEFT JOIN products p ON d.save_proid = p.product_id
+        LEFT JOIN products p ON (d.save_proid = p.product_id AND (p.store_id = s.store_id OR s.store_id IS NULL OR s.store_id <= 1))
         LEFT JOIN categories cat ON p.category_id = cat.category_id
         LEFT JOIN tbstore st ON s.store_id = st.store_id
         WHERE {$whereClause}
+        GROUP BY d.Id
         ORDER BY s.sale_date DESC, s.sale_time DESC, d.Id DESC
     ";
 

@@ -40,6 +40,19 @@ try {
     if (!in_array('diff_amount', $cols)) $pdo->exec("ALTER TABLE `price_adjustments` ADD COLUMN `diff_amount` DECIMAL(12,2) DEFAULT 0.00 AFTER `new_price`");
 } catch (Exception $e) {}
 
+$userStoreId = intval($_SESSION['store_id'] ?? 1);
+$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
+$isMain = isMainBranch($pdo, $userStoreId);
+
+// Fetch stores list for branch selection/filter
+$stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+// GET filter_store parameter
+$filter_store = isset($_GET['store_id']) && $_GET['store_id'] !== '' ? intval($_GET['store_id']) : 0;
+if (!$isAdmin && !$isMain) {
+    $filter_store = $userStoreId;
+}
+
 $message = '';
 $message_type = '';
 
@@ -58,6 +71,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $username          = $_SESSION['username'] ?? 'admin';
         $user_id           = $_SESSION['user_id'] ?? 1;
 
+        $targetStoreId     = isset($_POST['store_id']) && intval($_POST['store_id']) > 0 ? intval($_POST['store_id']) : ($filter_store > 0 ? $filter_store : $userStoreId);
+        if (!$isAdmin && !$isMain) {
+            $targetStoreId = $userStoreId;
+        }
+
         if ($target_mode === 'product' && $product_id <= 0) {
             $message = 'ກະລຸນາເລືອກສິນຄ້າທີ່ຕ້ອງການປັບລາຄາ!';
             $message_type = 'danger';
@@ -68,15 +86,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $pdo->beginTransaction();
 
-                $activeStoreId = getActiveStoreId($pdo);
                 // ດຶງລາຍການສິນຄ້າທີ່ຈະປັບ
                 if ($target_mode === 'product') {
                     $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE product_id = ? AND store_id = ?");
-                    $stmt->execute([$product_id, $activeStoreId]);
+                    $stmt->execute([$product_id, $targetStoreId]);
                     $targetProducts = $stmt->fetchAll();
                 } else {
                     $stmt = $pdo->prepare("SELECT product_id, product_name, bprice, price FROM products WHERE category_id = ? AND store_id = ?");
-                    $stmt->execute([$category_id, $activeStoreId]);
+                    $stmt->execute([$category_id, $targetStoreId]);
                     $targetProducts = $stmt->fetchAll();
                 }
 
@@ -124,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $diffAmount = ($target_price_type === 'bprice') ? ($newBprice - $oldBprice) : ($newPrice - $oldPrice);
 
                         // ອັບເດດລາຄາໃນຕາຕະລາງ products (ຕອງຕາມ store_id)
-                        $updStmt->execute([$newBprice, $newPrice, $pid, $activeStoreId]);
+                        $updStmt->execute([$newBprice, $newPrice, $pid, $targetStoreId]);
 
                         // ບັນທຶກປະຫວັດລາຍລະອຽດ
                         $logStmt->execute([
@@ -143,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                             $remark,
                             $username,
                             $user_id,
-                            $activeStoreId
+                            $targetStoreId
                         ]);
 
                         $count++;
@@ -152,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $pdo->commit();
                     $message = "ປັບລາຄາສິນຄ້າສຳເລັດແລ້ວ ທັງໝົດ {$count} ລາຍການ!";
                     $message_type = 'success';
-                    logActivity($pdo, "ປັບລາຄາສິນຄ້າ", "ໂໝດ: {$target_mode}, ປັບທັງໝົດ: {$count} ລາຍການ");
+                    logActivity($pdo, "ປັບລາຄາສິນຄ້າ", "ໂໝດ: {$target_mode}, ປັບທັງໝົດ: {$count} ລາຍການ (ສາຂາ #$targetStoreId)");
                 }
             } catch (Exception $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
@@ -164,9 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $adjust_id = intval($_POST['adjust_id'] ?? 0);
         if ($adjust_id > 0) {
             try {
-                $userStoreId = intval($_SESSION['store_id'] ?? 1);
-                $isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
-                $isMain = isMainBranch($pdo, $userStoreId);
                 $stmt = ($isAdmin || $isMain)
                     ? $pdo->prepare("DELETE FROM price_adjustments WHERE adjust_id = ?")
                     : $pdo->prepare("DELETE FROM price_adjustments WHERE adjust_id = ? AND branch_id = ?");
@@ -185,37 +199,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Fetch categories, products, and price adjustments history
-$activeStoreId = getActiveStoreId($pdo);
-$userStoreId = intval($_SESSION['store_id'] ?? 1);
-$isAdmin = ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ' || strtolower($_SESSION['status'] ?? '') === 'admin' || ($_SESSION['user_id'] ?? 0) == 1;
-$isMain = isMainBranch($pdo, $userStoreId);
+if (!empty($_POST['is_ajax'])) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => ($message_type === 'success'),
+        'message' => $message
+    ]);
+    exit();
+}
 
+// Fetch categories, products, and price adjustments history
 $categoriesList = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
 
+$targetProdStore = ($filter_store > 0) ? $filter_store : $userStoreId;
 $prodStmt = $pdo->prepare("SELECT p.product_id, p.product_name, p.barcode, p.category_id, p.bprice, p.price, p.unit, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.store_id = ? ORDER BY p.product_name ASC");
-$prodStmt->execute([$activeStoreId]);
+$prodStmt->execute([$targetProdStore]);
 $productsList = $prodStmt->fetchAll();
 
-if ($isAdmin || $isMain) {
-    $adjustments = $pdo->query("
-        SELECT pa.*, p.barcode as prod_barcode, c.category_name 
-        FROM price_adjustments pa
-        LEFT JOIN products p ON pa.product_id = p.product_id AND p.store_id = pa.branch_id
-        LEFT JOIN categories c ON pa.category_id = c.category_id
-        ORDER BY pa.adjust_id DESC 
-        LIMIT 100
-    ")->fetchAll();
-} else {
-    $adjStmt = $pdo->prepare("
-        SELECT pa.*, p.barcode as prod_barcode, c.category_name 
-        FROM price_adjustments pa
-        LEFT JOIN products p ON pa.product_id = p.product_id AND p.store_id = pa.branch_id
-        LEFT JOIN categories c ON pa.category_id = c.category_id
-        WHERE pa.branch_id = ?
-        ORDER BY pa.adjust_id DESC 
-        LIMIT 100
-    ");
-    $adjStmt->execute([$activeStoreId]);
-    $adjustments = $adjStmt->fetchAll();
+$where = ["1=1"];
+$params = [];
+if ($filter_store > 0) {
+    $where[] = "pa.branch_id = :filter_store";
+    $params[':filter_store'] = $filter_store;
+}
+$whereSql = implode(' AND ', $where);
+
+$adjStmt = $pdo->prepare("
+    SELECT pa.*, p.barcode as prod_barcode, c.category_name, s.store_name 
+    FROM price_adjustments pa
+    LEFT JOIN products p ON pa.product_id = p.product_id AND p.store_id = pa.branch_id
+    LEFT JOIN categories c ON pa.category_id = c.category_id
+    LEFT JOIN tbstore s ON pa.branch_id = s.store_id
+    WHERE {$whereSql}
+    ORDER BY pa.adjust_id DESC 
+    LIMIT 100
+");
+$adjStmt->execute($params);
+$adjustments = $adjStmt->fetchAll();
+
+if (!empty($_GET['fetch_table'])) {
+    require_once __DIR__ . '/../pages/settings/price_adjustment/partials/price_adj_table.php';
+    exit();
 }

@@ -56,10 +56,17 @@ if (!defined('MINIPOS_APP')) {
                               onclick='openEditBranchModal(<?php echo json_encode($b); ?>)' title="ແກ້ໄຂ">
                         <i class="fas fa-edit"></i>
                       </button>
-                      <button type="button" class="btn btn-sm <?php echo $b['status'] === 'active' ? 'btn-outline-danger' : 'btn-outline-success'; ?> rounded-circle" 
+                      <button type="button" class="btn btn-sm <?php echo $b['status'] === 'active' ? 'btn-outline-danger' : 'btn-outline-success'; ?> rounded-circle mr-1" 
                               onclick='confirmToggleBranchStatus(<?php echo $b["store_id"]; ?>, <?php echo json_encode($b["store_name"]); ?>, <?php echo json_encode($b["status"]); ?>)' 
                               title="<?php echo $b['status'] === 'active' ? 'ປິດສາຂາ' : 'ເປີດໃຊ້ງານສາຂາ'; ?>">
                         <i class="fas fa-power-off"></i>
+                      </button>
+                    <?php endif; ?>
+                    <?php if (hasPermission('branches', 'del') && empty($b['is_main'])): ?>
+                      <button type="button" class="btn btn-sm btn-danger rounded-circle" 
+                              onclick='confirmDeleteBranch(<?php echo $b["store_id"]; ?>, <?php echo json_encode($b["store_name"]); ?>)' 
+                              title="ລົບສາຂາ">
+                        <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
                   </div>

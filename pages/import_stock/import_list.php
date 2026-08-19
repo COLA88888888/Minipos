@@ -229,46 +229,6 @@ $from_date = $_GET['from_date'] ?? date('Y-m-d');
 $to_date   = $_GET['to_date']   ?? date('Y-m-d');
 $view_type = $_GET['view_type'] ?? 'bill';
 
-// Fetch categories for modal filter
-$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
-
-// Fetch all products with categories & multi-units
-$products = $pdo->query("
-    SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
-    FROM products p 
-    LEFT JOIN categories c ON p.category_id = c.category_id 
-    ORDER BY p.product_name ASC
-")->fetchAll();
-
-$product_units_map = [];
-$uRows = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC")->fetchAll();
-foreach ($uRows as $u) {
-    $product_units_map[$u['product_id']][] = $u;
-}
-
-// Pre-fetch items per bill for the View Bill Items Modal
-$allBillItems = $pdo->query("
-    SELECT id.*, p.product_name, p.barcode, p.unit AS base_unit,
-    (
-        CASE 
-            WHEN (pb.quantity IS NOT NULL AND pb.initial_qty IS NOT NULL AND pb.quantity < pb.initial_qty)
-                 OR (p.qty < id.total_base_qty) THEN 1 
-            ELSE 0 
-        END
-    ) AS has_movement
-    FROM import_details id
-    JOIN products p ON id.product_id = p.product_id
-    LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
-    ORDER BY id.import_detail_id ASC
-")->fetchAll();
-
-$billItemsMap = [];
-foreach ($allBillItems as $bi) {
-    // Make sure we carry forward necessary fields
-    $bi['invoice_number'] = ''; // Will be populated in JS or we can join imports
-    $billItemsMap[$bi['import_id']][] = $bi;
-}
-
 // ====== FETCH IMPORT RECORDS BASED ON VIEW TYPE & DATE RANGE ======
 $activeStoreId = getActiveStoreId($pdo);
 $userStoreId = intval($_SESSION['store_id'] ?? 1);
@@ -284,6 +244,28 @@ if (!$isAdmin && !$isMain) {
     $filter_store = $userStoreId;
 }
 
+// Fetch categories for modal filter
+$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+
+// Fetch products for modal filter (filtered by active/selected store)
+$targetProdStore = ($filter_store > 0) ? $filter_store : $userStoreId;
+$pStmt = $pdo->prepare("
+    SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
+    FROM products p 
+    LEFT JOIN categories c ON p.category_id = c.category_id 
+    WHERE p.store_id = ?
+    ORDER BY p.product_name ASC
+");
+$pStmt->execute([$targetProdStore]);
+$products = $pStmt->fetchAll();
+
+$product_units_map = [];
+$uRows = $pdo->query("SELECT * FROM product_units ORDER BY multiplier ASC")->fetchAll();
+foreach ($uRows as $u) {
+    $product_units_map[$u['product_id']][] = $u;
+}
+
+// Build store filter WHERE condition for bill queries
 $whereClause = "WHERE DATE(i.import_date) BETWEEN :from_date AND :to_date";
 $params = [
     ':from_date' => $from_date,
@@ -291,8 +273,42 @@ $params = [
 ];
 
 if ($filter_store > 0) {
-    $whereClause .= " AND p.store_id = :filter_store";
+    $whereClause .= " AND (CASE WHEN i.store_id > 0 THEN i.store_id ELSE p.store_id END) = :filter_store";
     $params[':filter_store'] = $filter_store;
+}
+
+// Pre-fetch items per bill for the View Bill Items Modal (strictly branch scoped)
+$allBillWhere = "";
+$allBillParams = [];
+if ($filter_store > 0) {
+    $allBillWhere = "WHERE (CASE WHEN i.store_id > 0 THEN i.store_id ELSE p.store_id END) = :filter_store";
+    $allBillParams[':filter_store'] = $filter_store;
+}
+
+$allBillStmt = $pdo->prepare("
+    SELECT id.*, p.product_name, p.barcode, p.unit AS base_unit,
+    (
+        CASE 
+            WHEN (pb.quantity IS NOT NULL AND pb.initial_qty IS NOT NULL AND pb.quantity < pb.initial_qty)
+                 OR (p.qty < id.total_base_qty) THEN 1 
+            ELSE 0 
+        END
+    ) AS has_movement
+    FROM import_details id
+    JOIN imports i ON id.import_id = i.import_id
+    LEFT JOIN products p ON (id.product_id = p.product_id AND p.store_id = (CASE WHEN i.store_id > 0 THEN i.store_id ELSE 1 END))
+    LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
+    {$allBillWhere}
+    GROUP BY id.import_detail_id
+    ORDER BY id.import_detail_id ASC
+");
+$allBillStmt->execute($allBillParams);
+$allBillItems = $allBillStmt->fetchAll();
+
+$billItemsMap = [];
+foreach ($allBillItems as $bi) {
+    $bi['invoice_number'] = '';
+    $billItemsMap[$bi['import_id']][] = $bi;
 }
 
 $importList = [];
@@ -310,7 +326,7 @@ if ($view_type === 'bill') {
             u.lname,
             s.store_name,
             s.store_id,
-            COUNT(id.import_detail_id) AS item_count,
+            COUNT(DISTINCT id.import_detail_id) AS item_count,
             SUM(id.total_base_qty) AS sum_base_qty,
             MAX(
                 CASE 
@@ -321,8 +337,8 @@ if ($view_type === 'bill') {
             ) AS has_movement
         FROM imports i
         LEFT JOIN import_details id ON i.import_id = id.import_id
-        LEFT JOIN products p ON id.product_id = p.product_id
-        LEFT JOIN tbstore s ON p.store_id = s.store_id
+        LEFT JOIN products p ON (id.product_id = p.product_id AND p.store_id = (CASE WHEN i.store_id > 0 THEN i.store_id ELSE 1 END))
+        LEFT JOIN tbstore s ON (CASE WHEN i.store_id > 0 THEN i.store_id ELSE p.store_id END) = s.store_id
         LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
         LEFT JOIN tbuser u ON i.created_by = u.Id
         {$whereClause}
@@ -360,11 +376,12 @@ if ($view_type === 'bill') {
             pb.quantity AS batch_rem_qty
         FROM import_details id
         JOIN imports i ON id.import_id = i.import_id
-        JOIN products p ON id.product_id = p.product_id
-        LEFT JOIN tbstore s ON p.store_id = s.store_id
+        LEFT JOIN products p ON (id.product_id = p.product_id AND p.store_id = (CASE WHEN i.store_id > 0 THEN i.store_id ELSE 1 END))
+        LEFT JOIN tbstore s ON (CASE WHEN i.store_id > 0 THEN i.store_id ELSE p.store_id END) = s.store_id
         LEFT JOIN tbuser u ON i.created_by = u.Id
         LEFT JOIN product_batches pb ON id.import_detail_id = pb.import_detail_id
         {$whereClause}
+        GROUP BY id.import_detail_id
         ORDER BY i.import_date DESC, id.import_detail_id DESC
     ";
     $stmt = $pdo->prepare($detailQuery);
