@@ -452,15 +452,6 @@ try {
             `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
-        $bankCount = (int)$pdo->query("SELECT COUNT(*) FROM bank_accounts")->fetchColumn();
-        if ($bankCount === 0) {
-            $pdo->exec("INSERT INTO bank_accounts (bank_name, account_number, account_name, bank_code, bank_logo, is_active) VALUES 
-                ('BCEL One (ທະນາຄານ ການຄ້າຕ່າງປະເທດລາວ)', '16012000012345', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'BCEL', 'bcel.png', 1),
-                ('LDB (ທະນາຄານ ພັດທະນາລາວ)', '01011000098765', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'LDB', 'ldb.png', 1),
-                ('JDB (ທະນາຄານ ພົງສະຫວັນ)', '05012000045678', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'JDB', 'jdb.png', 1),
-                ('STB (ທະນາຄານ ເອັສທີ)', '08012000033221', 'ບໍລິສັດ ມິນິ ພອສ ຈຳກັດ', 'STB', 'stb.png', 1)");
-        }
-
         // Add columns to tbsale_save & sales if missing
         $saleCols = $pdo->query("SHOW COLUMNS FROM tbsale_save")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('bank_account_id', $saleCols)) {
