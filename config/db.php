@@ -900,21 +900,7 @@ if (!function_exists('resolveBankLogo')) {
                 return '../../assets/img/banks/' . $filename;
             }
         }
-        $code = strtolower(trim($bankCode));
-        if (strpos($code, 'bcel') !== false || strpos($code, 'bcl') !== false) $code = 'bcel';
-        else if (strpos($code, 'ldb') !== false) $code = 'ldb';
-        else if (strpos($code, 'jdb') !== false) $code = 'jdb';
-        else if (strpos($code, 'stb') !== false) $code = 'stb';
-        else if (strpos($code, 'apb') !== false) $code = 'apb';
-        else if (strpos($code, 'lvb') !== false) $code = 'lvb';
-
-        if ($code && file_exists($root . '/assets/img/banks/' . $code . '.svg')) {
-            return '../../assets/img/banks/' . $code . '.svg';
-        }
-        if ($code && file_exists($root . '/assets/img/banks/' . $code . '.png')) {
-            return '../../assets/img/banks/' . $code . '.png';
-        }
-        return '../../assets/img/banks/default.svg';
+        return '';
     }
 }
 

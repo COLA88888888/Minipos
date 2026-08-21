@@ -89,7 +89,11 @@
                            style="cursor: pointer; transition: all 0.15s; background: #ffffff; border-color: #cbd5e1 !important; min-height: 38px;"
                            onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($displayLabel)); ?>', '<?php echo htmlspecialchars($bQr); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_number'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_name'] ?? '')); ?>', this)">
                         <div class="d-flex align-items-center text-truncate" style="gap: 6px;">
-                          <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px; flex-shrink: 0;" onerror="this.src='../../assets/img/banks/default.svg';">
+                          <?php if (!empty($bLogo)): ?>
+                            <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px; flex-shrink: 0;">
+                          <?php else: ?>
+                            <i class="fas fa-university text-primary" style="font-size: 1.1rem; flex-shrink: 0;"></i>
+                          <?php endif; ?>
                           <div class="font-weight-bold text-dark text-truncate" style="font-size: 0.80rem; font-family: 'Noto Sans Lao', sans-serif;" title="<?php echo htmlspecialchars($displayLabel); ?>">
                             <?php echo htmlspecialchars($displayLabel); ?>
                           </div>
