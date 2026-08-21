@@ -58,7 +58,7 @@ window.POS_TODAY_SALE_COUNT = <?php echo $todaySaleCount; ?>;
 <?php require_once __DIR__ . '/partials/checkout_modal.php'; ?>
 
 <!-- Hidden Iframe for Thermal Receipt Printing -->
-<iframe id="posPrintIframe" style="position: absolute; width: 0; height: 0; border: 0; visibility: hidden;"></iframe>
+<iframe id="posPrintIframe" style="position: fixed; right: -9999px; bottom: -9999px; width: 300px; height: 300px; border: none; opacity: 0; pointer-events: none;"></iframe>
 
 <!-- POS JavaScript Functionality -->
 <?php require_once __DIR__ . '/partials/pos_js.php'; ?>

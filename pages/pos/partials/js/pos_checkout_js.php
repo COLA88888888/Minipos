@@ -560,8 +560,10 @@ function handleOnlineCheckoutReceiptUI(res) {
   if (typeof broadcastCustomerDisplay === 'function') {
     broadcastCustomerDisplay('payment_success', { cashReceived: res.cash_received, qrReceived: res.qr_received, changeAmount: res.change });
   }
-  printReceipt();
-  setTimeout(function() { resetPOS(); }, 1200);
+  $('#receiptModal').modal('show');
+  setTimeout(function() {
+    printReceipt();
+  }, 300);
 }
 
 // ============================
@@ -573,7 +575,7 @@ function printReceipt() {
   if (!iframe) {
     iframe = document.createElement('iframe');
     iframe.id = 'posPrintIframe';
-    iframe.style.cssText = 'position:absolute;width:0px;height:0px;border:none;';
+    iframe.style.cssText = 'position:fixed;right:-9999px;bottom:-9999px;width:300px;height:300px;border:none;opacity:0;pointer-events:none;';
     document.body.appendChild(iframe);
   }
   var iframeDoc = iframe.contentWindow || iframe.contentDocument;
@@ -619,12 +621,17 @@ function printReceipt() {
   function doTriggerPOSPrint() {
     if (printTriggered) return;
     printTriggered = true;
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch(e) {
+      console.warn('Iframe print error, falling back to window.print():', e);
+      window.print();
+    }
   }
 
   if (totalImages === 0) {
-    setTimeout(doTriggerPOSPrint, 150);
+    setTimeout(doTriggerPOSPrint, 200);
   } else {
     for (var i = 0; i < totalImages; i++) {
       if (images[i].complete && images[i].naturalWidth !== 0) {
@@ -633,15 +640,15 @@ function printReceipt() {
         images[i].onload = images[i].onerror = function() {
           loadedCount++;
           if (loadedCount >= totalImages) {
-            setTimeout(doTriggerPOSPrint, 100);
+            setTimeout(doTriggerPOSPrint, 150);
           }
         };
       }
     }
     if (loadedCount >= totalImages) {
-      setTimeout(doTriggerPOSPrint, 150);
+      setTimeout(doTriggerPOSPrint, 200);
     } else {
-      setTimeout(doTriggerPOSPrint, 500);
+      setTimeout(doTriggerPOSPrint, 600);
     }
   }
 }
@@ -953,8 +960,10 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
     if (typeof broadcastCustomerDisplay === 'function') {
       broadcastCustomerDisplay('payment_success', { cashReceived: saleObj.cash_received, qrReceived: saleObj.qr_received, changeAmount: change });
     }
-    printReceipt();
-    setTimeout(function() { resetPOS(); }, 1000);
+    $('#receiptModal').modal('show');
+    setTimeout(function() {
+      printReceipt();
+    }, 300);
   });
 }
 
