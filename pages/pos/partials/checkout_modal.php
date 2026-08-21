@@ -78,21 +78,23 @@
                     <?php 
                       $bLogo = resolveBankLogo($bAccount['bank_logo'] ?? '', $bAccount['bank_code'] ?? '');
                       $bQr   = resolveBankQr($bAccount['qr_code_img'] ?? '', $bAccount['bank_code'] ?? '');
-                      $code = strtoupper(trim($bAccount['bank_code']));
-                      $shortName = !empty($code) ? $code : htmlspecialchars($bAccount['bank_name']);
-                      $bColor = ($code === 'BCEL') ? '#002d72' : (($code === 'LDB') ? '#047857' : (($code === 'JDB') ? '#6b21a8' : (($code === 'STB') ? '#ea580c' : (($code === 'APB') ? '#15803d' : (($code === 'LVB') ? '#b91c1c' : '#0284c7')))));
+                      $code = strtoupper(trim($bAccount['bank_code'] ?? ''));
+                      $bName = !empty($bAccount['bank_name']) ? $bAccount['bank_name'] : (!empty($code) ? $code : 'Bank');
+                      $accOwner = !empty($bAccount['account_name']) ? $bAccount['account_name'] : '';
+                      $displayLabel = $bName . ($accOwner ? " ($accOwner)" : '');
+                      $bColor = (strpos($code, 'BCEL') !== false) ? '#002d72' : ((strpos($code, 'LDB') !== false) ? '#047857' : ((strpos($code, 'JDB') !== false) ? '#6b21a8' : ((strpos($code, 'STB') !== false) ? '#ea580c' : ((strpos($code, 'APB') !== false) ? '#15803d' : ((strpos($code, 'LVB') !== false) ? '#b91c1c' : '#0284c7')))));
                     ?>
                     <div class="col-6 px-1">
                       <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between" 
                            style="cursor: pointer; transition: all 0.15s; background: #ffffff; border-color: #cbd5e1 !important; min-height: 38px;"
-                           onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($shortName)); ?>', '<?php echo htmlspecialchars($bQr); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_number'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_name'] ?? '')); ?>', this)">
-                        <div class="d-flex align-items-center" style="gap: 6px;">
-                          <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px;" onerror="this.src='../../assets/img/banks/default.svg';">
-                          <div class="font-weight-bold text-dark" style="font-size: 0.82rem; font-family: 'Montserrat', 'Noto Sans Lao', sans-serif; letter-spacing: 0.3px;">
-                            <?php echo htmlspecialchars($shortName); ?>
+                           onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($displayLabel)); ?>', '<?php echo htmlspecialchars($bQr); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_number'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_name'] ?? '')); ?>', this)">
+                        <div class="d-flex align-items-center text-truncate" style="gap: 6px;">
+                          <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px; flex-shrink: 0;" onerror="this.src='../../assets/img/banks/default.svg';">
+                          <div class="font-weight-bold text-dark text-truncate" style="font-size: 0.80rem; font-family: 'Noto Sans Lao', sans-serif;" title="<?php echo htmlspecialchars($displayLabel); ?>">
+                            <?php echo htmlspecialchars($displayLabel); ?>
                           </div>
                         </div>
-                        <input type="radio" name="pos_selected_bank_id" value="<?php echo $bAccount['id']; ?>" style="accent-color: <?php echo $bColor; ?>; width: 14px; height: 14px; cursor: pointer;">
+                        <input type="radio" name="pos_selected_bank_id" value="<?php echo $bAccount['id']; ?>" style="accent-color: <?php echo $bColor; ?>; width: 14px; height: 14px; cursor: pointer; flex-shrink: 0;">
                       </div>
                     </div>
                   <?php endforeach; ?>
