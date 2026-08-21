@@ -523,21 +523,23 @@ function handleOnlineCheckoutReceiptUI(res) {
   var isTransferPayment = (qrAmt > 0) || (pType && (pType.includes('ໂອນ') || pType.includes('QR')));
 
   if (isTransferPayment) {
-    if (bQrImg) {
-      $('#rc_bank_qr_img').attr('src', bQrImg);
+    if (bQrImg && bQrImg.trim() !== '') {
+      $('#rc_bank_qr_img').attr('src', bQrImg).show();
+    } else {
+      $('#rc_bank_qr_img').hide();
     }
-    var labelBank = bName ? bName : 'BCEL One';
-    if (bAccName) labelBank += ' (' + bAccName + ')';
-    $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')');
+    var labelBank = bName ? bName : '';
+    if (bAccName) labelBank += (labelBank ? ' - ' : '') + bAccName;
+    $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
 
     if (bAccNo) {
       $('#rc_bank_acc_lbl').text('ເລກບັນຊີ: ' + bAccNo).show();
     } else {
       $('#rc_bank_acc_lbl').hide();
     }
-    $('.receipt-qr-box').show();
+    $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
   } else {
-    $('.receipt-qr-box').hide();
+    $('.receipt-qr-box').attr('style', 'display:none!important;').hide();
   }
 
   var tbody = $('#rc_items');

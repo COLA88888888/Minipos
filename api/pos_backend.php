@@ -121,8 +121,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $bank_account_id = isset($_POST['bank_account_id']) && intval($_POST['bank_account_id']) > 0 ? intval($_POST['bank_account_id']) : null;
         $bank_name = isset($_POST['bank_name']) && trim($_POST['bank_name']) !== '' ? trim($_POST['bank_name']) : null;
 
-        $bank_info = null;
-        if ($bank_account_id) {
+        if (empty($bank_account_id) && ($qr_received > 0 || strpos($payment_type, 'ໂອນ') !== false || strpos($payment_type, 'QR') !== false || strpos($payment_type, 'Transfer') !== false)) {
+            try {
+                $bStmt = $pdo->query("SELECT * FROM bank_accounts WHERE is_active = 1 ORDER BY id ASC LIMIT 1");
+                $bank_info = $bStmt->fetch(PDO::FETCH_ASSOC);
+                if ($bank_info) {
+                    $bank_account_id = intval($bank_info['id']);
+                    $bank_name = $bank_info['bank_name'];
+                }
+            } catch (Throwable $e) {}
+        } else if ($bank_account_id) {
             try {
                 $bStmt = $pdo->prepare("SELECT * FROM bank_accounts WHERE id = ?");
                 $bStmt->execute([$bank_account_id]);
