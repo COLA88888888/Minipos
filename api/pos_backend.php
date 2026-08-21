@@ -41,9 +41,7 @@ function getClientIP() {
 // Live Stock Polling Handler
 if (isset($_GET['action']) && $_GET['action'] === 'get_live_stocks') {
     header('Content-Type: application/json');
-    $activeStoreId = getActiveStoreId($pdo);
-    $stmt = $pdo->prepare("SELECT product_id, qty FROM products WHERE store_id = ?");
-    $stmt->execute([$activeStoreId]);
+    $stmt = $pdo->query("SELECT product_id, qty FROM products");
     $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['success' => true, 'stocks' => $stocks]);
     exit();
@@ -198,11 +196,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ");
         
         $stmtUpdateStock = $pdo->prepare("
-            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id AND store_id = :store_id
+            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id
         ");
 
         $stmtCheckStock = $pdo->prepare("
-            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid AND store_id = :store_id FOR UPDATE
+            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid FOR UPDATE
         ");
         
         $details_summary = [];
@@ -221,12 +219,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $is_gift = !empty($item['is_free_gift']) || $price == 0 || strpos($item['product_name'], '(ແຖມ)') !== false;
 
             if ($is_gift) {
-                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
+                $stmtCheckStock->execute([':pid' => $pid]);
                 $pData = $stmtCheckStock->fetch();
                 $shouldCutQty = $pData ? intval($pData['cut_qty'] ?? 0) : 0;
                 $currentDbStock = $pData ? floatval($pData['qty']) : 0;
             } else {
-                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
+                $stmtCheckStock->execute([':pid' => $pid]);
                 $pData = $stmtCheckStock->fetch();
                 if (!$pData) {
                     $pdo->rollBack();
@@ -269,8 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             if ($shouldCutQty) {
                 $stmtUpdateStock->execute([
                     ':deduct_qty' => $deduct_stock_qty,
-                    ':product_id' => $pid,
-                    ':store_id'   => $activeStoreId
+                    ':product_id' => $pid
                 ]);
                 $newStock = max(0, $currentDbStock - $deduct_stock_qty);
             }
