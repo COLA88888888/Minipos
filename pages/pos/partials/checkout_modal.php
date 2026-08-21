@@ -88,7 +88,7 @@
                     <div class="col-6 px-1">
                       <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between <?php echo ($bIdx === 0) ? 'selected-bank' : ''; ?>" 
                            style="cursor: pointer; transition: all 0.15s; background: <?php echo ($bIdx === 0) ? '#f0f9ff' : '#ffffff'; ?>; border-color: <?php echo ($bIdx === 0) ? $bColor : '#cbd5e1'; ?> !important; min-height: 38px;"
-                           onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($shortName)); ?>', '<?php echo htmlspecialchars($bQr); ?>', this)">
+                           onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($shortName)); ?>', '<?php echo htmlspecialchars($bQr); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_number'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_name'] ?? '')); ?>', this)">
                         <div class="d-flex align-items-center" style="gap: 6px;">
                           <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px;" onerror="this.src='../../assets/img/banks/default.svg';">
                           <div class="font-weight-bold text-dark" style="font-size: 0.82rem; font-family: 'Montserrat', 'Noto Sans Lao', sans-serif; letter-spacing: 0.3px;">

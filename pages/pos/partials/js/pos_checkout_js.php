@@ -506,15 +506,27 @@ function handleOnlineCheckoutReceiptUI(res) {
   $('#rc_cash_amt').text(cashAmt.toLocaleString() + ' ₭');
   $('#rc_qr_amt').text(qrAmt.toLocaleString() + ' ₭');
 
-  var bName = res.bank_name || '';
-  if ((!bName || bName.trim() === '') && (res.bank_account_id || qrAmt > 0)) {
-    bName = 'BCEL One';
+  var bName = res.bank_name || window.currentSelectedBankName || '';
+  var bAccNo = res.bank_account_no || window.currentSelectedBankAccNo || '';
+  var bAccName = res.bank_account_name || window.currentSelectedBankAccName || '';
+  var bQrImg = res.bank_qr_img || window.currentSelectedBankQrPath || '';
+
+  if (bQrImg) {
+    $('#rc_bank_qr_img').attr('src', bQrImg);
   }
-  if ((bName || qrAmt > 0)) {
+
+  if (bName || qrAmt > 0) {
     var labelBank = bName ? bName : 'BCEL One';
+    if (bAccName) labelBank += ' (' + bAccName + ')';
     $('#rc_bank_name_lbl').text('ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')');
   } else {
     $('#rc_bank_name_lbl').text('ສະແກນ QR Code ເພື່ອຊຳລະເງິນ');
+  }
+
+  if (bAccNo) {
+    $('#rc_bank_acc_lbl').text('ເລກບັນຊີ: ' + bAccNo).show();
+  } else {
+    $('#rc_bank_acc_lbl').hide();
   }
 
   var tbody = $('#rc_items');
@@ -678,7 +690,7 @@ function resetPOS() {
   $('#barcodeInput').val('').focus();
 }
 
-function selectPosBank(bankId, bankName, qrPath, el) {
+function selectPosBank(bankId, bankName, qrPath, accNo, accName, el) {
   $('.pos-bank-option').css({'background': '#ffffff', 'border-color': '#cbd5e1'}).removeClass('selected-bank');
   if (el) {
     $(el).addClass('selected-bank').css({'background': '#f0f9ff', 'border-color': '#0284c7'});
@@ -686,12 +698,16 @@ function selectPosBank(bankId, bankName, qrPath, el) {
   }
   if (qrPath) {
     $('#posActiveBankQrImg').attr('src', qrPath);
+    $('#rc_bank_qr_img').attr('src', qrPath);
   }
   if (bankName) {
     $('#posActiveBankNameTitle').text(' - ' + bankName);
   }
   window.currentSelectedBankId = bankId;
   window.currentSelectedBankName = bankName;
+  window.currentSelectedBankQrPath = qrPath;
+  window.currentSelectedBankAccNo = accNo || '';
+  window.currentSelectedBankAccName = accName || '';
 }
 
 function formatPriceInput(input) {

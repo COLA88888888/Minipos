@@ -132,11 +132,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             } catch (Throwable $e) {}
         }
 
-        if ($bank_account_id && empty($bank_name)) {
+        $bank_info = null;
+        if ($bank_account_id) {
             try {
-                $bStmt = $pdo->prepare("SELECT bank_name FROM bank_accounts WHERE id = ?");
+                $bStmt = $pdo->prepare("SELECT * FROM bank_accounts WHERE id = ?");
                 $bStmt->execute([$bank_account_id]);
-                $bank_name = $bStmt->fetchColumn() ?: null;
+                $bank_info = $bStmt->fetch(PDO::FETCH_ASSOC);
+                if ($bank_info && !empty($bank_info['bank_name'])) {
+                    $bank_name = $bank_info['bank_name'];
+                }
             } catch (Throwable $e) {}
         }
 
@@ -318,6 +322,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             'payment_type'   => $payment_type,
             'bank_account_id'=> $bank_account_id,
             'bank_name'      => $bank_name,
+            'bank_account_no'=> $bank_info['account_number'] ?? '',
+            'bank_account_name'=> $bank_info['account_name'] ?? '',
+            'bank_qr_img'    => resolveBankQr($bank_info['qr_code_img'] ?? '', $bank_info['bank_code'] ?? ''),
             'details'        => $details_summary,
             'updated_stocks' => $updated_stocks
         ]);
