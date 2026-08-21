@@ -334,8 +334,11 @@ function processCheckout() {
     change      = Math.max(0, (cashReceived + qrReceived) - total);
   }
 
-  var activeBankId = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankId || $('input[name="pos_selected_bank_id"]:checked').val() || null) : null;
-  var activeBankName = (selectedPayType === 'ໂອນ' || selectedPayType === 'QR' || selectedPayType === 'ໂອນເງິນ / QR' || currentPayMode === 'multiple') ? (window.currentSelectedBankName || null) : null;
+  var isTransferTxn = (currentPayMode === 'split' && qrReceived > 0) ||
+                      (currentPayMode === 'single' && selectedPayType !== 'ເງິນສົດ');
+
+  var activeBankId = isTransferTxn ? (window.currentSelectedBankId || $('input[name="pos_selected_bank_id"]:checked').val() || null) : null;
+  var activeBankName = isTransferTxn ? (window.currentSelectedBankName || null) : null;
 
   // Validate & clean cart items payload before sending to server
   var cleanCart = cart.filter(function(item) {
@@ -953,6 +956,34 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
 
     $('#rc_cash_amt').text(offCashAmt.toLocaleString() + ' ₭');
     $('#rc_qr_amt').text(offQrAmt.toLocaleString() + ' ₭');
+
+    var bName = saleObj.bank_name || window.currentSelectedBankName || '';
+    var bAccNo = saleObj.bank_account_no || window.currentSelectedBankAccNo || '';
+    var bAccName = saleObj.bank_account_name || window.currentSelectedBankAccName || '';
+    var bQrImg = saleObj.bank_qr_img || window.currentSelectedBankQrPath || '';
+    var pType = saleObj.payment_type || selectedPayType || '';
+
+    var isTransferPayment = (offQrAmt > 0) || (pType && (pType.includes('ໂອນ') || pType.includes('QR')));
+
+    if (isTransferPayment) {
+      if (bQrImg && bQrImg.trim() !== '') {
+        $('#rc_bank_qr_img').attr('src', bQrImg).show();
+      } else {
+        $('#rc_bank_qr_img').hide();
+      }
+      var labelBank = bName ? bName : '';
+      if (bAccName) labelBank += (labelBank ? ' - ' : '') + bAccName;
+      $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
+
+      if (bAccNo) {
+        $('#rc_bank_acc_lbl').text('ເລກບັນຊີ: ' + bAccNo).show();
+      } else {
+        $('#rc_bank_acc_lbl').hide();
+      }
+      $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
+    } else {
+      $('.receipt-qr-box').attr('style', 'display:none!important;').hide();
+    }
 
     var tbody = $('#rc_items');
     tbody.empty();
