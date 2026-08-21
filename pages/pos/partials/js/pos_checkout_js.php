@@ -275,8 +275,15 @@ function openCheckoutModal() {
   $('#splitSummary').hide();
   $('#payModeSingleBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
   $('#payModeSplitBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
-  $('#splitCashAmount').val('0');
-  $('#splitQrAmount').val('0');
+  window.currentSelectedBankId = null;
+  window.currentSelectedBankName = null;
+  window.currentSelectedBankQrPath = '';
+  window.currentSelectedBankAccNo = '';
+  window.currentSelectedBankAccName = '';
+  $('input[name="pos_selected_bank_id"]').prop('checked', false);
+  $('.pos-bank-option').removeClass('selected-bank').css({'background': '#ffffff', 'border-color': '#cbd5e1'});
+  $('#posActiveBankQrImg').attr('src', '../../assets/img/qr_placeholder.png');
+  $('#posActiveBankNameTitle').text('');
 
   selectPayTypeTab('ເງິນສົດ');
   var totalText = $('#cartTotal').text();

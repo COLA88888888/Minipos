@@ -930,27 +930,14 @@ if (!function_exists('resolveBankLogo')) {
 if (!function_exists('resolveBankQr')) {
     function resolveBankQr($qrFile, $bankCode = '') {
         $root = dirname(__DIR__);
-        if (!empty($qrFile)) {
-            $filename = basename(trim($qrFile));
-            if (file_exists($root . '/assets/img/qr/' . $filename)) {
-                return '../../assets/img/qr/' . $filename;
-            }
+        if (empty($qrFile) || trim($qrFile) === '') {
+            return '';
         }
-        $code = strtolower(trim($bankCode));
-        if (strpos($code, 'bcel') !== false || strpos($code, 'bcl') !== false) $code = 'bcel';
-        else if (strpos($code, 'ldb') !== false) $code = 'ldb';
-        else if (strpos($code, 'jdb') !== false) $code = 'jdb';
-        else if (strpos($code, 'stb') !== false) $code = 'stb';
-        else if (strpos($code, 'apb') !== false) $code = 'apb';
-        else if (strpos($code, 'lvb') !== false) $code = 'lvb';
-
-        if ($code && file_exists($root . '/assets/img/qr/' . $code . '_qr.png')) {
-            return '../../assets/img/qr/' . $code . '_qr.png';
+        $filename = basename(trim($qrFile));
+        if (file_exists($root . '/assets/img/qr/' . $filename)) {
+            return '../../assets/img/qr/' . $filename;
         }
-        if (file_exists($root . '/assets/img/qr/qr_placeholder.png')) {
-            return '../../assets/img/qr/qr_placeholder.png';
-        }
-        return '../../assets/img/qr_placeholder.png';
+        return '';
     }
 }
 

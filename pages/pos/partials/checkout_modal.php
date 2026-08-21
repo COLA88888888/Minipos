@@ -81,13 +81,10 @@
                       $code = strtoupper(trim($bAccount['bank_code']));
                       $shortName = !empty($code) ? $code : htmlspecialchars($bAccount['bank_name']);
                       $bColor = ($code === 'BCEL') ? '#002d72' : (($code === 'LDB') ? '#047857' : (($code === 'JDB') ? '#6b21a8' : (($code === 'STB') ? '#ea580c' : (($code === 'APB') ? '#15803d' : (($code === 'LVB') ? '#b91c1c' : '#0284c7')))));
-                      if ($bIdx === 0) {
-                          $defaultQrPath = $bQr;
-                      }
                     ?>
                     <div class="col-6 px-1">
-                      <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between <?php echo ($bIdx === 0) ? 'selected-bank' : ''; ?>" 
-                           style="cursor: pointer; transition: all 0.15s; background: <?php echo ($bIdx === 0) ? '#f0f9ff' : '#ffffff'; ?>; border-color: <?php echo ($bIdx === 0) ? $bColor : '#cbd5e1'; ?> !important; min-height: 38px;"
+                      <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between" 
+                           style="cursor: pointer; transition: all 0.15s; background: #ffffff; border-color: #cbd5e1 !important; min-height: 38px;"
                            onclick="selectPosBank(<?php echo $bAccount['id']; ?>, '<?php echo htmlspecialchars(addslashes($shortName)); ?>', '<?php echo htmlspecialchars($bQr); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_number'] ?? '')); ?>', '<?php echo htmlspecialchars(addslashes($bAccount['account_name'] ?? '')); ?>', this)">
                         <div class="d-flex align-items-center" style="gap: 6px;">
                           <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 24px; height: 24px; object-fit: contain; border-radius: 5px; border: 1px solid #e2e8f0; background: #fff; padding: 1px;" onerror="this.src='../../assets/img/banks/default.svg';">
@@ -95,7 +92,7 @@
                             <?php echo htmlspecialchars($shortName); ?>
                           </div>
                         </div>
-                        <input type="radio" name="pos_selected_bank_id" value="<?php echo $bAccount['id']; ?>" <?php echo ($bIdx === 0) ? 'checked' : ''; ?> style="accent-color: <?php echo $bColor; ?>; width: 14px; height: 14px; cursor: pointer;">
+                        <input type="radio" name="pos_selected_bank_id" value="<?php echo $bAccount['id']; ?>" style="accent-color: <?php echo $bColor; ?>; width: 14px; height: 14px; cursor: pointer;">
                       </div>
                     </div>
                   <?php endforeach; ?>

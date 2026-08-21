@@ -121,17 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $bank_account_id = isset($_POST['bank_account_id']) && intval($_POST['bank_account_id']) > 0 ? intval($_POST['bank_account_id']) : null;
         $bank_name = isset($_POST['bank_name']) && trim($_POST['bank_name']) !== '' ? trim($_POST['bank_name']) : null;
 
-        // Auto-assign primary active bank account if payment involves transfer but bank_account_id was not passed
-        if (empty($bank_account_id) && (strpos($payment_type, 'ໂອນ') !== false || strpos($payment_type, 'QR') !== false || strpos($payment_type, 'Transfer') !== false)) {
-            try {
-                $firstBank = $pdo->query("SELECT id, bank_name FROM bank_accounts WHERE is_active = 1 ORDER BY id ASC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
-                if ($firstBank) {
-                    $bank_account_id = intval($firstBank['id']);
-                    $bank_name = $firstBank['bank_name'];
-                }
-            } catch (Throwable $e) {}
-        }
-
         $bank_info = null;
         if ($bank_account_id) {
             try {
