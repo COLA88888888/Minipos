@@ -145,15 +145,7 @@
                   $company = [];
               }
           }
-          $storeQrName = !empty($company['qr_img']) ? basename($company['qr_img']) : '';
-          $storeQrPath = '';
-          if (!empty($storeQrName) && file_exists(__DIR__ . '/../../../assets/img/qr/' . $storeQrName)) {
-              $storeQrPath = $base_path . 'assets/img/qr/' . $storeQrName;
-          } elseif (file_exists(__DIR__ . '/../../../assets/img/qr_placeholder.png')) {
-              $storeQrPath = $base_path . 'assets/img/qr_placeholder.png';
-          } elseif (file_exists(__DIR__ . '/../../../assets/img/qr/qr_default.png')) {
-              $storeQrPath = $base_path . 'assets/img/qr/qr_default.png';
-          }
+          $storeQrPath = resolveBankQr($company['qr_img'] ?? '');
         ?>
         <?php if (!empty($storeQrPath)): ?>
         <div class="text-center my-2 receipt-qr-box">

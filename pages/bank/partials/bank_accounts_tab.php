@@ -11,15 +11,26 @@ $bank_accounts_list = $banks_stmt ? $banks_stmt->fetchAll(PDO::FETCH_ASSOC) : []
 // Helper get bank logo image
 if (!function_exists('resolveBankLogo')) {
     function resolveBankLogo($logoFile, $bankCode = '') {
+        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
         if (!empty($logoFile)) {
             $filename = basename(trim($logoFile));
-            if (file_exists(__DIR__ . '/../../../assets/img/banks/' . $filename)) {
+            if (file_exists($root . '/assets/img/banks/' . $filename)) {
                 return '../../assets/img/banks/' . $filename;
             }
         }
         $code = strtolower(trim($bankCode));
-        if ($code && file_exists(__DIR__ . '/../../../assets/img/banks/' . $code . '.svg')) {
+        if (strpos($code, 'bcel') !== false || strpos($code, 'bcl') !== false) $code = 'bcel';
+        else if (strpos($code, 'ldb') !== false) $code = 'ldb';
+        else if (strpos($code, 'jdb') !== false) $code = 'jdb';
+        else if (strpos($code, 'stb') !== false) $code = 'stb';
+        else if (strpos($code, 'apb') !== false) $code = 'apb';
+        else if (strpos($code, 'lvb') !== false) $code = 'lvb';
+
+        if ($code && file_exists($root . '/assets/img/banks/' . $code . '.svg')) {
             return '../../assets/img/banks/' . $code . '.svg';
+        }
+        if ($code && file_exists($root . '/assets/img/banks/' . $code . '.png')) {
+            return '../../assets/img/banks/' . $code . '.png';
         }
         return '../../assets/img/banks/default.svg';
     }
@@ -27,12 +38,27 @@ if (!function_exists('resolveBankLogo')) {
 
 // Helper get bank QR image
 if (!function_exists('resolveBankQr')) {
-    function resolveBankQr($qrFile) {
+    function resolveBankQr($qrFile, $bankCode = '') {
+        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
         if (!empty($qrFile)) {
             $filename = basename(trim($qrFile));
-            if (file_exists(__DIR__ . '/../../../assets/img/qr/' . $filename)) {
+            if (file_exists($root . '/assets/img/qr/' . $filename)) {
                 return '../../assets/img/qr/' . $filename;
             }
+        }
+        $code = strtolower(trim($bankCode));
+        if (strpos($code, 'bcel') !== false || strpos($code, 'bcl') !== false) $code = 'bcel';
+        else if (strpos($code, 'ldb') !== false) $code = 'ldb';
+        else if (strpos($code, 'jdb') !== false) $code = 'jdb';
+        else if (strpos($code, 'stb') !== false) $code = 'stb';
+        else if (strpos($code, 'apb') !== false) $code = 'apb';
+        else if (strpos($code, 'lvb') !== false) $code = 'lvb';
+
+        if ($code && file_exists($root . '/assets/img/qr/' . $code . '_qr.png')) {
+            return '../../assets/img/qr/' . $code . '_qr.png';
+        }
+        if (file_exists($root . '/assets/img/qr/qr_placeholder.png')) {
+            return '../../assets/img/qr/qr_placeholder.png';
         }
         return '../../assets/img/qr_placeholder.png';
     }

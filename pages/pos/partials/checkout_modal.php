@@ -65,7 +65,7 @@
                     if ($b_stmt) $pos_bank_accounts = $b_stmt->fetchAll(PDO::FETCH_ASSOC);
                 } catch (Throwable $e) {}
 
-                $defaultQrPath = !empty($company['qr_img']) ? ('../../assets/img/qr/' . $company['qr_img']) : '../../assets/img/qr_placeholder.png';
+                $defaultQrPath = resolveBankQr($company['qr_img'] ?? '');
               ?>
 
               <div class="font-weight-bold mb-2 text-dark" style="font-size:0.85rem;">
@@ -76,15 +76,14 @@
                 <div class="row mb-2" style="row-gap: 8px; margin-left: -4px; margin-right: -4px;" id="posBankSelectGrid">
                   <?php foreach ($pos_bank_accounts as $bIdx => $bAccount): ?>
                     <?php 
-                      $bLogo = !empty($bAccount['bank_logo']) && file_exists(__DIR__ . '/../../../assets/img/banks/' . basename($bAccount['bank_logo'])) 
-                               ? ('../../assets/img/banks/' . basename($bAccount['bank_logo'])) 
-                               : ('../../assets/img/banks/' . strtolower($bAccount['bank_code']) . '.svg');
-                      $bQr = !empty($bAccount['qr_code_img']) && file_exists(__DIR__ . '/../../../assets/img/qr/' . basename($bAccount['qr_code_img']))
-                             ? ('../../assets/img/qr/' . basename($bAccount['qr_code_img'])) 
-                             : $defaultQrPath;
+                      $bLogo = resolveBankLogo($bAccount['bank_logo'] ?? '', $bAccount['bank_code'] ?? '');
+                      $bQr   = resolveBankQr($bAccount['qr_code_img'] ?? '', $bAccount['bank_code'] ?? '');
                       $code = strtoupper(trim($bAccount['bank_code']));
                       $shortName = !empty($code) ? $code : htmlspecialchars($bAccount['bank_name']);
                       $bColor = ($code === 'BCEL') ? '#002d72' : (($code === 'LDB') ? '#047857' : (($code === 'JDB') ? '#6b21a8' : (($code === 'STB') ? '#ea580c' : (($code === 'APB') ? '#15803d' : (($code === 'LVB') ? '#b91c1c' : '#0284c7')))));
+                      if ($bIdx === 0) {
+                          $defaultQrPath = $bQr;
+                      }
                     ?>
                     <div class="col-6 px-1">
                       <div class="pos-bank-option px-2.5 py-1.5 rounded border d-flex align-items-center justify-content-between <?php echo ($bIdx === 0) ? 'selected-bank' : ''; ?>" 
@@ -110,7 +109,7 @@
                 <div style="display: inline-block; position: relative; cursor: pointer;" onclick="zoomPosQrImage()" title="ກົດເພື່ອຂະຫຍາຍ QR Code ໃຫຍ່ HD">
                   <img id="posActiveBankQrImg" src="<?php echo htmlspecialchars($defaultQrPath); ?>" 
                        style="width: 180px; height: 180px; object-fit: contain; border-radius: 12px; border: 2.5px solid #6366f1; padding: 5px; background: #ffffff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.20); image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; transition: transform 0.2s;"
-                       onerror="this.src='../../assets/img/qr_placeholder.png';"
+                       onerror="this.onerror=null;this.src='../../assets/img/qr_placeholder.png';"
                        alt="Bank QR Code"
                        onmouseover="this.style.transform='scale(1.04)'"
                        onmouseout="this.style.transform='scale(1)'">
