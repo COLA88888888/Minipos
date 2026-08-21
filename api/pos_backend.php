@@ -41,6 +41,9 @@ function getClientIP() {
 // Live Stock Polling Handler
 if (isset($_GET['action']) && $_GET['action'] === 'get_live_stocks') {
     header('Content-Type: application/json');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    header('Pragma: no-cache');
+    header('Expires: 0');
     $stmt = $pdo->query("SELECT product_id, qty FROM products");
     $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['success' => true, 'stocks' => $stocks]);

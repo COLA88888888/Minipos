@@ -281,7 +281,7 @@ function updateProductGridBadges() {
 
   if (cart && cart.length > 0) {
     cart.forEach(function(item) {
-      var pid = item.product_id;
+      var pid = String(item.product_id);
       var qty = parseFloat(item.quantity) || 0;
       var multiplier = parseInt(item.multiplier) || 1;
       var baseDeduct = qty * multiplier;
@@ -306,6 +306,8 @@ function updateProductGridBadges() {
     var initialStock = parseFloat(stockValEl.attr('data-initial-stock')) || 0;
     if (typeof localStocks[pid] !== 'undefined') {
       initialStock = parseFloat(localStocks[pid]);
+    } else if (typeof localStocks[parseInt(pid, 10)] !== 'undefined') {
+      initialStock = parseFloat(localStocks[parseInt(pid, 10)]);
     } else if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
       var pItem = allProducts.find(function(item) { return String(item.product_id) === String(pid); });
       if (pItem) {
@@ -315,7 +317,7 @@ function updateProductGridBadges() {
     stockValEl.attr('data-initial-stock', initialStock);
     stockValEl.data('initial-stock', initialStock);
 
-    var totalStockDeducted = productStockDeductMap[pid] || 0;
+    var totalStockDeducted = productStockDeductMap[pid] || productStockDeductMap[parseInt(pid, 10)] || 0;
     var remainingStock = Math.max(0, initialStock - totalStockDeducted);
 
     stockValEl.text(remainingStock.toLocaleString());
@@ -644,19 +646,6 @@ function _doAddToCart(product, unitObj) {
   // 3. ຖ້າເຫຼືອ 10 ລາຍການ (ຫຼື ຫຼຸດລົງ <= 10) -> ແຈ້ງເຕືອນວ່າສິນຄ້າໃກ້ຈະໝົດແລ້ວ (ເທົ່ານັ້ນ cut_qty = 1)
   if (getProductCutQty(product.product_id) === 1 && newRemaining <= 10 && newRemaining >= 0) {
     showLowStockToast(product.product_name, newRemaining, product.unit || 'ອັນ');
-  } else {
-    // Toast alert feedback on success
-    const Toast = Swal.mixin({
-      toast: true,
-      position: 'top-end',
-      showConfirmButton: false,
-      timer: 1200,
-      timerProgressBar: false
-    });
-    Toast.fire({
-      icon: 'success',
-      title: 'ເພີ່ມ "' + product.product_name + '" ລົງກະຕ່າແລ້ວ'
-    });
   }
 
   updateCartUI();
@@ -692,8 +681,9 @@ function switchMobilePosTab(tab) {
 // Live Stock Automatic Sync Polling
 function pollPOSLiveStock() {
   $.ajax({
-    url: (window.POS_BACKEND_URL || '../../api/pos_backend.php') + '?action=get_live_stocks',
+    url: (window.POS_BACKEND_URL || '../../api/pos_backend.php') + '?action=get_live_stocks&_=' + Date.now(),
     type: 'GET',
+    cache: false,
     dataType: 'json',
     success: function(res) {
       if (res && res.success && res.stocks && res.stocks.length > 0) {
@@ -706,7 +696,15 @@ function pollPOSLiveStock() {
         res.stocks.forEach(function(s) {
           var serverQty = parseFloat(s.qty);
           var pid = s.product_id;
-          var curLocalQty = (typeof localStocks[pid] !== 'undefined') ? parseFloat(localStocks[pid]) : null;
+          var curLocalQty = null;
+          if (typeof localStocks[pid] !== 'undefined') {
+            curLocalQty = parseFloat(localStocks[pid]);
+          } else if (typeof localStocks[String(pid)] !== 'undefined') {
+            curLocalQty = parseFloat(localStocks[String(pid)]);
+          } else if (typeof localStocks[parseInt(pid, 10)] !== 'undefined') {
+            curLocalQty = parseFloat(localStocks[parseInt(pid, 10)]);
+          }
+
           if (curLocalQty === null || serverQty !== curLocalQty) {
             updated.push({ product_id: pid, new_qty: serverQty });
           }
