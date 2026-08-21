@@ -342,7 +342,7 @@
           $storeQrName = !empty($company['qr_img']) ? $company['qr_img'] : '';
           $storeQrPath = !empty($storeQrName) ? ($base_path . 'assets/img/qr/' . $storeQrName) : ($base_path . 'assets/img/qr_placeholder.png');
         ?>
-        <div class="text-center my-2 receipt-qr-box">
+        <div class="text-center my-2 receipt-qr-box" style="display:none;">
           <img id="rc_bank_qr_img" src="<?php echo htmlspecialchars($storeQrPath); ?>" alt="QR Code" class="receipt-qr-img"
                style="max-width:90px;max-height:90px;width:90px;height:auto;object-fit:contain;margin:4px auto 2px auto;display:block;"
                onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/qr_placeholder.png';">
