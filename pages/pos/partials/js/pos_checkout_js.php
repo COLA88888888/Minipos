@@ -282,7 +282,8 @@ function openCheckoutModal() {
   window.currentSelectedBankAccName = '';
   $('input[name="pos_selected_bank_id"]').prop('checked', false);
   $('.pos-bank-option').removeClass('selected-bank').css({'background': '#ffffff', 'border-color': '#cbd5e1'});
-  $('#posActiveBankQrImg').attr('src', '../../assets/img/qr_placeholder.png');
+  $('#posActiveBankQrContainer').hide();
+  $('#posNoQrMessage').hide();
   $('#posActiveBankNameTitle').text('');
 
   selectPayTypeTab('ເງິນສົດ');
@@ -706,16 +707,24 @@ function selectPosBank(bankId, bankName, qrPath, accNo, accName, el) {
     $(el).addClass('selected-bank').css({'background': '#f0f9ff', 'border-color': '#0284c7'});
     $(el).find('input[type="radio"]').prop('checked', true);
   }
-  if (qrPath) {
+
+  if (qrPath && qrPath.trim() !== '') {
     $('#posActiveBankQrImg').attr('src', qrPath);
     $('#rc_bank_qr_img').attr('src', qrPath);
+    $('#posActiveBankQrContainer').show();
+    $('#posNoQrMessage').hide();
+  } else {
+    $('#posActiveBankQrImg').attr('src', '');
+    $('#posActiveBankQrContainer').hide();
+    $('#posNoQrMessage').show();
   }
+
   if (bankName) {
     $('#posActiveBankNameTitle').text(' - ' + bankName);
   }
   window.currentSelectedBankId = bankId;
   window.currentSelectedBankName = bankName;
-  window.currentSelectedBankQrPath = qrPath;
+  window.currentSelectedBankQrPath = qrPath || '';
   window.currentSelectedBankAccNo = accNo || '';
   window.currentSelectedBankAccName = accName || '';
 }

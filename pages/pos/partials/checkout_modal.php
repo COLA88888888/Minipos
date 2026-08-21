@@ -99,20 +99,24 @@
                 </div>
               <?php endif; ?>
 
-              <div class="text-center mt-2 pt-2 border-top">
-                <div class="font-weight-bold mb-1.5" style="font-size:0.85rem;color:#7c3aed;">
-                  <i class="fas fa-qrcode mr-1"></i> ສະແກນ QR Code ຊຳລະເງິນ <span id="posActiveBankNameTitle" class="text-primary font-weight-bold"></span>
-                </div>
-                <div style="display: inline-block; position: relative; cursor: pointer;" onclick="zoomPosQrImage()" title="ກົດເພື່ອຂະຫຍາຍ QR Code ໃຫຍ່ HD">
-                  <img id="posActiveBankQrImg" src="<?php echo htmlspecialchars($defaultQrPath); ?>" 
-                       style="width: 180px; height: 180px; object-fit: contain; border-radius: 12px; border: 2.5px solid #6366f1; padding: 5px; background: #ffffff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.20); image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; transition: transform 0.2s;"
-                       onerror="this.onerror=null;this.src='../../assets/img/qr_placeholder.png';"
-                       alt="Bank QR Code"
-                       onmouseover="this.style.transform='scale(1.04)'"
-                       onmouseout="this.style.transform='scale(1)'">
-                  <div style="font-size: 0.75rem; color: #4f46e5; font-weight: 700; margin-top: 5px;">
-                    <i class="fas fa-search-plus mr-1"></i> ກົດເພື່ອຂະຫຍາຍໃຫຍ່ HD
+              <div class="text-center mt-2 pt-2 border-top" id="posActiveBankQrDisplaySection">
+                <div id="posActiveBankQrContainer" style="display: none;">
+                  <div class="font-weight-bold mb-1.5" style="font-size:0.85rem;color:#7c3aed;">
+                    <i class="fas fa-qrcode mr-1"></i> ສະແກນ QR Code ຊຳລະເງິນ <span id="posActiveBankNameTitle" class="text-primary font-weight-bold"></span>
                   </div>
+                  <div style="display: inline-block; position: relative; cursor: pointer;" onclick="zoomPosQrImage()" title="ກົດເພື່ອຂະຫຍາຍ QR Code ໃຫຍ່ HD">
+                    <img id="posActiveBankQrImg" src="" 
+                         style="width: 180px; height: 180px; object-fit: contain; border-radius: 12px; border: 2.5px solid #6366f1; padding: 5px; background: #ffffff; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.20); transition: transform 0.2s;"
+                         alt="Bank QR Code"
+                         onmouseover="this.style.transform='scale(1.04)'"
+                         onmouseout="this.style.transform='scale(1)'">
+                    <div style="font-size: 0.75rem; color: #4f46e5; font-weight: 700; margin-top: 5px;">
+                      <i class="fas fa-search-plus mr-1"></i> ກົດເພື່ອຂະຫຍາຍໃຫຍ່ HD
+                    </div>
+                  </div>
+                </div>
+                <div id="posNoQrMessage" style="display: none;" class="p-3 text-muted small font-weight-bold">
+                  <i class="fas fa-info-circle text-info mr-1"></i> ບັນຊີທະນາຄານນີ້ ຍັງບໍ່ໄດ້ອັບໂຫຼດ QR Code
                 </div>
               </div>
             </div>
