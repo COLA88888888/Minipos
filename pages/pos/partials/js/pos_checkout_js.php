@@ -560,10 +560,8 @@ function handleOnlineCheckoutReceiptUI(res) {
   if (typeof broadcastCustomerDisplay === 'function') {
     broadcastCustomerDisplay('payment_success', { cashReceived: res.cash_received, qrReceived: res.qr_received, changeAmount: res.change });
   }
-  $('#receiptModal').modal('show');
-  setTimeout(function() {
-    printReceipt();
-  }, 300);
+  printReceipt();
+  resetPOS();
 }
 
 // ============================
@@ -960,10 +958,8 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
     if (typeof broadcastCustomerDisplay === 'function') {
       broadcastCustomerDisplay('payment_success', { cashReceived: saleObj.cash_received, qrReceived: saleObj.qr_received, changeAmount: change });
     }
-    $('#receiptModal').modal('show');
-    setTimeout(function() {
-      printReceipt();
-    }, 300);
+    printReceipt();
+    resetPOS();
   });
 }
 
