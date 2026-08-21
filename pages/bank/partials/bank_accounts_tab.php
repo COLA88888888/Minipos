@@ -11,29 +11,32 @@ $bank_accounts_list = $banks_stmt ? $banks_stmt->fetchAll(PDO::FETCH_ASSOC) : []
 // Helper get bank logo image
 if (!function_exists('resolveBankLogo')) {
     function resolveBankLogo($logoFile, $bankCode = '') {
-        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
-        if (!empty($logoFile)) {
-            $filename = basename(trim($logoFile));
-            if (file_exists($root . '/assets/img/banks/' . $filename)) {
-                return '../../assets/img/banks/' . $filename;
-            }
+        if (empty($logoFile) || trim($logoFile) === '') {
+            return '';
         }
-        return '';
+        $filename = basename(trim($logoFile));
+        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
+        $htdocsRoot = 'D:/xampp/htdocs/MiniPos';
+        if (file_exists($root . '/assets/img/banks/' . $filename) || file_exists($htdocsRoot . '/assets/img/banks/' . $filename)) {
+            return '../../assets/img/banks/' . $filename;
+        }
+        return '../../assets/img/banks/' . $filename;
     }
 }
 
 // Helper get bank QR image
 if (!function_exists('resolveBankQr')) {
     function resolveBankQr($qrFile, $bankCode = '') {
-        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
         if (empty($qrFile) || trim($qrFile) === '') {
             return '';
         }
         $filename = basename(trim($qrFile));
-        if (file_exists($root . '/assets/img/qr/' . $filename)) {
+        $root = realpath(__DIR__ . '/../../../') ?: dirname(dirname(dirname(__DIR__)));
+        $htdocsRoot = 'D:/xampp/htdocs/MiniPos';
+        if (file_exists($root . '/assets/img/qr/' . $filename) || file_exists($htdocsRoot . '/assets/img/qr/' . $filename)) {
             return '../../assets/img/qr/' . $filename;
         }
-        return '';
+        return '../../assets/img/qr/' . $filename;
     }
 }
 

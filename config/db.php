@@ -893,28 +893,31 @@ if (!function_exists('getPermissionLimit')) {
 // Global Helper Functions for Bank Assets
 if (!function_exists('resolveBankLogo')) {
     function resolveBankLogo($logoFile, $bankCode = '') {
-        $root = dirname(__DIR__);
-        if (!empty($logoFile)) {
-            $filename = basename(trim($logoFile));
-            if (file_exists($root . '/assets/img/banks/' . $filename)) {
-                return '../../assets/img/banks/' . $filename;
-            }
+        if (empty($logoFile) || trim($logoFile) === '') {
+            return '';
         }
-        return '';
+        $filename = basename(trim($logoFile));
+        $root = dirname(__DIR__);
+        $htdocsRoot = 'D:/xampp/htdocs/MiniPos';
+        if (file_exists($root . '/assets/img/banks/' . $filename) || file_exists($htdocsRoot . '/assets/img/banks/' . $filename)) {
+            return '../../assets/img/banks/' . $filename;
+        }
+        return '../../assets/img/banks/' . $filename;
     }
 }
 
 if (!function_exists('resolveBankQr')) {
     function resolveBankQr($qrFile, $bankCode = '') {
-        $root = dirname(__DIR__);
         if (empty($qrFile) || trim($qrFile) === '') {
             return '';
         }
         $filename = basename(trim($qrFile));
-        if (file_exists($root . '/assets/img/qr/' . $filename)) {
+        $root = dirname(__DIR__);
+        $htdocsRoot = 'D:/xampp/htdocs/MiniPos';
+        if (file_exists($root . '/assets/img/qr/' . $filename) || file_exists($htdocsRoot . '/assets/img/qr/' . $filename)) {
             return '../../assets/img/qr/' . $filename;
         }
-        return '';
+        return '../../assets/img/qr/' . $filename;
     }
 }
 
