@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content" style="border-radius: 16px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
       <div class="modal-header bg-primary text-white py-3">
-        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
+        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <i class="fas fa-id-card mr-2"></i> ລາຍລະອຽດຂໍ້ມູນຜູ້ນຳໃຊ້
         </h5>
         <button type="button" class="close text-white opacity-90" data-dismiss="modal" aria-label="Close">

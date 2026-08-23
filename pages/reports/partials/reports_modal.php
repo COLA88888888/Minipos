@@ -1,3 +1,13 @@
+<?php
+  // The receipt header (logo/name/address/phone) below needs $company — several pages that
+  // include this partial (item_sales.php, all_sales.php, sales_details.php, daily_report.php,
+  // delete_bills.php) never fetch it themselves, so without this guard the reprinted receipt
+  // falls back to blank fields and the literal string "MiniPOS" instead of the real store info.
+  if (empty($company)) {
+      // Shared name/address/phone comes from the main branch; logo from the active branch.
+      $company = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo));
+  }
+?>
 <!-- Modal: Bill Details Popup -->
 <div class="modal fade" id="reportBillModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-centered" role="document">
@@ -94,7 +104,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body p-3" id="reportReceiptPrintArea" style="font-family:'Noto Sans Lao Looped', monospace, sans-serif;font-size:12px;color:#000;">
+      <div class="modal-body p-3" id="reportReceiptPrintArea" style="font-family:'Noto Sans Lao', 'Souliyo', 'Boon', monospace, sans-serif;font-size:12px;color:#000;">
         <div class="text-center mb-2">
           <?php
             $base_path = '../../';
@@ -109,6 +119,7 @@
           <div class="receipt-header-tel" style="font-size:12px;font-weight:600;color:#000;line-height:1.4;">ໂທ: <?php echo htmlspecialchars($company['com_tel'] ?? ''); ?></div>
         </div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+        <div class="d-flex justify-content-between" id="rc_rep_tax_id_row" style="color:#000;font-weight:600;display:none;"><span>ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:</span><span id="rc_rep_tax_id" style="font-weight:700;"></span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ເລກບິນ:</span><span id="rc_rep_bill" style="font-weight:700;">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ວັນທີ:</span><span id="rc_rep_date">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span>ຜູ້ຂາຍ:</span><span id="rc_rep_cashier">-</span></div>
@@ -137,24 +148,14 @@
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span>ເງິນທອນ:</span><span id="rc_rep_change">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
-        <?php 
-          if (empty($company)) {
-              try {
-                  $company = $pdo->query("SELECT * FROM tbcompanyinfo LIMIT 1")->fetch(PDO::FETCH_ASSOC) ?: [];
-              } catch (Exception $e) {
-                  $company = [];
-              }
-          }
-          $storeQrPath = resolveBankQr($company['qr_img'] ?? '');
-        ?>
-        <?php if (!empty($storeQrPath)): ?>
-        <div class="text-center my-2 receipt-qr-box">
-          <img src="<?php echo htmlspecialchars($storeQrPath); ?>" alt="QR Code" class="receipt-qr-img"
+        <!-- Bank QR box — filled dynamically by printBill() with the exact bank/QR used for this sale -->
+        <div class="text-center my-2 receipt-qr-box" style="display:none;">
+          <img id="rc_rep_bank_qr_img" src="" alt="QR Code" class="receipt-qr-img"
                style="max-width:100px;max-height:100px;width:100px;height:auto;object-fit:contain;margin:6px auto 2px auto;display:block;"
                onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/qr_placeholder.png';">
-          <div style="font-size:10.5px;font-weight:700;color:#000;margin-top:2px;">ສະແກນ QR Code ເພື່ອຊຳລະເງິນ</div>
+          <div id="rc_rep_bank_name_lbl" style="font-size:10.5px;font-weight:700;color:#000;margin-top:2px;">ສະແກນ QR Code ເພື່ອຊຳລະເງິນ</div>
+          <div id="rc_rep_bank_acc_lbl" style="font-size:10px;font-weight:700;color:#000;display:none;margin-top:1px;"></div>
         </div>
-        <?php endif; ?>
         <div class="text-center receipt-footer-msg" style="margin-top:10px !important; padding-top:8px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!'); ?></div>
       </div>
       <div class="modal-footer border-0 p-3 bg-light">

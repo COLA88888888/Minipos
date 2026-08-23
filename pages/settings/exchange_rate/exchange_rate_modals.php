@@ -32,7 +32,7 @@
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
           <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="border: none;">ບັນທຶກ</button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="border: none; background: linear-gradient(135deg, #2c5aa0, #244886);">ບັນທຶກ</button>
         </div>
       </form>
     </div>
@@ -70,7 +70,7 @@
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
           <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4">ອັບເດດ</button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">ອັບເດດ</button>
         </div>
       </form>
     </div>

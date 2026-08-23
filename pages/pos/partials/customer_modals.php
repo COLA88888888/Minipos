@@ -3,7 +3,7 @@
   <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
       <div class="modal-header bg-primary text-white py-3 px-4">
-        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
+        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <i class="fas fa-user-friends mr-2"></i> ເລືອກລູກຄ້າ / ສະມາຊິກ
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="modal-footer border-0 bg-light p-3">
-        <button type="button" class="btn btn-primary font-weight-bold px-3 py-2" onclick="selectCustomer(null)" data-dismiss="modal" style="border-radius: 8px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; box-shadow: 0 3px 10px rgba(37, 99, 235, 0.30);">
+        <button type="button" class="btn btn-primary font-weight-bold px-3 py-2" onclick="selectCustomer(null)" data-dismiss="modal" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none; box-shadow: 0 3px 10px rgba(36, 72, 134, 0.30);">
           <i class="fas fa-user-check mr-1.5"></i> ເລືອກລູກຄ້າທົ່ວໄປ
         </button>
         <button type="button" class="btn btn-secondary font-weight-bold px-3 py-2" data-dismiss="modal" style="border-radius: 8px;">ປິດ</button>
@@ -57,7 +57,7 @@
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
       <div class="modal-header bg-success text-white py-3 px-4">
-        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
+        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <i class="fas fa-user-plus mr-2"></i> ເພີ່ມຂໍ້ມູນລູກຄ້າໃໝ່
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
@@ -75,7 +75,7 @@
               <div>
                 <i class="fas fa-info-circle mr-1"></i> ພົບຂໍ້ມູນລູກຄ້າເກົ່າ: <strong id="existingCusInfoText"></strong>
               </div>
-              <button type="button" class="btn btn-sm btn-primary font-weight-bold ml-2 py-0 px-2" id="btnSelectExistingCus" style="font-size: 0.78rem;">
+              <button type="button" class="btn btn-sm btn-primary font-weight-bold ml-2 py-0 px-2" id="btnSelectExistingCus" style="font-size: 0.88rem;">
                 <i class="fas fa-check-circle mr-1"></i> ເລືອກລູກຄ້າເກົ່ານີ້
               </button>
             </div>
@@ -84,7 +84,7 @@
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="font-weight-bold text-dark mb-1">ລະຫັດລູກຄ້າ <span class="text-danger">*</span></label>
-              <input type="text" id="newCusCode" class="form-control bg-light font-weight-bold" readonly placeholder="CUST-001" style="border-radius: 8px; height: 42px; color: #2563eb;">
+              <input type="text" id="newCusCode" class="form-control bg-light font-weight-bold" readonly placeholder="CUST-001" style="border-radius: 8px; height: 42px; color: #244886;">
             </div>
 
             <div class="col-md-6 mb-3">

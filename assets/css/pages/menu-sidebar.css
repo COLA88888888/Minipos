@@ -5,14 +5,14 @@
 
 /* === Font Settings === */
 *:not(.fas):not(.far):not(.fab):not(.fa) {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif !important;
 }
 body {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif !important;
 }
 html, body, .nav-link, .brand-text, h1, h2, h3, h4, h5, h6,
 .btn, .form-control, .card-title {
-    font-family: 'Noto Sans Lao Looped', sans-serif !important;
+    font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif !important;
 }
 /* Keep Font Awesome Icons working */
 .fas, .far, .fa {
@@ -22,6 +22,18 @@ html, body, .nav-link, .brand-text, h1, h2, h3, h4, h5, h6,
 .fab {
     font-family: "Font Awesome 5 Brands" !important;
     font-weight: 400 !important;
+}
+
+/* === Sidebar Menu Font Size (Bumped up for readability) === */
+.main-sidebar .nav-sidebar > .nav-item > .nav-link p,
+.main-sidebar .nav-treeview .nav-link p {
+    font-size: 1.08rem !important;
+}
+.main-sidebar .nav-sidebar .nav-icon {
+    font-size: 1.2rem !important;
+}
+.main-sidebar .brand-text {
+    font-size: 1.3rem !important;
 }
 
 /* === Sidebar Menu Animation === */
@@ -65,6 +77,7 @@ body::-webkit-scrollbar,
 }
 .sidebar {
     height: calc(100vh - 65px) !important;
+    height: calc(100dvh - 65px) !important;
     overflow-x: hidden !important;
 }
 .nav-sidebar {
@@ -91,11 +104,16 @@ body::-webkit-scrollbar,
 
 /* === Iframe scroll fix === */
 html, body { overflow: hidden !important; height: 100% !important; }
-.wrapper { height: 100vh !important; overflow: hidden !important; }
+.wrapper {
+    height: 100vh !important;
+    height: 100dvh !important; /* accounts for the mobile browser address bar showing/hiding */
+    overflow: hidden !important;
+}
 .content-wrapper {
     overflow: hidden !important;
     padding: 0 !important;
     height: calc(100vh - 64px) !important;
+    height: calc(100dvh - 64px) !important;
 }
 .content-wrapper iframe {
     display: block;
@@ -107,8 +125,8 @@ html, body { overflow: hidden !important; height: 100% !important; }
 
 /* === Navbar (Spacious Blue Header) === */
 .main-header.navbar {
-    background: rgb(2, 99, 255) !important;
-    background-color: rgb(2, 99, 255) !important;
+    background: #244886 !important;
+    background-color: #244886 !important;
     min-height: 64px !important;
     height: 64px !important;
     padding: 0 20px !important;
@@ -154,8 +172,8 @@ html, body { overflow: hidden !important; height: 100% !important; }
 
 /* === Responsive Mobile Styling === */
 @media (max-width: 576px) {
-    html, body { 
-        font-size: 13.5px !important; 
+    html, body {
+        font-size: 16px !important;
     }
     .main-header.navbar {
         min-height: 58px !important;
@@ -197,14 +215,14 @@ html, body { overflow: hidden !important; height: 100% !important; }
 
 /* === Sidebar (Seamless Blue Header with Vertical Divider) === */
 .main-sidebar {
-    background: rgb(2, 99, 255) !important;
-    background-color: rgb(2, 99, 255) !important;
+    background: #244886 !important;
+    background-color: #244886 !important;
     border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
     box-shadow: none !important;
 }
 .main-sidebar .brand-link {
-    background: rgb(2, 99, 255) !important;
-    background-color: rgb(2, 99, 255) !important;
+    background: #244886 !important;
+    background-color: #244886 !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
     border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
     box-shadow: none !important;
@@ -224,7 +242,10 @@ html, body { overflow: hidden !important; height: 100% !important; }
     border-radius: 8px !important;
     margin: 2px 8px !important;
     padding: 10px 12px !important;
-    transition: all 0.25s ease !important;
+    transition: color 0.15s ease !important;
+}
+.main-sidebar .sidebar .nav-link.active {
+    transition: none !important;
 }
 .main-sidebar .sidebar .nav-link:hover {
     background-color: rgba(255,255,255,0.15) !important;
@@ -232,9 +253,9 @@ html, body { overflow: hidden !important; height: 100% !important; }
 }
 .nav-sidebar > .nav-item:not(.has-treeview) > .nav-link.active,
 .nav-sidebar .nav-treeview .nav-link.active {
-    background: linear-gradient(135deg, rgb(2, 99, 255), rgb(149, 201, 223)) !important;
+    background: linear-gradient(135deg, #1b3869, #3864aa) !important;
     color: #ffffff !important;
-    box-shadow: 0 3px 8px rgba(93,173,226,0.4) !important;
+    box-shadow: 0 3px 8px rgba(36, 72, 134, 0.45) !important;
 }
 
 .nav-sidebar .has-treeview > .nav-link {
@@ -308,6 +329,15 @@ html, body { overflow: hidden !important; height: 100% !important; }
     margin-bottom: 0 !important;
 }
 .dropdown-item, .dropdown-toggle { cursor: pointer !important; }
+
+/* === Notification Dropdown Font Size (Bumped up for readability) === */
+.notif-dropdown-box .dropdown-header span { font-size: 1rem !important; }
+.notif-dropdown-box strong,
+.notif-dropdown-box .text-truncate { font-size: 0.92rem !important; }
+.notif-dropdown-box .badge { font-size: 0.82rem !important; }
+.notif-dropdown-box small,
+.notif-dropdown-box .text-muted { font-size: 0.88rem !important; }
+.notif-dropdown-box .px-3.py-1\.5 { font-size: 0.92rem !important; }
 
 /* ===== User Panel - Sidebar Collapsed (ຕອນຫຍໍ້ sidebar) ===== */
 
@@ -616,7 +646,7 @@ html, body { overflow: hidden !important; height: 100% !important; }
         left: 0;
         width: 250px;
         height: 64px;
-        background: rgb(2, 99, 255) !important;
+        background: #244886 !important;
         z-index: 999;
         pointer-events: none;
         will-change: width;
@@ -754,29 +784,11 @@ html, body { overflow: hidden !important; height: 100% !important; }
     }
 }
 
-@media (max-width: 991.98px) {
-    html, body {
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        height: auto !important;
-        min-height: 100% !important;
-    }
-    .wrapper {
-        height: auto !important;
-        min-height: 100vh !important;
-        overflow-y: auto !important;
-    }
-    .content-wrapper {
-        height: auto !important;
-        min-height: calc(100vh - 64px - 42px) !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    .content-wrapper iframe {
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-}
+/* NOTE: html/body/.wrapper/.content-wrapper must stay non-scrolling on mobile too — the
+   "Iframe scroll fix" rule above (line ~105) already pins them so only the iframe's own
+   page scrolls internally, keeping the navbar/header always visible. A mobile override
+   here that makes them overflow-y:auto used to fight that rule and let the whole app
+   shell scroll, dragging the header out of view — removed. */
 
 /* ===== COMPLETE HOVER LOCKDOWN FOR COLLAPSED SIDEBAR (DISABLED HOVER EXPANSION) ===== */
 @media (min-width: 768px) {

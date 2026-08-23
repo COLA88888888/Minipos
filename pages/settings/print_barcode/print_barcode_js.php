@@ -308,7 +308,7 @@ function executePageBarcodePrint() {
     <script src="${'<?php echo $base_path; ?>assets/js/JsBarcode.all.min.js'}"><\/script>
     <style>
       @page { margin: 0; size: auto; }
-      body { margin: 0; padding: 6px; font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', Arial, sans-serif; background: #fff; color: #000; -webkit-print-color-adjust: exact; }
+      body { margin: 0; padding: 6px; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif; background: #fff; color: #000; -webkit-print-color-adjust: exact; }
       .label-container { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
       .barcode-label { box-sizing: border-box; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; page-break-inside: avoid; break-inside: avoid; margin-bottom: 6px; }
       ${size === '40x30' ? `

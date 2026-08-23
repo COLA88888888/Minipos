@@ -52,7 +52,7 @@
 
       <!-- 5. Action Buttons -->
       <div class="col-md-12 col-lg-2 mt-2 mt-lg-0 d-flex align-items-center">
-        <button type="submit" class="btn btn-primary font-weight-bold px-3 shadow-sm mr-2" style="height: 42px; border-radius: 6px; flex: 1;">
+        <button type="submit" class="btn btn-primary font-weight-bold px-3 shadow-sm mr-2" style="height: 42px; border-radius: 6px; flex: 1; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
           <i class="fas fa-search mr-1"></i> ຄົ້ນຫາ
         </button>
         <a href="import_list.php" class="btn btn-outline-secondary font-weight-bold px-3" style="height: 42px; border-radius: 6px; display: inline-flex; align-items: center;" title="ລ້າງຄ່າກັ່ນກອງ">

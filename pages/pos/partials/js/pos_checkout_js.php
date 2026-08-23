@@ -16,8 +16,18 @@ function broadcastStockUpdate(updatedStocks) {
   } catch(e) {}
 }
 
+// Bumped on every authoritative stock write (checkout success, cross-tab broadcast).
+// Lets a slow-in-flight poll request notice it's stale and skip applying, instead of
+// reverting a just-decremented stock number back up for a moment ("bounce back").
+window.__posStockApplySeq = window.__posStockApplySeq || 0;
+// Timestamp of the last authoritative write. The periodic live-stock poll (pos_cart_js.php)
+// stays quiet for a few seconds after this, so it can never race a just-completed sale.
+window.__posLastAuthoritativeWriteAt = window.__posLastAuthoritativeWriteAt || 0;
+
 function applyStockUpdateFromBroadcast(updatedStocks) {
   if (!updatedStocks || !updatedStocks.length) return;
+  window.__posStockApplySeq++;
+  window.__posLastAuthoritativeWriteAt = Date.now();
 
   var localStocks = {};
   try {
@@ -28,15 +38,11 @@ function applyStockUpdateFromBroadcast(updatedStocks) {
     var pid = st.product_id;
     var newQty = parseFloat(st.new_qty);
 
-    // Persist to localStocks
+    // Persist the new baseline only — do NOT write it straight to the visible badge here.
+    // The badge must show baseline minus whatever's still in the cart, and recalculateLiveStock()
+    // below computes that correctly from this baseline. Writing the raw baseline to the DOM first
+    // is what caused the old "bounce": it briefly showed the un-adjusted number before being corrected.
     localStocks[pid] = newQty;
-
-    var stockValEl = $('.product-stock-val-' + pid);
-    if (stockValEl.length) {
-      stockValEl.attr('data-initial-stock', newQty);
-      stockValEl.data('initial-stock', newQty);
-      stockValEl.text(newQty.toLocaleString());
-    }
 
     if (typeof allProducts !== 'undefined' && allProducts && allProducts.length > 0) {
       var pItem = allProducts.find(function(item) { return String(item.product_id) === String(pid); });
@@ -115,7 +121,7 @@ function numpadBackspace() {
 function setPayMode(mode) {
   currentPayMode = mode;
   if (mode === 'single') {
-    $('#payModeSingleBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
+    $('#payModeSingleBtn').css({ 'border-color': '#244886', 'background': '#eef2fb', 'color': '#1a3666' });
     $('#payModeSplitBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
     $('#singlePaySection').show();
     $('#splitPaySection').hide();
@@ -150,7 +156,7 @@ function setPayMode(mode) {
 function selectPayTypeTab(type) {
   selectedPayType = type;
   if (type === 'ເງິນສົດ') {
-    $('#payTypeCashBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
+    $('#payTypeCashBtn').css({ 'border-color': '#244886', 'background': '#eef2fb', 'color': '#1a3666' });
     $('#payTypeQrBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
     $('#singleQrSection').slideUp(150);
   } else {
@@ -262,7 +268,7 @@ function openCheckoutModal() {
       icon: 'warning',
       title: 'ແຈ້ງເຕືອນ',
       text: 'ກະລຸນາເພີ່ມສິນຄ້າລົງກະຕ່າກ່ອນ!',
-      confirmButtonColor: '#2563eb'
+      confirmButtonColor: '#244886'
     });
     return;
   }
@@ -273,7 +279,7 @@ function openCheckoutModal() {
   $('#payTypeRow').show();
   $('#singleSummary').show();
   $('#splitSummary').hide();
-  $('#payModeSingleBtn').css({ 'border-color': '#2563eb', 'background': '#eff6ff', 'color': '#1d4ed8' });
+  $('#payModeSingleBtn').css({ 'border-color': '#244886', 'background': '#eef2fb', 'color': '#1a3666' });
   $('#payModeSplitBtn').css({ 'border-color': '#cbd5e1', 'background': '#ffffff', 'color': '#64748b' });
   window.currentSelectedBankId = null;
   window.currentSelectedBankName = null;
@@ -394,7 +400,11 @@ function processCheckout() {
   $.ajax({
     url: (window.POS_BACKEND_URL || '../../api/pos_backend.php'),
     type: 'POST',
-    data: Object.assign({ action: 'checkout', cart: JSON.stringify(cleanCart) }, offlinePayload),
+    // offlinePayload.cart is the raw array (kept for the IndexedDB offline-fallback path) — it must
+    // come first so the stringified cart below always wins, or Object.assign lets the raw array
+    // clobber it, jQuery then serializes it as cart[0][product_id]=... instead of one JSON string,
+    // and PHP's json_decode($_POST['cart']) fatal-errors on every single checkout (array given, not string).
+    data: Object.assign({}, offlinePayload, { action: 'checkout', cart: JSON.stringify(cleanCart) }),
     dataType: 'json',
     success: function(res) {
       if (res && res.success) {
@@ -518,8 +528,6 @@ function handleOnlineCheckoutReceiptUI(res) {
   $('#rc_qr_amt').text(qrAmt.toLocaleString() + ' ₭');
 
   var bName = res.bank_name || window.currentSelectedBankName || '';
-  var bAccNo = res.bank_account_no || window.currentSelectedBankAccNo || '';
-  var bAccName = res.bank_account_name || window.currentSelectedBankAccName || '';
   var bQrImg = res.bank_qr_img || window.currentSelectedBankQrPath || '';
   var pType = res.payment_type || selectedPayType || '';
 
@@ -532,14 +540,8 @@ function handleOnlineCheckoutReceiptUI(res) {
       $('#rc_bank_qr_img').hide();
     }
     var labelBank = bName ? bName : '';
-    if (bAccName) labelBank += (labelBank ? ' - ' : '') + bAccName;
     $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
-
-    if (bAccNo) {
-      $('#rc_bank_acc_lbl').text('ເລກບັນຊີ: ' + bAccNo).show();
-    } else {
-      $('#rc_bank_acc_lbl').hide();
-    }
+    $('#rc_bank_acc_lbl').hide();
     $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
   } else {
     $('.receipt-qr-box').attr('style', 'display:none!important;').hide();
@@ -614,7 +616,7 @@ function printReceipt() {
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
     <style>
       @page { size: 80mm auto; margin: 0mm; }
-      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', Arial, sans-serif !important; color: #000 !important; }
+      * { box-sizing: border-box; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif !important; color: #000 !important; }
       html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 12px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
@@ -958,8 +960,6 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
     $('#rc_qr_amt').text(offQrAmt.toLocaleString() + ' ₭');
 
     var bName = saleObj.bank_name || window.currentSelectedBankName || '';
-    var bAccNo = saleObj.bank_account_no || window.currentSelectedBankAccNo || '';
-    var bAccName = saleObj.bank_account_name || window.currentSelectedBankAccName || '';
     var bQrImg = saleObj.bank_qr_img || window.currentSelectedBankQrPath || '';
     var pType = saleObj.payment_type || selectedPayType || '';
 
@@ -972,14 +972,8 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
         $('#rc_bank_qr_img').hide();
       }
       var labelBank = bName ? bName : '';
-      if (bAccName) labelBank += (labelBank ? ' - ' : '') + bAccName;
       $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
-
-      if (bAccNo) {
-        $('#rc_bank_acc_lbl').text('ເລກບັນຊີ: ' + bAccNo).show();
-      } else {
-        $('#rc_bank_acc_lbl').hide();
-      }
+      $('#rc_bank_acc_lbl').hide();
       $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
     } else {
       $('.receipt-qr-box').attr('style', 'display:none!important;').hide();

@@ -21,11 +21,9 @@ if (empty($_SESSION['user_id'])) {
 
 $vat_rate = floatval(getSetting($pdo, 'vat_rate', '0'));
 
-// Fetch Company/Store info directly from Database
-$company = $pdo->query("SELECT * FROM tbcompanyinfo LIMIT 1")->fetch();
-if (!$company) {
-    $company = $pdo->query("SELECT store_name as com_name_la, address as com_address, tel as com_tel, 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!' as barcode, logo_path as img_url FROM tbstore LIMIT 1")->fetch();
-}
+// Fetch Company/Store info for the branch making this sale — shared name/address/phone from
+// the main branch, logo specific to this branch.
+$company = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo));
 
 // Helper function to get client IP
 function getClientIP() {
@@ -44,7 +42,9 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_live_stocks') {
     header('Cache-Control: no-cache, no-store, must-revalidate');
     header('Pragma: no-cache');
     header('Expires: 0');
-    $stmt = $pdo->query("SELECT product_id, qty FROM products");
+    $liveStoreId = getActiveStoreId($pdo);
+    $stmt = $pdo->prepare("SELECT product_id, qty FROM products WHERE store_id = ?");
+    $stmt->execute([$liveStoreId]);
     $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode(['success' => true, 'stocks' => $stocks]);
     exit();
@@ -194,16 +194,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         // Insert into tbsale_save_detail and update inventory
         $stmtDetail = $pdo->prepare("
-            INSERT INTO tbsale_save_detail (save_bill, save_date, save_time, save_proid, save_proname, save_qty, save_price, cost_price, save_money, save_net_money, user_receives)
-            VALUES (:save_bill, CURDATE(), CURTIME(), :save_proid, :save_proname, :save_qty, :save_price, :cost_price, :save_money, :save_net_money, :user_receives)
+            INSERT INTO tbsale_save_detail (save_bill, save_date, save_time, save_proid, save_proname, save_qty, save_price, cost_price, save_money, save_net_money, user_receives, multiplier)
+            VALUES (:save_bill, CURDATE(), CURTIME(), :save_proid, :save_proname, :save_qty, :save_price, :cost_price, :save_money, :save_net_money, :user_receives, :multiplier)
         ");
         
         $stmtUpdateStock = $pdo->prepare("
-            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id
+            UPDATE products SET qty = qty - :deduct_qty WHERE product_id = :product_id AND store_id = :store_id
         ");
 
         $stmtCheckStock = $pdo->prepare("
-            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid FOR UPDATE
+            SELECT product_name, qty, cut_qty FROM products WHERE product_id = :pid AND store_id = :store_id FOR UPDATE
         ");
         
         $details_summary = [];
@@ -222,15 +222,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $is_gift = !empty($item['is_free_gift']) || $price == 0 || strpos($item['product_name'], '(ແຖມ)') !== false;
 
             if ($is_gift) {
-                $stmtCheckStock->execute([':pid' => $pid]);
+                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
                 $pData = $stmtCheckStock->fetch();
                 $shouldCutQty = $pData ? intval($pData['cut_qty'] ?? 0) : 0;
                 $currentDbStock = $pData ? floatval($pData['qty']) : 0;
             } else {
-                $stmtCheckStock->execute([':pid' => $pid]);
+                $stmtCheckStock->execute([':pid' => $pid, ':store_id' => $activeStoreId]);
                 $pData = $stmtCheckStock->fetch();
                 if (!$pData) {
-                    $pdo->rollBack();
+                    if ($pdo->inTransaction()) $pdo->rollBack();
                     echo json_encode(['success' => false, 'message' => "ບໍ່ພົບຂໍ້ມູນສິນຄ້າ ID: {$pid} ໃນລະບົບ!"]);
                     exit();
                 }
@@ -240,13 +240,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
                 if ($shouldCutQty) {
                     if ($currentDbStock <= 0) {
-                        $pdo->rollBack();
+                        if ($pdo->inTransaction()) $pdo->rollBack();
                         echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ໝົດແລ້ວ! ບໍ່ສາມາດຂາຍໄດ້"]);
                         exit();
                     }
 
                     if ($currentDbStock < $deduct_stock_qty) {
-                        $pdo->rollBack();
+                        if ($pdo->inTransaction()) $pdo->rollBack();
                         echo json_encode(['success' => false, 'message' => "ສິນຄ້າ \"{$pData['product_name']}\" ເຫຼືອພຽງ {$currentDbStock} ອັນ! ບໍ່ພໍສຳລັບການຂາຍ"]);
                         exit();
                     }
@@ -262,7 +262,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ':cost_price'   => $cost,
                 ':save_money'   => $total_item,
                 ':save_net_money'=> $total_item,
-                ':user_receives'=> $user_receive_name
+                ':user_receives'=> $user_receive_name,
+                ':multiplier'   => $multiplier
             ]);
             
             $newStock = $currentDbStock;
@@ -270,7 +271,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             if ($shouldCutQty) {
                 $stmtUpdateStock->execute([
                     ':deduct_qty' => $deduct_stock_qty,
-                    ':product_id' => $pid
+                    ':product_id' => $pid,
+                    ':store_id'   => $activeStoreId
                 ]);
                 $newStock = max(0, $currentDbStock - $deduct_stock_qty);
             }
@@ -541,8 +543,10 @@ function getProductPromotion($product, $activePromos) {
 }
 
 // Fetch categories, products, and customers list
-$categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
 $activeStoreId = getActiveStoreId($pdo);
+$categoriesStmt = $pdo->prepare("SELECT * FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$categoriesStmt->execute([$activeStoreId]);
+$categories = $categoriesStmt->fetchAll();
 $productsStmt = $pdo->prepare("
     SELECT p.*, c.category_name 
     FROM products p 

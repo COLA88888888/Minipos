@@ -8,23 +8,29 @@ $base_path = '../../../';
 require_once __DIR__ . '/../../../config/db.php';
 
 // ກວດສອບສິດທິການເຂົ້າເຖິງ
-if (empty($_SESSION['user_id']) || (!hasPermission('setup') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('print_barcode') && !hasPermission('setup') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
 
-// ດຶງຂໍ້ມູນຊື່ຮ້ານ
-$comp_stmt = $pdo->query("SELECT com_name_la FROM tbcompanyinfo LIMIT 1");
-$company_name = $comp_stmt ? ($comp_stmt->fetchColumn() ?: 'MiniPos') : 'MiniPos';
+// ດຶງຂໍ້ມູນຊື່ຮ້ານ (ຊື່ຮ້ານແມ່ນຂໍ້ມູນຮ່ວມກັນ ມາຈາກສາຂາຫຼັກ)
+$company_name = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo))['com_name_la'] ?? 'MiniPos';
+if (empty($company_name)) $company_name = 'MiniPos';
 
-// ດຶງຂໍ້ມູນປະເພດ ແລະ ສິນຄ້າທັງໝົດ
-$categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
-$products = $pdo->query("
-    SELECT p.*, c.category_name 
-    FROM products p 
-    LEFT JOIN categories c ON p.category_id = c.category_id 
+// ດຶງຂໍ້ມູນປະເພດ ແລະ ສິນຄ້າ (ສະເພາະສາຂາທີ່ເລືອກຢູ່)
+$printBarcodeStoreId = getActiveStoreId($pdo);
+$catStmt = $pdo->prepare("SELECT * FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$printBarcodeStoreId]);
+$categories = $catStmt->fetchAll();
+$prodStmt = $pdo->prepare("
+    SELECT p.*, c.category_name
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.category_id
+    WHERE p.store_id = ?
     ORDER BY p.product_name ASC
-")->fetchAll();
+");
+$prodStmt->execute([$printBarcodeStoreId]);
+$products = $prodStmt->fetchAll();
 
 // Helper ດຶງຮູບພາບສິນຄ້າ
 function getProductImg($imgFile) {

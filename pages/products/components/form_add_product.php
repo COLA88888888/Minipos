@@ -7,8 +7,8 @@
         <input type="hidden" name="product_id" id="add_product_id">
         
         <!-- HEADER -->
-        <div class="modal-header bg-primary text-white py-3 px-4">
-          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.15rem;">
+        <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important;">
+          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.15rem;">
             <i class="fas fa-plus-circle mr-2"></i> ເພີ່ມສິນຄ້າໃໝ່
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -155,7 +155,7 @@
         <!-- FOOTER -->
         <div class="modal-footer border-0 pt-0 pb-4 px-4">
           <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px; cursor: pointer;" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px; cursor: pointer;">
+          <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px; cursor: pointer; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-save mr-1"></i> ບັນທຶກ
           </button>
         </div>

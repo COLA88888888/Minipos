@@ -10,7 +10,7 @@
   </div>
   <div class="col-sm-6 text-right">
     <?php if (hasPermission('exchange_rate', 'add')): ?>
-      <button type="button" class="btn btn-primary px-3.5 font-weight-bold" data-toggle="modal" data-target="#rateModal" style="border-radius: 6px; height: 38px; border: none;">
+      <button type="button" class="btn btn-primary px-3.5 font-weight-bold" data-toggle="modal" data-target="#rateModal" style="border-radius: 6px; height: 38px; border: none; background: linear-gradient(135deg, #2c5aa0, #244886);">
         <i class="fas fa-plus-circle mr-1.5"></i> ອັບເດດອັດຕາໃໝ່
       </button>
     <?php endif; ?>

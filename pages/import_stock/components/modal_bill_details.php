@@ -5,8 +5,8 @@
 <div class="modal fade" id="billDetailsModal" tabindex="-1" role="dialog" aria-labelledby="billDetailsModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-      <div class="modal-header bg-primary text-white py-3">
-        <h5 class="modal-title font-weight-bold" id="billDetailsModalLabel" style="font-family: 'Noto Sans Lao Looped';">
+      <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important;">
+        <h5 class="modal-title font-weight-bold" id="billDetailsModalLabel" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <i class="fas fa-file-invoice mr-2"></i> ລາຍລະອຽດສິນຄ້າໃນໃບບິນ: <span id="modal_invoice_no" class="badge badge-light text-primary px-2 py-1 ml-1" style="font-size: 1.05rem;"></span>
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">

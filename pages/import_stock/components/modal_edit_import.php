@@ -5,8 +5,8 @@
 <div class="modal fade" id="editImportModal" tabindex="-1" role="dialog" aria-labelledby="editImportModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-      <div class="modal-header bg-primary text-white py-3">
-        <h5 class="modal-title font-weight-bold" id="editImportModalLabel" style="font-family: 'Noto Sans Lao Looped';">
+      <div class="modal-header text-white py-3" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important;">
+        <h5 class="modal-title font-weight-bold" id="editImportModalLabel" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <i class="fas fa-edit mr-2"></i> ແກ້ໄຂຂໍ້ມູນການຮັບສິນຄ້າເຂົ້າ
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -75,7 +75,7 @@
 
         <div class="modal-footer bg-light py-3 px-4 border-top">
           <button type="button" class="btn btn-secondary font-weight-bold px-4" data-dismiss="modal" style="border-radius: 8px;">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 8px;">
+          <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-save mr-1"></i> ບັນທຶກການແກ້ໄຂ
           </button>
         </div>

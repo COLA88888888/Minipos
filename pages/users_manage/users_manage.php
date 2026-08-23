@@ -19,13 +19,13 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-sm-6">
-          <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped'; font-size:  18px;">
+          <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; font-size:  18px;">
             <i class="fas fa-users-cog text-primary mr-2"></i> ຈັດການຜູ້ນຳໃຊ້ລະບົບ
           </h5>
         </div>
         <div class="col-sm-6 text-right">
           <?php if (hasPermission('users', 'add')): ?>
-            <button type="button" class="btn btn-primary px-3 py-1.5 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px; white-space: nowrap;">
+            <button type="button" class="btn btn-primary px-3 py-1.5 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addUserModal" style="border-radius: 6px; white-space: nowrap; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
               <i class="fas fa-user-plus mr-1"></i> ເພີ່ມຜູ້ໃຊ້
             </button>
           <?php endif; ?>
@@ -40,7 +40,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- MAIN USERS TABLE CARD -->
       <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden;">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center w-100">
-          <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; color: #0f172a;">
+          <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; color: #0f172a;">
             ລາຍງານຜູ້ໃຊ້ງານທັງໝົດ
           </h6>
           

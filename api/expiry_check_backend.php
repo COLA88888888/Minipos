@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             
             logActivity($pdo, "ຕັດຈຳໜ່າຍສິນຄ້າ", "ສິນຄ້າ: $p_name, ຈຳນວນ: $qty_to_dispose, ເຫດຜົນ: $reason");
         } catch (Exception $e) {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) $pdo->rollBack();
             $message = 'ຜິດພາດ: ' . $e->getMessage();
             $message_type = 'danger';
         }
@@ -81,12 +81,11 @@ $activeStoreId = getActiveStoreId($pdo);
 
 // Base Query
 $query = "
-    SELECT pb.*, p.product_name, p.base_unit, c.category_name, s.shelf_name,
+    SELECT pb.*, p.product_name, p.base_unit, c.category_name, NULL AS shelf_name,
            DATEDIFF(pb.expiry_date, CURDATE()) AS days_left
     FROM product_batches pb
     JOIN products p ON pb.product_id = p.product_id
     JOIN categories c ON p.category_id = c.category_id
-    LEFT JOIN shelves s ON p.shelf_id = s.shelf_id
     WHERE pb.quantity > 0 AND pb.expiry_date IS NOT NULL AND p.store_id = ?
 ";
 
@@ -117,4 +116,6 @@ $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $batches = $stmt->fetchAll();
 
-$categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
+$catStmt = $pdo->prepare("SELECT * FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$activeStoreId]);
+$categories = $catStmt->fetchAll();

@@ -185,8 +185,8 @@ $targetProdStore = ($filter_branch > 0) ? $filter_branch : $userStoreId;
 
 $categories = [];
 try {
-    $cStmt = $pdo->prepare("SELECT category_name FROM categories ORDER BY category_name ASC");
-    $cStmt->execute();
+    $cStmt = $pdo->prepare("SELECT category_name FROM categories WHERE store_id = ? OR store_id = 1 ORDER BY category_name ASC");
+    $cStmt->execute([$targetProdStore]);
     $categories = $cStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (Exception $e) {}
 

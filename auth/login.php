@@ -12,14 +12,14 @@ if (isset($_SESSION['checked']) && $_SESSION['checked'] === 1 && !empty($_SESSIO
     exit();
 }
 require_once __DIR__ . '/../config/db.php';
-$site_logo = '../assets/img/logo/logo.png';
+$site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 ?>
 <!DOCTYPE html>
 <html lang="lo">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS Wlaodev</title>
+    <title>Wlaodev POS</title>
     <link rel="shortcut icon" href="<?php echo $site_logo; ?>" type="image/x-icon">
 
     <!-- CSS Plugins & Theme -->
@@ -47,8 +47,8 @@ $site_logo = '../assets/img/logo/logo.png';
 
             <!-- Title Header -->
             <div class="login-header-text">
-                <h4>ເຂົ້າສູ່ລະບົບ POS System</h4>
-                <p>POS Wlaodev</p>
+                <h4>ເຂົ້າສູ່ລະບົບ Wlaodev POS</h4>
+                <!-- <p>POS Wlaodev</p> -->
                 <!-- <div class="login-hint">ກະລຸນາເຂົ້າສູ່ລະບົບ...</div> -->
             </div>
 
@@ -88,7 +88,7 @@ $site_logo = '../assets/img/logo/logo.png';
 
         <!-- Footer Below Card -->
         <div class="bct-footer">
-            <div class="bct-footer-copy">&copy; 2026 - POS System By <a href="https://laodev.la/" target="_blank" rel="noopener noreferrer">LaoDev.la</a></div>
+            <div class="bct-footer-copy">&copy; 2026 - Wlaodev POS By <a href="https://laodev.la/" target="_blank" rel="noopener noreferrer">LaoDev.la</a></div>
             <div class="bct-social-links">
                 <a href="https://www.facebook.com/profile.php?id=100067585680024&locale=th_TH" target="_blank" rel="noopener noreferrer" class="bct-social-link">
                     <i class="fab fa-facebook"></i> WLaoDev

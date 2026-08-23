@@ -146,7 +146,7 @@
           <button type="button" class="btn btn-secondary font-weight-bold px-3 py-2" data-dismiss="modal" style="border-radius: 6px;">
             ຍົກເລີກ
           </button>
-          <button type="submit" class="btn btn-primary font-weight-bold text-white px-4 py-2 shadow-sm" style="border-radius: 6px;">
+          <button type="submit" class="btn btn-primary font-weight-bold text-white px-4 py-2 shadow-sm" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-check-circle mr-1"></i>ບັນທຶກ
           </button>
         </div>

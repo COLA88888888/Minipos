@@ -130,7 +130,8 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
             exit();
         }
 
-        $companyTax = $pdo->query("SELECT tax_type, vat_percent FROM tbcompanyinfo LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+        // Tax settings are shared across all branches (live on the main branch's row only)
+        $companyTax = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo));
         if ($companyTax) {
             if (empty($billData['tax_type']) || $billData['tax_type'] === 'none') {
                 if (!empty($companyTax['tax_type']) && $companyTax['tax_type'] !== 'none') {
@@ -142,6 +143,28 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
                     $billData['vat_rate'] = floatval($companyTax['vat_percent']);
                 }
             }
+            $billData['tax_id'] = $companyTax['tax_id'] ?? '';
+        }
+
+        // Resolve the exact bank/QR that was used at checkout time — a reprint must show
+        // the same QR code and account the customer actually paid to, not the store's default.
+        $billData['bank_qr_img'] = '';
+        $billData['bank_account_no'] = '';
+        $billData['bank_account_name'] = '';
+        if (!empty($billData['bank_account_id'])) {
+            try {
+                $bStmt = $pdo->prepare("SELECT * FROM bank_accounts WHERE id = ?");
+                $bStmt->execute([$billData['bank_account_id']]);
+                $bInfo = $bStmt->fetch(PDO::FETCH_ASSOC);
+                if ($bInfo) {
+                    $billData['bank_qr_img'] = resolveBankQr($bInfo['qr_code_img'] ?? '', $bInfo['bank_code'] ?? '');
+                    $billData['bank_account_no'] = $bInfo['account_number'] ?? '';
+                    $billData['bank_account_name'] = $bInfo['account_name'] ?? '';
+                    if (empty($billData['bank_name'])) {
+                        $billData['bank_name'] = $bInfo['bank_name'] ?? '';
+                    }
+                }
+            } catch (Throwable $e) {}
         }
 
         $amountAfterDisc = max(0, floatval($billData['sale_amount'] ?? 0) - floatval($billData['sale_discount_bill'] ?? 0));
@@ -199,31 +222,35 @@ if ($reqAction === 'delete_bill') {
         $bill = $stmtB->fetch(PDO::FETCH_ASSOC);
 
         if (!$bill) {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) $pdo->rollBack();
             echo json_encode(['success' => false, 'message' => 'ບໍ່ພົບຂໍ້ມູນບິນຂາຍນີ້ໃນລະບົບ!']);
             exit();
         }
 
         if (($bill['sale_status'] ?? '') === 'CANCEL') {
-            $pdo->rollBack();
+            if ($pdo->inTransaction()) $pdo->rollBack();
             echo json_encode(['success' => false, 'message' => 'ບິນຂາຍນີ້ຖືກລົບ/ຍົກເລີກໄປແລ້ວ!']);
             exit();
         }
 
         // 2. Fetch bill items
-        $stmtD = $pdo->prepare("SELECT save_proid, save_qty FROM tbsale_save_detail WHERE save_bill = :bill");
+        $stmtD = $pdo->prepare("SELECT save_proid, save_qty, multiplier FROM tbsale_save_detail WHERE save_bill = :bill");
         $stmtD->execute([':bill' => $billNo]);
         $details = $stmtD->fetchAll(PDO::FETCH_ASSOC);
 
-        // 3. Restore Product Inventory Stock (qty = qty + save_qty)
-        $stmtRestore = $pdo->prepare("UPDATE products SET qty = qty + :restore_qty WHERE product_id = :proid");
+        // 3. Restore Product Inventory Stock — must restore save_qty * multiplier (the actual
+        // quantity that was cut at checkout), not just save_qty, or a sale made in a multi-unit
+        // (e.g. 1 "ຕູດ" = 12 base units) only gets 1 unit restored instead of 12.
+        $billStoreId = intval($bill['store_id'] ?? 1);
+        $stmtRestore = $pdo->prepare("UPDATE products SET qty = qty + :restore_qty WHERE product_id = :proid AND store_id = :store_id");
         foreach ($details as $item) {
             $proid = $item['save_proid'];
-            $qty   = floatval($item['save_qty']);
+            $qty   = floatval($item['save_qty']) * (intval($item['multiplier'] ?? 1) ?: 1);
             if (!empty($proid) && $qty > 0) {
                 $stmtRestore->execute([
                     ':restore_qty' => $qty,
-                    ':proid'       => $proid
+                    ':proid'       => $proid,
+                    ':store_id'    => $billStoreId
                 ]);
             }
         }

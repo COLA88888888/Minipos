@@ -36,7 +36,7 @@ if (file_exists($backupDir)) {
 }
 ?>
 
-<link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/pages/database-backup.css">
+<link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/pages/database-backup.css?v=<?php echo filemtime(__DIR__ . '/../../assets/css/pages/database-backup.css'); ?>">
 
 <div class="container-fluid backup-page">
     <!-- Header Title & Compact Action Buttons -->

@@ -113,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $message_type = 'success';
                 logActivity($pdo, "ຮັບສິນຄ້າເຂົ້າ (ໃບບິນ)", "ໃບບິນ: $invoice_number, $insertedCount ລາຍການ, ລວມ: " . number_format($total_bill_cost) . " ₭");
             } catch (Exception $e) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';
             }
@@ -174,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 $pdo->commit();
             } catch (Exception $e) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 $message = $e->getMessage();
                 $message_type = 'danger';
             }
@@ -249,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 $pdo->commit();
             } catch (Exception $e) {
-                $pdo->rollBack();
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';
             }
@@ -258,10 +258,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // Fetch categories for modal filter
-$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+$activeStoreId = getActiveStoreId($pdo);
+$catStmt = $pdo->prepare("SELECT category_id, category_name FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$activeStoreId]);
+$categories = $catStmt->fetchAll();
 
 // Fetch products for current active store with categories & multi-units
-$activeStoreId = getActiveStoreId($pdo);
 $prodStmt = $pdo->prepare("
     SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
     FROM products p 
@@ -345,7 +347,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-sm-6">
-          <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped';">
+          <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-truck-loading text-primary mr-2"></i> ຮັບສິນຄ້າເຂົ້າສະຕັອກ
           </h4>
         </div>
@@ -468,7 +470,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
               <!-- Add Item Button -->
               <div class="col-md-2">
-                <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px;" onclick="addCurrentItemToCart()">
+                <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="addCurrentItemToCart()">
                   <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
                 </button>
               </div>
@@ -525,11 +527,11 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- Table Footer Action Bar: Save Stock Button (Right Aligned) -->
               <div class="card-footer bg-light border-top p-3 d-flex align-items-center justify-content-end" style="border-color: #e2e8f0 !important;">
                 <?php if (hasPermission('import_stock', 'add')): ?>
-                  <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="height: 38px; border-radius: 6px;" onclick="submitDirectImportBill()">
+                  <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="height: 38px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="submitDirectImportBill()">
                     <i class="fas fa-save mr-1.5" style="font-size: 1.1rem;"></i> ບັນທຶກສະຕັອກ
                   </button>
                 <?php else: ?>
-                  <span class="badge badge-light text-muted" style="font-size: 0.9rem;">ເບິ່ງຢ່າງດຽວ (ບໍ່ມີສິດບັນທຶກ)</span>
+                  <span class="badge badge-light text-muted" style="font-size: 0.9rem;">ເບິ່ງຢ່າງດຽວ</span>
                 <?php endif; ?>
               </div>
             </div>

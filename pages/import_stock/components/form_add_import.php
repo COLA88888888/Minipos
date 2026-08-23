@@ -8,8 +8,8 @@
       <form id="importStockForm" action="" method="POST" novalidate>
         <input type="hidden" name="action" value="import_stock">
 
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
+        <div class="modal-header text-white" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important;">
+          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-truck-loading mr-2"></i> ຟອມບັນທຶກຮັບສິນຄ້າເຂົ້າ
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -162,7 +162,7 @@
 
         <div class="modal-footer border-0 pt-0 pb-4 px-4">
           <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px;" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px;" onclick="submitImportStock()">
+          <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="submitImportStock()">
             <i class="fas fa-save mr-1"></i> ບັນທຶກຮັບເຂົ້າ
           </button>
         </div>

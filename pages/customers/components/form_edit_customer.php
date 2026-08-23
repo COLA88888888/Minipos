@@ -6,8 +6,8 @@
         <input type="hidden" name="action" value="edit_customer">
         <input type="hidden" id="edit_customer_id" name="customer_id">
         
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">
+        <div class="modal-header text-white" style="background: linear-gradient(135deg, #2c5aa0, #244886);">
+          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-edit mr-2"></i> ແກ້ໄຂຂໍ້ມູນລູກຄ້າ
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -62,7 +62,7 @@
 
         <div class="modal-footer border-0 pt-0 pb-4 px-4">
           <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px;" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px;" onclick="submitEditCustomer()">
+          <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="submitEditCustomer()">
             <i class="fas fa-save mr-1"></i>ອັບເດດ
           </button>
         </div>
@@ -80,7 +80,7 @@ function submitEditCustomer() {
       icon: 'warning',
       title: 'ກະລຸນາປ້ອນຊື່',
       text: 'ຊື່ ແລະ ນາມສະກຸນລູກຄ້າບໍ່ສາມາດຫວ່າງໄດ້!',
-      confirmButtonColor: '#2563eb',
+      confirmButtonColor: '#244886',
       confirmButtonText: 'ຕົກລົງ'
     });
     $('#edit_customer_name').focus();
@@ -105,7 +105,7 @@ function submitEditCustomer() {
         icon: 'error',
         title: 'ຜິດພາດ',
         text: res.message || 'ຜິດພາດ!',
-        confirmButtonColor: '#2563eb'
+        confirmButtonColor: '#244886'
       });
     }
   }, 'json');

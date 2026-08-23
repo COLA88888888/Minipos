@@ -98,7 +98,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="row-gap: 10px;">
     <div>
-      <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
         <i class="fas fa-wallet text-info mr-2"></i> ລາຍງານການເງິນ
       </h5>
     </div>
@@ -178,8 +178,9 @@ require_once __DIR__ . '/../../layouts/header.php';
 
       <!-- Action Buttons (ຄົ້ນຫາ & ຣີໂຫລດ) -->
       <div style="flex: 1 1 140px; width: 100%;">
+        <label class="font-weight-bold text-dark mb-1 d-block d-md-none" style="font-size: 0.82rem; visibility: hidden;">&nbsp;</label>
         <div class="d-flex align-items-center" style="gap: 8px; width: 100%;">
-          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); flex: 1;">
+          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); flex: 1;">
             <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
           </button>
           <a href="financial.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="ລ້າງຄ່າ">
@@ -200,6 +201,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <th class="text-center py-3" style="width: 50px; background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ລຳດັບ</th>
               <th class="py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເລກບິນ</th>
               <th class="py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ວັນທີ່</th>
+              <th class="text-center py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສ່ວນຫຼຸດ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເງິນສົດ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເງິນໂອນ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ເງິນທອນ</th>
@@ -211,7 +213,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <tbody>
             <?php if (empty($finances)): ?>
               <tr>
-                <td colspan="9" class="text-center py-5 text-muted">
+                <td colspan="10" class="text-center py-5 text-muted">
                   <i class="fas fa-wallet fa-3x mb-3 text-secondary opacity-50 d-block"></i>
                   ບໍ່ພົບຂໍ້ມູນລາຍງານການເງິນ
                 </td>
@@ -252,6 +254,16 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <td class="text-center font-weight-bold text-muted"><?php echo $offset + $idx + 1; ?></td>
                   <td class="font-weight-bold text-primary"><?php echo htmlspecialchars($row['sale_save_bill']); ?></td>
                   <td class="text-left" style="font-size: 0.84rem; color: #475569;"><?php echo $dateFormatted; ?></td>
+                  <td class="text-center">
+                    <?php $billDiscount = floatval($row['sale_discount_bill'] ?? 0); ?>
+                    <?php if ($billDiscount > 0): ?>
+                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.76rem; border-radius: 6px;">
+                        -<?php echo number_format($billDiscount); ?> ₭
+                      </span>
+                    <?php else: ?>
+                      <span class="text-muted">-</span>
+                    <?php endif; ?>
+                  </td>
                   <td class="text-right font-weight-bold text-dark"><?php echo number_format($cash, 0); ?> ₭</td>
                   <td class="text-right font-weight-bold text-primary"><?php echo number_format($qr, 0); ?> ₭</td>
                   <td class="text-right font-weight-bold text-info"><?php echo number_format($change, 0); ?> ₭</td>
@@ -271,7 +283,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <?php if (!empty($finances)): ?>
             <tfoot style="background: #f8fafc; border-top: 2px solid #cbd5e1;">
               <tr class="font-weight-bold" style="font-size: 0.9rem; color: #0f172a;">
-                <td colspan="3" class="text-center py-3 text-uppercase font-weight-bold" style="background: #f8fafc; color: #0f172a;">ລວມທັງໝົດ:</td>
+                <td colspan="4" class="text-center py-3 text-uppercase font-weight-bold" style="background: #f8fafc; color: #0f172a;">ລວມທັງໝົດ:</td>
                 <td class="text-right py-3 text-dark font-weight-bold" style="background: #f8fafc; color: #0f172a;" id="tot_cash">0 ₭</td>
                 <td class="text-right py-3 text-primary font-weight-bold" style="background: #f8fafc;" id="tot_qr">0 ₭</td>
                 <td class="text-right py-3 text-info font-weight-bold" style="background: #f8fafc;" id="tot_change">0 ₭</td>
@@ -344,11 +356,11 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(row => {
             if (row.style.display !== 'none') {
                 const cells = row.querySelectorAll('td');
-                if (cells.length >= 9) {
-                    sumCash += parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, '')) || 0;
-                    sumQr += parseFloat(cells[4].textContent.replace(/[^0-9.-]+/g, '')) || 0;
-                    sumChange += parseFloat(cells[5].textContent.replace(/[^0-9.-]+/g, '')) || 0;
-                    sumRec += parseFloat(cells[6].textContent.replace(/[^0-9.-]+/g, '')) || 0;
+                if (cells.length >= 10) {
+                    sumCash += parseFloat(cells[4].textContent.replace(/[^0-9.-]+/g, '')) || 0;
+                    sumQr += parseFloat(cells[5].textContent.replace(/[^0-9.-]+/g, '')) || 0;
+                    sumChange += parseFloat(cells[6].textContent.replace(/[^0-9.-]+/g, '')) || 0;
+                    sumRec += parseFloat(cells[7].textContent.replace(/[^0-9.-]+/g, '')) || 0;
                 }
             }
         });

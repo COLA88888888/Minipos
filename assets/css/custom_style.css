@@ -1,8 +1,8 @@
 /* Modern Hotel Dashboard Styles */
 :root {
-  --primary-color: #4361ee;
-  --primary-light: #4895ef;
-  --secondary-color: #3f37c9;
+  --primary-color: #244886;
+  --primary-light: #3864aa;
+  --secondary-color: #1b3869;
   --success-color: #10b981;
   --danger-color: #ef4444;
   --warning-color: #f59e0b;
@@ -30,7 +30,7 @@ body {
 }
 
 body, div, h1, h2, h3, h4, h5, h6, p, a, span, button, input, select, textarea, label {
-  font-family: 'Noto Sans Lao Looped', 'Outfit', sans-serif;
+  font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', 'Outfit', sans-serif;
 }
 
 /* Exclude Font Awesome from font override */

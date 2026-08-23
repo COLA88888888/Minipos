@@ -19,14 +19,16 @@ $message_type = '';
 // Handle Category Form Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
+        $catActiveStoreId = getActiveStoreId($pdo);
+
         if ($_POST['action'] === 'add_category') {
             $name = trim($_POST['category_name'] ?? '');
             $desc = trim($_POST['description'] ?? '');
             $cat_id = isset($_POST['category_id']) && $_POST['category_id'] !== '' ? intval($_POST['category_id']) : null;
             if ($name !== '' && $cat_id !== null && $cat_id > 0) {
                 try {
-                    $stmt = $pdo->prepare("INSERT INTO categories (category_id, category_name, description) VALUES (?, ?, ?)");
-                    $stmt->execute([$cat_id, $name, $desc]);
+                    $stmt = $pdo->prepare("INSERT INTO categories (category_id, category_name, description, store_id) VALUES (?, ?, ?, ?)");
+                    $stmt->execute([$cat_id, $name, $desc, $catActiveStoreId]);
                     $message = 'ເພີ່ມປະເພດສິນຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ເພີ່ມປະເພດສິນຄ້າ", "ຊື່: $name");
@@ -45,8 +47,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $desc = trim($_POST['description'] ?? '');
             if ($id > 0 && $name !== '') {
                 try {
-                    $stmt = $pdo->prepare("UPDATE categories SET category_name = ?, description = ? WHERE category_id = ?");
-                    $stmt->execute([$name, $desc, $id]);
+                    // Scoped to this branch's own category — a sub-branch user can't edit another branch's row
+                    $stmt = $pdo->prepare("UPDATE categories SET category_name = ?, description = ? WHERE category_id = ? AND store_id = ?");
+                    $stmt->execute([$name, $desc, $id, $catActiveStoreId]);
                     $message = 'ແກ້ໄຂປະເພດສິນຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ແກ້ໄຂປະເພດສິນຄ້າ", "ID: $id, ຊື່ໃໝ່: $name");
@@ -59,7 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif ($_POST['action'] === 'delete_category') {
             $id = intval($_POST['category_id'] ?? 0);
             if ($id > 0) {
-                // Check if category has products inside
+                // Check if category has products inside — across ALL branches, since some
+                // branches' products intentionally still point at another branch's category
+                // (left in place by design) and deleting it out from under them isn't safe.
                 $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE category_id = ?");
                 $checkStmt->execute([$id]);
                 $count = (int)$checkStmt->fetchColumn();
@@ -69,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message_type = 'danger';
                 } else {
                     try {
-                        $stmt = $pdo->prepare("DELETE FROM categories WHERE category_id = ?");
-                        $stmt->execute([$id]);
+                        $stmt = $pdo->prepare("DELETE FROM categories WHERE category_id = ? AND store_id = ?");
+                        $stmt->execute([$id, $catActiveStoreId]);
                         $message = 'ລົບປະເພດສິນຄ້າສຳເລັດ!';
                         $message_type = 'success';
                         logActivity($pdo, "ລົບປະເພດສິນຄ້າ", "ID: $id");
@@ -84,10 +89,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch All Categories With Product Count
-$stmtCat = $pdo->query("SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.category_id) AS product_count FROM categories c ORDER BY c.category_id DESC");
+// Fetch Categories scoped to the active branch only — don't mix categories across branches.
+// product_count intentionally still matches by category_id alone (not store_id) — some
+// branches already have products pointing at another branch's category by design and those
+// links were left in place, so the count must keep including them.
+$activeStoreIdForCat = getActiveStoreId($pdo);
+$stmtCat = $pdo->prepare("SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id = c.category_id) AS product_count FROM categories c WHERE c.store_id = ? ORDER BY c.category_id DESC");
+$stmtCat->execute([$activeStoreIdForCat]);
 $allCategories = $stmtCat->fetchAll();
 $total_records = count($allCategories);
 
-// Next available ID (MAX + 1, or 1 if empty)
+// Next available ID (MAX + 1 across all branches, or 1 if empty) — category_id is a shared
+// primary key, so this must stay global to avoid two branches generating the same new ID.
 $next_cat_id = (int)$pdo->query("SELECT IFNULL(MAX(category_id), 0) + 1 FROM categories")->fetchColumn();

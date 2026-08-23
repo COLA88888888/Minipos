@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 }
 
                 if (empty($targetProducts)) {
-                    $pdo->rollBack();
+                    if ($pdo->inTransaction()) $pdo->rollBack();
                     $message = 'ບໍ່ພົບສິນຄ້າໃນເງື່ອນໄຂທີ່ເລືອກ!';
                     $message_type = 'warning';
                 } else {
@@ -209,9 +209,11 @@ if (!empty($_POST['is_ajax'])) {
 }
 
 // Fetch categories, products, and price adjustments history
-$categoriesList = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
-
 $targetProdStore = ($filter_store > 0) ? $filter_store : $userStoreId;
+$catListStmt = $pdo->prepare("SELECT category_id, category_name FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catListStmt->execute([$targetProdStore]);
+$categoriesList = $catListStmt->fetchAll();
+
 $prodStmt = $pdo->prepare("SELECT p.product_id, p.product_name, p.barcode, p.category_id, p.bprice, p.price, p.unit, c.category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE p.store_id = ? ORDER BY p.product_name ASC");
 $prodStmt->execute([$targetProdStore]);
 $productsList = $prodStmt->fetchAll();

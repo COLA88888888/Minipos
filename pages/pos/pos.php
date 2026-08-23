@@ -45,7 +45,7 @@ window.POS_TODAY_SALE_COUNT = <?php echo $todaySaleCount; ?>;
 
 <!-- Mobile Floating Cart Bar (Visible on Mobile when on Products tab) -->
 <div id="mobileFloatingCartBar" class="d-lg-none" style="display: none; position: fixed; bottom: 14px; left: 12px; right: 12px; z-index: 1050;">
-  <button type="button" class="btn btn-primary btn-block shadow-lg font-weight-bold py-3 px-3.5 d-flex justify-content-between align-items-center" onclick="switchMobilePosTab('cart')" style="border-radius: 14px; font-size: 1.05rem; min-height: 52px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none; box-shadow: 0 8px 24px rgba(37,99,235,0.5) !important;">
+  <button type="button" class="btn btn-primary btn-block shadow-lg font-weight-bold py-3 px-3.5 d-flex justify-content-between align-items-center" onclick="switchMobilePosTab('cart')" style="border-radius: 14px; font-size: 1.05rem; min-height: 52px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none; box-shadow: 0 8px 24px rgba(36,72,134,0.5) !important;">
     <span><i class="fas fa-shopping-basket mr-2" style="font-size: 1.15rem;"></i> ເບິ່ງລາຍການຂາຍ (<span id="floatingCartItemCount">0 ລາຍການ</span>)</span>
     <span class="font-weight-bold" style="font-size: 1.15rem;" id="floatingCartTotal">0 ₭ <i class="fas fa-chevron-right ml-1"></i></span>
   </button>

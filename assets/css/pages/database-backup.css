@@ -65,14 +65,14 @@
     transition: all 0.2s ease;
 }
 .btn-primary-custom {
-    background: #2563eb;
-    border: 1px solid #2563eb;
+    background: linear-gradient(135deg, #2c5aa0, #244886);
+    border: 1px solid #244886;
     color: #ffffff;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 4px 12px rgba(36, 72, 134, 0.15);
 }
 .btn-primary-custom:hover {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: linear-gradient(135deg, #244886, #1a3666);
+    border-color: #1a3666;
     color: #ffffff;
 }
 .btn-secondary-custom {

@@ -6,17 +6,21 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
     echo "<script>window.top.location.href = '" . $base_path . "auth/login.php?expired=1';</script>";
     exit();
 }
+$header_site_name = 'Wlaodev POS';
+$header_site_logo = $base_path . 'assets/img/logosystem/Wlaodev.jpg';
 ?>
 <!DOCTYPE html>
 <html lang="lo">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Wlaodev POS</title>
+    <title><?php echo htmlspecialchars($header_site_name); ?></title>
+    <link rel="shortcut icon" href="<?php echo htmlspecialchars($header_site_logo); ?>" type="image/jpeg">
+    <link rel="icon" href="<?php echo htmlspecialchars($header_site_logo); ?>" type="image/jpeg">
     <link rel="manifest" href="<?php echo $base_path; ?>manifest.json">
     
-    <!-- Local Font - Noto Sans Lao Looped -->
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
+    <!-- System Modern Font - Noto Sans Lao -->
+    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css?v=<?php echo time(); ?>">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/fontawesome-free/css/all.min.css">
@@ -30,7 +34,7 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
     <link rel="stylesheet" href="<?php echo $base_path; ?>dist/css/adminlte.min.css">
     <!-- overlayScrollbars -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css?v=29">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css?v=34">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
     <!-- Select2 Searchable Dropdown -->
@@ -56,7 +60,7 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
     </script>
     <style>
       body {
-        font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif;
+        font-family: 'Noto Sans Lao', 'Segoe UI', sans-serif;
       }
       /* Custom Premium Scrollbar */
       ::-webkit-scrollbar {
@@ -129,7 +133,7 @@ if (empty($_SESSION['checked']) || empty($_SESSION['user_id'])) {
       }
 
       .preloader-text {
-        font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif;
+        font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;
         font-size: 1.05rem;
         color: #334155;
         font-weight: 600;

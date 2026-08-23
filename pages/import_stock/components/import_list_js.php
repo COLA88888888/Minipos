@@ -232,7 +232,7 @@
         <![endif]-->
         <style>
           body, table, td, th {
-            font-family: 'Phetsarath OT', 'Noto Sans Lao', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+            font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
             font-size: 11pt !important;
           }
           table {

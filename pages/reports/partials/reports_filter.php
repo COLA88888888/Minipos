@@ -22,7 +22,7 @@
 
       <!-- Search & Refresh Buttons -->
       <div class="d-flex align-items-center" style="flex: 0 0 auto; gap: 6px;">
-        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); white-space: nowrap; font-size: 0.85rem;">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); white-space: nowrap; font-size: 0.85rem;">
           <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
         </button>
         <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>?type=daily" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">
@@ -131,7 +131,7 @@
 
       <!-- Action Buttons -->
       <div class="d-flex align-items-center" style="flex: 0 0 auto; gap: 6px;">
-        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); white-space: nowrap; font-size: 0.85rem;">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); white-space: nowrap; font-size: 0.85rem;">
           <i class="fas fa-search mr-1"></i> ຄົ້ນຫາ
         </button>
         <a href="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>?type=<?php echo htmlspecialchars($type ?: 'all_sales'); ?>&view_mode=<?php echo htmlspecialchars($view_mode); ?>" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">

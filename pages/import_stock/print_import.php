@@ -54,15 +54,15 @@ $importDate = !empty($import['import_date']) ? date('d/m/Y H:i', strtotime($impo
   <title>ໃບບິນຮັບສິນຄ້າເຂົ້າ - <?php echo htmlspecialchars($import['invoice_number']); ?></title>
   <link rel="stylesheet" href="../../assets/css/local-font.css">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao+Looped:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Lao:wght@400;500;600;700&display=swap');
     
     * {
       box-sizing: border-box;
-      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
+      font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif !important;
     }
     
     body {
-      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', 'Saysettha OT', sans-serif !important;
+      font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif !important;
       margin: 0;
       padding: 0;
       background-color: #f1f5f9;

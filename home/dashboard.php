@@ -13,8 +13,8 @@ if (!isset($_SESSION['checked']) || $_SESSION['checked'] !== 1 || !isset($_SESSI
 require_once __DIR__ . '/../config/db.php';
 
 $base_path = '../';
-$site_name = 'POS Wlaodev';
-$site_logo = '../assets/img/logo/logo.png';
+$site_name = 'Wlaodev POS';
+$site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 
 if (!empty($_SESSION['user_id'])) {
     try {
@@ -78,7 +78,8 @@ if (!hasPermission('dashboard')) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?php echo htmlspecialchars($site_name); ?></title>
-  <link rel="shortcut icon" href="<?php echo $site_logo; ?>" type="image/x-icon">
+  <link rel="shortcut icon" href="<?php echo htmlspecialchars($site_logo); ?>" type="image/jpeg">
+  <link rel="icon" href="<?php echo htmlspecialchars($site_logo); ?>" type="image/jpeg">
   
   <script>
     (function() {
@@ -101,7 +102,7 @@ if (!hasPermission('dashboard')) {
   </script>
 
   <!-- Local Fonts & Styles -->
-  <link rel="stylesheet" href="../assets/css/local-font.css">
+  <link rel="stylesheet" href="../assets/css/local-font.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="../dist/css/adminlte.min.css">
   <link rel="stylesheet" href="../plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
@@ -228,7 +229,7 @@ if (!hasPermission('dashboard')) {
 <div class="wrapper">
 
   <!-- ແຖບເມນູດ້ານເທິງ (Top Navigation Bar) -->
-  <nav class="main-header navbar navbar-expand navbar-dark justify-content-between" style="background-color: rgb(2, 99, 255) !important; border: none !important; border-bottom: none !important; box-shadow: none !important; height: 64px;">
+  <nav class="main-header navbar navbar-expand navbar-dark justify-content-between" style="background-color: #244886 !important; border: none !important; border-bottom: none !important; box-shadow: none !important; height: 64px;">
     <!-- Left side: Menu toggle & Branch Switcher -->
     <ul class="navbar-nav align-items-center">
       <li class="nav-item">
@@ -296,7 +297,7 @@ if (!hasPermission('dashboard')) {
     ?>
 
     <!-- Right side: Subscription Days Remaining + Notifications Bell + Logout -->
-    <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao Looped', sans-serif;">
+    <ul class="navbar-nav ml-auto align-items-center" style="gap: 12px; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
       
       <!-- Notifications Dropdown (Low Stock & Out of Stock Warning Grouped by Branch - Only for Main Branch / Admin) -->
       <?php if ($userIsMain || $userIsAdmin): ?>
@@ -308,7 +309,7 @@ if (!hasPermission('dashboard')) {
             </span>
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
-            <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
+            <div class="dropdown-header font-weight-bold d-flex text-white justify-content-between align-items-center py-2.5 px-3" style="background-color: #244886 !important;">
               <span class="text-truncate mr-2"><i class="fas fa-exclamation-triangle text-warning mr-1.5"></i> ແຈ້ງເຕືອນສິນຄ້າໃກ້ໝົດ/ໝົດ (<span id="mainNotifTitleCount"><?php echo $lowStockCount; ?></span>)</span>
               <button type="button" id="btnMarkAllMain" class="btn btn-xs btn-outline-light font-weight-bold flex-shrink-0" onclick="markAllNotifsAsRead('mainNotifBadge')" style="border-radius: 6px; font-size: 0.73rem; <?php echo ($lowStockCount > 0) ? '' : 'display: none;'; ?>">ອ່ານທັງໝົດ</button>
             </div>
@@ -377,7 +378,7 @@ if (!hasPermission('dashboard')) {
             </span>
           </a>
           <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notif-dropdown-box shadow-lg border-0">
-            <div class="dropdown-header font-weight-bold d-flex bg-primary text-white justify-content-between align-items-center py-2.5 px-3">
+            <div class="dropdown-header font-weight-bold d-flex text-white justify-content-between align-items-center py-2.5 px-3" style="background-color: #244886 !important;">
               <span class="text-truncate mr-2"><i class="fas fa-bell text-white mr-1.5"></i> ແຈ້ງເຕືອນສາຂາ (<span id="subNotifTitleCount"><?php echo $totalSubNotifications; ?></span>)</span>
               <button type="button" id="btnMarkAllSub" class="btn btn-xs btn-outline-light font-weight-bold flex-shrink-0" onclick="markAllNotifsAsRead('subNotifBadge')" style="border-radius: 6px; font-size: 0.73rem; <?php echo ($totalSubNotifications > 0) ? '' : 'display: none;'; ?>">ອ່ານທັງໝົດ</button>
             </div>
@@ -1279,9 +1280,17 @@ if (!hasPermission('dashboard')) {
     var sidebarEl = document.querySelector('.sidebar');
     if (sidebarEl && window.jQuery && jQuery.fn.overlayScrollbars) {
       var os = $(sidebarEl).overlayScrollbars();
-      var savedScroll = sessionStorage.getItem('sidebarScrollTop');
-      if (os && savedScroll) {
-        os.scroll({ y: parseInt(savedScroll, 10) }, 0);
+      if (os && window.innerWidth <= 991) {
+        // overlayScrollbars caches its scroll height from when the sidebar was still a
+        // hidden/collapsed off-canvas drawer, so on mobile the bottom of the menu can end
+        // up unreachable and scrolling feels like it jumps — fall back to native scrolling.
+        os.destroy();
+        sidebarEl.style.overflowY = 'auto';
+      } else {
+        var savedScroll = sessionStorage.getItem('sidebarScrollTop');
+        if (os && savedScroll) {
+          os.scroll({ y: parseInt(savedScroll, 10) }, 0);
+        }
       }
     }
 
@@ -1289,7 +1298,7 @@ if (!hasPermission('dashboard')) {
 
     function showFastLoader() {
       clearTimeout(loaderSafetyTimer);
-      $('#iframeLoaderOverlay').stop(true, true).fadeIn(60);
+      $('#iframeLoaderOverlay').stop(true, true).show();
       loaderSafetyTimer = setTimeout(function() {
         $('#iframeLoaderOverlay').stop(true, true).fadeOut(120);
       }, 1200);
@@ -1618,7 +1627,7 @@ if (!hasPermission('dashboard')) {
   })();
 </script>
   <!-- STOCK TRANSFER DETAILS MODAL POPUP -->
-  <div class="modal fade" id="notifTransferDetailModal" tabindex="-1" role="dialog" aria-hidden="true" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+  <div class="modal fade" id="notifTransferDetailModal" tabindex="-1" role="dialog" aria-hidden="true" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;">
         

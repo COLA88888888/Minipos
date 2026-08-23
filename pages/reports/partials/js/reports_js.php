@@ -160,11 +160,30 @@ function printBill(billNo) {
         var payHtml = '';
         payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນສົດ:</span><span>' + cash.toLocaleString() + ' ₭</span></div>';
         payHtml += '<div class="d-flex justify-content-between"><span>ຮັບເງິນໂອນ:</span><span>' + qr.toLocaleString() + ' ₭</span></div>';
-        if (qr > 0 || (typePay && (typePay.indexOf('ໂອນ') !== -1 || typePay.indexOf('QR') !== -1))) {
-          var repBank = b.bank_name ? b.bank_name : 'BCEL One';
-          payHtml += '<div class="d-flex justify-content-between font-weight-bold" style="font-weight:700;"><span>ໂອນຜ່ານທະນາຄານ:</span><span>' + repBank + '</span></div>';
-        }
         $('#rc_rep_payment_rows').html(payHtml);
+
+        // Bank QR box — must show the exact bank/QR/account used for this sale, same as the
+        // original receipt printed at checkout, not a generic store default.
+        var isTransferPayment = (qr > 0) || (typePay && (typePay.indexOf('ໂອນ') !== -1 || typePay.indexOf('QR') !== -1));
+        if (isTransferPayment) {
+          var bQrImg = b.bank_qr_img || '';
+          if (bQrImg) {
+            $('#rc_rep_bank_qr_img').attr('src', bQrImg).show();
+          } else {
+            $('#rc_rep_bank_qr_img').hide();
+          }
+          var labelBank = b.bank_name || '';
+          if (b.bank_account_name) labelBank += (labelBank ? ' - ' : '') + b.bank_account_name;
+          $('#rc_rep_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
+          if (b.bank_account_no) {
+            $('#rc_rep_bank_acc_lbl').text('ເລກບັນຊີ: ' + b.bank_account_no).show();
+          } else {
+            $('#rc_rep_bank_acc_lbl').hide();
+          }
+          $('.receipt-qr-box').show();
+        } else {
+          $('.receipt-qr-box').hide();
+        }
 
         var tbody = $('#rc_rep_items');
         tbody.empty();
@@ -215,7 +234,7 @@ function doPrintReportReceipt() {
     <link rel="stylesheet" href="../../assets/css/local-font.css">
     <style>
       @page { size: 80mm auto; margin: 0mm; }
-      * { box-sizing: border-box; font-family: 'Noto Sans Lao Looped', 'Phetsarath OT', Arial, sans-serif !important; color: #000 !important; }
+      * { box-sizing: border-box; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif !important; color: #000 !important; }
       html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 12px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
@@ -457,14 +476,14 @@ function doExportExcel() {
 
   var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
   html += '<head><meta charset="utf-8"><style>';
-  html += '* { font-family: "Phetsarath OT", "Noto Sans Lao", "Saysettha OT", sans-serif !important; }';
-  html += 'table { border-collapse: collapse; width: 100%; font-family: "Phetsarath OT", "Noto Sans Lao", sans-serif; }';
-  html += 'th, td { border: 1px solid #cbd5e1; padding: 10px 12px; font-family: "Phetsarath OT", "Noto Sans Lao", sans-serif; vertical-align: middle; }';
+  html += '* { font-family: "Noto Sans Lao", "Souliyo", "Boon", sans-serif !important; }';
+  html += 'table { border-collapse: collapse; width: 100%; font-family: "Noto Sans Lao", "Souliyo", "Boon", sans-serif; }';
+  html += 'th, td { border: 1px solid #cbd5e1; padding: 10px 12px; font-family: "Noto Sans Lao", "Souliyo", "Boon", sans-serif; vertical-align: middle; }';
   html += 'th { background-color: #f1f5f9; font-weight: bold; text-align: center !important; }';
   html += '.text-right { text-align: right !important; }';
   html += '.text-center { text-align: center !important; }';
   html += '.text-left { text-align: left !important; }';
-  html += 'h2 { text-align: center !important; font-family: "Phetsarath OT", "Noto Sans Lao", sans-serif; font-size: 18px; margin: 15px 0; }';
+  html += 'h2 { text-align: center !important; font-family: "Noto Sans Lao", "Souliyo", "Boon", sans-serif; font-size: 18px; margin: 15px 0; }';
   html += '</style></head><body>';
   html += '<h2>ລາຍງານການຂາຍທັງໝົດ</h2>';
   html += cloneTable.outerHTML;
@@ -501,13 +520,13 @@ function doExportPDF() {
   if (typeof html2pdf !== 'undefined') {
     var wrapper = document.createElement('div');
     wrapper.style.padding = '15px';
-    wrapper.style.fontFamily = "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif";
+    wrapper.style.fontFamily = "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif";
     
     var title = document.createElement('h3');
     title.innerText = 'ລາຍງານການຂາຍທັງໝົດ';
     title.style.textAlign = 'center';
     title.style.marginBottom = '15px';
-    title.style.fontFamily = "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif";
+    title.style.fontFamily = "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif";
     
     var cloneTable = table.cloneNode(true);
     cloneTable.style.width = '100%';

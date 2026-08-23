@@ -1,8 +1,29 @@
-/* ===== Local Font: Noto Sans Lao Looped ===== */
-/* This font is stored locally - works without internet */
+/* ===== Modern System Font: Noto Sans Lao ===== */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap');
 
+html, body, *,
+.content-wrapper, .main-header, .main-sidebar, .sidebar,
+.card, .modal, .table, .btn, .nav-link, input, select, textarea, button {
+  font-family: 'Noto Sans Lao', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Keep FontAwesome icon glyphs intact — the blanket rule above also hits <i class="fas ...">
+   itself, and since ::before has no font-family of its own it would inherit Noto Sans Lao
+   instead of the icon font, turning every icon into a blank box. */
+.fa, .fas, .far, .fal, .fad,
+.fa::before, .fas::before, .far::before, .fal::before, .fad::before,
+.fa::after, .fas::after, .far::after, .fal::after, .fad::after {
+  font-family: "Font Awesome 5 Free" !important;
+}
+.fab,
+.fab::before,
+.fab::after {
+  font-family: "Font Awesome 5 Brands" !important;
+}
+
+/* Fallback local font-face mapping for offline environments */
 @font-face {
-  font-family: 'Noto Sans Lao Looped';
+  font-family: 'Noto Sans Lao Local';
   src: url('../fonts/NotoSansLaoLooped-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
@@ -10,10 +31,10 @@
 }
 
 @font-face {
-  font-family: 'Noto Sans Lao Looped';
-  src: url('../fonts/NotoSansLaoLooped-Bold.ttf') format('truetype'),
-       url('../fonts/NotoSansLaoLooped-Regular.ttf') format('truetype');
+  font-family: 'Noto Sans Lao Local';
+  src: url('../fonts/NotoSansLaoLooped-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
+

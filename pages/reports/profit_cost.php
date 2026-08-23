@@ -85,10 +85,14 @@ $sql = "
                 ELSE d.save_price * 0.7 
             END
         ) AS buy_price,
-        SUM(d.save_money) AS total_revenue
+        SUM(d.save_money) AS total_revenue,
+        SUM(
+            COALESCE(d.save_discount_item, 0) +
+            (CASE WHEN s.sale_amount > 0 THEN (d.save_money / s.sale_amount) * COALESCE(s.sale_discount_bill, 0) ELSE 0 END)
+        ) AS total_discount
     FROM tbsale_save_detail d
     INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
-    LEFT JOIN products p ON d.save_proid = p.product_id
+    LEFT JOIN products p ON (d.save_proid = p.product_id AND p.store_id = s.store_id)
     WHERE {$whereClause}
     GROUP BY d.save_proid, product_name
     ORDER BY total_revenue DESC
@@ -114,7 +118,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Header -->
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="row-gap: 10px;">
     <div>
-      <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
         <i class="fas fa-chart-line text-info mr-2"></i> ລາຍງານກຳໄລ-ຕົ້ນທຶນ
       </h5>
     </div>
@@ -187,7 +191,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Action Buttons (ຄົ້ນຫາ & ຣີໂຫລດ) -->
       <div style="flex: 1 1 160px; width: 100%;">
         <div class="d-flex align-items-center" style="gap: 8px; width: 100%;">
-          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); flex: 1;">
+          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); flex: 1;">
             <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
           </button>
           <a href="profit_cost.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="ລ້າງຄ່າ">
@@ -207,6 +211,7 @@ require_once __DIR__ . '/../../layouts/header.php';
             <tr style="background: #ffffff; color: #1e293b;">
               <th class="py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຊື່ສິນຄ້າ</th>
               <th class="text-center py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຈຳນວນ</th>
+              <th class="text-center py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ສ່ວນຫຼຸດ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຍອດຂາຍ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ຕົ້ນທຶນ</th>
               <th class="text-right py-3" style="background: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">ກຳໄລ</th>
@@ -216,7 +221,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <tbody>
             <?php if (empty($display_data)): ?>
               <tr>
-                <td colspan="6" class="text-center py-5 text-muted">
+                <td colspan="7" class="text-center py-5 text-muted">
                   <i class="fas fa-chart-line fa-3x mb-3 text-secondary opacity-50 d-block"></i>
                   ບໍ່ພົບຂໍ້ມູນລາຍງານກຳໄລ-ຕົ້ນທຶນ
                 </td>
@@ -236,6 +241,15 @@ require_once __DIR__ . '/../../layouts/header.php';
                 <tr>
                   <td class="font-weight-bold text-dark"><?php echo htmlspecialchars($row['product_name']); ?></td>
                   <td class="text-center font-weight-bold text-dark"><?php echo number_format($qty); ?></td>
+                  <td class="text-center">
+                    <?php if (!empty($row['total_discount']) && floatval($row['total_discount']) > 0): ?>
+                      <span class="badge badge-danger font-weight-bold px-2 py-1" style="font-size: 0.76rem; border-radius: 6px;">
+                        -<?php echo number_format($row['total_discount']); ?> ₭
+                      </span>
+                    <?php else: ?>
+                      <span class="text-muted">-</span>
+                    <?php endif; ?>
+                  </td>
                   <td class="text-right font-weight-bold text-dark"><?php echo number_format($revSum, 0); ?> ₭</td>
                   <td class="text-right font-weight-bold text-secondary"><?php echo number_format($costSum, 0); ?> ₭</td>
                   <td class="text-right font-weight-bold <?php echo $profitClass; ?>" style="font-size: 0.95rem;">

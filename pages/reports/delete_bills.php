@@ -107,7 +107,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
   <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
-      <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
         <i class="fas fa-history text-danger mr-2"></i> ປະຫວັດການລົບບິນຂາຍ
       </h5>
     </div>
@@ -175,7 +175,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
       <!-- Buttons -->
       <div style="flex: 1 1 130px; width: 100%;">
         <div class="d-flex align-items-center" style="gap: 8px; width: 100%;">
-          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); flex: 1;">
+          <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); flex: 1;">
             <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
           </button>
           <a href="delete_bills.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="ລ້າງຄ່າ">

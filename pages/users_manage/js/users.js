@@ -174,7 +174,7 @@ function validateUserForm(formId) {
       Swal.fire({
         icon: 'warning',
         title: 'ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ!',
-        html: '<div style="font-family: Noto Sans Lao Looped;">ທ່ານຍັງບໍ່ທັນໄດ້ປ້ອນຂໍ້ມູນ: <strong class="text-danger">' + fieldListStr + '</strong><br><span class="text-muted mt-2 d-inline-block" style="font-size:0.9rem;">ກະລຸນາກວດສອບ ແລະ ປ້ອນຂໍ້ມູນທີ່ມີເຄື່ອງໝາຍ (<span class="text-danger">*</span>) ໃຫ້ຄົບຖ້ວນ</span></div>',
+        html: '<div style="font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', sans-serif;">ທ່ານຍັງບໍ່ທັນໄດ້ປ້ອນຂໍ້ມູນ: <strong class="text-danger">' + fieldListStr + '</strong><br><span class="text-muted mt-2 d-inline-block" style="font-size:0.9rem;">ກະລຸນາກວດສອບ ແລະ ປ້ອນຂໍ້ມູນທີ່ມີເຄື່ອງໝາຍ (<span class="text-danger">*</span>) ໃຫ້ຄົບຖ້ວນ</span></div>',
         confirmButtonText: 'ຕົກລົງ',
         confirmButtonColor: '#0284c7'
       });
@@ -190,7 +190,7 @@ function validateUserForm(formId) {
         Swal.fire({
           icon: 'warning',
           title: 'ລະຫັດຜ່ານບໍ່ກົງກັນ!',
-          html: '<div style="font-family: Noto Sans Lao Looped;">ກະລຸນາກວດສອບ <strong>ລະຫັດຜ່ານ</strong> ແລະ <strong>ຢືນຢັນລະຫັດຜ່ານ</strong> ໃຫ້ກົງກັນ!</div>',
+          html: '<div style="font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', sans-serif;">ກະລຸນາກວດສອບ <strong>ລະຫັດຜ່ານ</strong> ແລະ <strong>ຢືນຢັນລະຫັດຜ່ານ</strong> ໃຫ້ກົງກັນ!</div>',
           confirmButtonText: 'ຕົກລົງ',
           confirmButtonColor: '#0284c7'
         });

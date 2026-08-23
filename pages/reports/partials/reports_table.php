@@ -56,7 +56,7 @@
             ?>
               <!-- 1. Bill Banner Header Row (#eff6ff / #dbeafe) -->
               <tr style="background-color: #eff6ff; border-top: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe;">
-                <td colspan="10" class="py-2 px-3 font-weight-bold" style="color: #1e40af; font-size: 0.88rem;">
+                <td colspan="11" class="py-2 px-3 font-weight-bold" style="color: #1e40af; font-size: 0.88rem;">
                   <i class="fas fa-receipt mr-1 text-primary"></i> Bill: <strong><?php echo htmlspecialchars($bNo); ?></strong> | Date: <strong><?php echo htmlspecialchars($dateOnly); ?></strong>
                 </td>
               </tr>
@@ -112,7 +112,7 @@
 
               <!-- 3. Bill Summary Row (#fef9c3) -->
               <tr style="background-color: #fef9c3; border-bottom: 2px solid #fde047;">
-                <td colspan="8" class="text-right font-weight-bold text-dark pr-3">ລວມບິນ:</td>
+                <td colspan="9" class="text-right font-weight-bold text-dark pr-3">ລວມບິນ:</td>
                 <td class="text-right font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo number_format($bGroup['bill_net'], 0); ?></td>
                 <td></td>
               </tr>
@@ -152,18 +152,18 @@
                 <td class="text-right font-weight-bold text-info"><?php echo number_format($row['change'] ?? 0, 0); ?> ₭</td>
                 <td class="text-left font-weight-bold text-dark" style="font-size: 0.84rem;"><?php echo htmlspecialchars($row['cashier']); ?></td>
                 <td class="text-center no-print" style="white-space: nowrap !important;">
-                  <div class="d-inline-flex align-items-center" style="gap: 4px;">
-                    <button type="button" class="btn btn-sm btn-light border shadow-sm text-primary" onclick="viewBillDetails('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ລາຍລະອຽດ">
+                  <div class="d-inline-flex align-items-center" style="gap: 6px;">
+                    <button type="button" class="btn btn-sm btn-light border shadow-sm text-primary" onclick="viewBillDetails('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ລາຍລະອຽດ" style="width: 34px; height: 34px; padding: 0; font-size: 1.05rem;">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button type="button" class="btn btn-sm btn-light border shadow-sm text-info" onclick="printBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ພິມໃບບິນ">
+                    <button type="button" class="btn btn-sm btn-light border shadow-sm text-info" onclick="printBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ພິມໃບບິນ" style="width: 34px; height: 34px; padding: 0; font-size: 1.05rem;">
                       <i class="fas fa-print"></i>
                     </button>
-                    <?php 
+                    <?php
                       $canDeleteBill = hasPermission('delete_bills') || ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ';
-                      if (($row['status'] ?? 'SUCCESS') !== 'CANCEL' && $canDeleteBill): 
+                      if (($row['status'] ?? 'SUCCESS') !== 'CANCEL' && $canDeleteBill):
                     ?>
-                      <button type="button" class="btn btn-sm btn-light border shadow-sm text-danger" onclick="deleteBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ລຶບບິນຂາຍ">
+                      <button type="button" class="btn btn-sm btn-light border shadow-sm text-danger" onclick="deleteBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="ລຶບບິນຂາຍ" style="width: 34px; height: 34px; padding: 0; font-size: 1.05rem;">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
@@ -181,14 +181,14 @@
         <tfoot style="background: #f8fafc; font-weight: 800; border-top: 2px solid #cbd5e1;">
           <tr>
             <?php if ($view_mode === 'item'): ?>
-              <td colspan="5" class="text-right text-dark">ລວມທັງໝົດ:</td>
+              <td colspan="6" class="text-right text-dark">ລວມທັງໝົດ:</td>
               <td class="text-center text-dark"><?php echo number_format($total_qty); ?></td>
               <td class="text-right text-secondary"><?php echo number_format($total_gross, 0); ?> ₭</td>
               <td class="text-right text-danger"><?php echo number_format($total_disc, 0); ?> ₭</td>
               <td class="text-right text-success" style="font-size: 1.0rem;"><?php echo number_format($total_net, 0); ?> ₭</td>
               <td></td>
             <?php else: ?>
-              <td colspan="3" class="text-right text-dark">ລວມທັງໝົດ:</td>
+              <td colspan="4" class="text-right text-dark">ລວມທັງໝົດ:</td>
               <td class="text-center text-dark"><?php echo number_format($total_qty); ?></td>
               <td class="text-right text-secondary"><?php echo number_format($total_gross, 0); ?> ₭</td>
               <td class="text-right text-danger"><?php echo number_format($total_disc, 0); ?> ₭</td>

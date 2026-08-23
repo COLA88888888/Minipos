@@ -22,9 +22,43 @@ function broadcastCustomerDisplay(checkoutState, extraData) {
   }
 }
 
-function openCustomerDisplayWindow() {
-  window.open('customer_display.php', 'POSCustomerDisplay', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+function openCustomerDisplayOnScreen(left, top, w, h) {
+  var win = window.open('customer_display.php', 'POSCustomerDisplay',
+    'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+  if (win) {
+    try { win.moveTo(left, top); win.resizeTo(w, h); } catch(e) {}
+  }
   broadcastCustomerDisplay('shopping');
+}
+
+function openCustomerDisplayWindow() {
+  // Prefer the Window Management API so the display opens directly on the OTHER monitor,
+  // not just fullscreen on whichever monitor the cashier's POS window is already on.
+  if (typeof window.getScreenDetails === 'function') {
+    window.getScreenDetails().then(function(details) {
+      var current = details.currentScreen;
+      var other = details.screens.find(function(s) { return s !== current; });
+      if (other) {
+        openCustomerDisplayOnScreen(other.availLeft, other.availTop, other.availWidth, other.availHeight);
+      } else {
+        // Only one screen detected — fall back to filling the current one.
+        openCustomerDisplayOnScreen(0, 0, screen.availWidth || 1200, screen.availHeight || 800);
+      }
+    }).catch(function() {
+      openCustomerDisplayFallback();
+    });
+    return;
+  }
+  openCustomerDisplayFallback();
+}
+
+function openCustomerDisplayFallback() {
+  // No Window Management API (or permission denied) — best-effort guess: most dual-monitor
+  // setups extend the desktop to the right, so positioning past the current screen's width
+  // lands the window on the second monitor.
+  var w = screen.availWidth || screen.width || 1200;
+  var h = screen.availHeight || screen.height || 800;
+  openCustomerDisplayOnScreen(w, 0, w, h);
 }
 
 // --- CART & ITEM MANAGEMENT ---
@@ -74,7 +108,7 @@ function updateCartUI() {
     }
 
     var isGift = !!item.is_free_gift;
-    var giftBadge = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.68rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
+    var giftBadge = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.78rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
     var priceDisplay = isGift 
       ? `<span class="text-success font-weight-bold" style="font-size:0.80rem;">0 ₭</span>` 
       : `${Number(item.unit_price).toLocaleString()} ₭`;
@@ -88,8 +122,8 @@ function updateCartUI() {
         <!-- 2. ຊື່ສິນຄ້າ + ຫົວໜ່ວຍ -->
         <div class="cart-item-name-wrap" style="flex:1.4; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:2px;">
           <div class="font-weight-bold text-truncate" style="font-size:0.86rem; color:#1e293b; line-height:1.2;" title="${item.product_name}">${item.product_name} ${giftBadge}</div>
-          <span class="cart-item-unit-badge d-none d-lg-inline-block" style="font-size:0.70rem; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; border-radius:5px; padding:1px 7px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name}</span>
-          <span class="cart-item-unit-badge-mobile d-inline-block d-lg-none" style="font-size:0.68rem; font-weight:700; color:#2563eb; background:#eff6ff; border:1px solid #bfdbfe; border-radius:5px; padding:1px 5px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name} (${priceDisplay})</span>
+          <span class="cart-item-unit-badge d-none d-lg-inline-block" style="font-size:0.80rem; font-weight:700; color:#244886; background:#eef2fb; border:1px solid #c7d2e8; border-radius:5px; padding:1px 7px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name}</span>
+          <span class="cart-item-unit-badge-mobile d-inline-block d-lg-none" style="font-size:0.78rem; font-weight:700; color:#244886; background:#eef2fb; border:1px solid #c7d2e8; border-radius:5px; padding:1px 5px; width:fit-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.unit_name} (${priceDisplay})</span>
         </div>
 
         <!-- 3. ລາຄາຕໍ່ໜ່ວຍ (Desktop Only) -->
@@ -103,7 +137,7 @@ function updateCartUI() {
             <i class="fas fa-minus"></i>
           </button>
           <input type="number" min="1" value="${item.quantity}" onchange="changeCartQty('${item.cartKey}', this.value)" class="input-qty-val" style="width:38px; height:34px; border:none; border-left:1px solid #cbd5e1; border-right:1px solid #cbd5e1; text-align:center; font-size:0.92rem; font-weight:700; color:#1e293b; background:#ffffff; padding:0; -moz-appearance:textfield;" ${isGift ? 'readonly' : ''}>
-          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:32px; height:34px; border:none; background:transparent; color:#2563eb; font-size:0.92rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;" ${isGift ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+          <button onclick="incCartQty('${item.cartKey}', 1)" title="ເພີ່ມ" class="btn-qty-plus" style="width:32px; height:34px; border:none; background:transparent; color:#244886; font-size:0.92rem; cursor:pointer; line-height:1; display:flex; align-items:center; justify-content:center; padding:0;" ${isGift ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
             <i class="fas fa-plus"></i>
           </button>
         </div>
@@ -361,7 +395,7 @@ function updateProductGridBadges() {
         statusBadge.hide().removeClass('out-of-stock low-stock');
       }
       if (cardEl.length) {
-        cardEl.css({'border': '1.5px solid #3b82f6', 'opacity': '1.0', 'background': '#ffffff'});
+        cardEl.css({'border': '1.5px solid #244886', 'opacity': '1.0', 'background': '#ffffff'});
       }
       if (infoWrap.length) {
         infoWrap.removeClass('out-of-stock low-stock').addClass('in-stock');
@@ -458,7 +492,7 @@ function clearCart() {
       icon: 'info',
       title: 'ແຈ້ງເຕືອນ',
       text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າຢູ່ແລ້ວ!',
-      confirmButtonColor: '#2563eb'
+      confirmButtonColor: '#244886'
     });
     return;
   }
@@ -679,13 +713,27 @@ function switchMobilePosTab(tab) {
 }
 
 // Live Stock Automatic Sync Polling
+var POS_STOCK_POLL_COOLDOWN_MS = 8000;
+
 function pollPOSLiveStock() {
+  // Skip entirely for a few seconds after any checkout/broadcast — that write is already
+  // correct, and the server's own row may not even reflect it yet if this fires right on
+  // its heels, which is exactly what caused stock to bounce back up and then self-correct.
+  var lastWrite = window.__posLastAuthoritativeWriteAt || 0;
+  if (lastWrite && (Date.now() - lastWrite) < POS_STOCK_POLL_COOLDOWN_MS) return;
+
+  var seqAtRequest = window.__posStockApplySeq || 0;
   $.ajax({
     url: (window.POS_BACKEND_URL || '../../api/pos_backend.php') + '?action=get_live_stocks&_=' + Date.now(),
     type: 'GET',
     cache: false,
     dataType: 'json',
     success: function(res) {
+      // A checkout (or another tab's broadcast) already applied a newer, authoritative
+      // update while this request was in flight — this response is stale, discard it
+      // instead of bouncing the just-decremented stock number back up.
+      if ((window.__posStockApplySeq || 0) !== seqAtRequest) return;
+
       if (res && res.success && res.stocks && res.stocks.length > 0) {
         var localStocks = {};
         try {

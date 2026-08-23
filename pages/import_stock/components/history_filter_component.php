@@ -44,7 +44,7 @@
       </div>
 
       <div class="col-md-2 d-flex gap-2">
-        <button type="submit" class="btn btn-primary btn-sm font-weight-bold flex-fill" style="height: 36px; border-radius: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold flex-fill" style="height: 36px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886);">
           <i class="fas fa-search mr-1"></i> ຄົ້ນຫາ
         </button>
         <a href="transfer_history.php" class="btn btn-light btn-sm border font-weight-bold px-2.5" title="ລ້າງຄ່າ" style="height: 36px; border-radius: 6px;">

@@ -19,13 +19,13 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-sm-6">
-          <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped'; font-size: 18px;">
+          <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; font-size: 18px;">
             <i class="fas fa-th-list text-primary mr-2"></i> ຈັດການປະເພດສິນຄ້າ
           </h5>
         </div>
         <div class="col-sm-6 text-right">
           <?php if (hasPermission('categories', 'add')): ?>
-          <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCategoryModal" style="border-radius: 6px;">
+          <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCategoryModal" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມປະເພດສິນຄ້າ
           </button>
           <?php endif; ?>
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; background: #ffffff;">
         
         <div class="card-header bg-white py-3 border-0">
-          <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; color: #0f172a; font-size: 1rem;">
+          <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; color: #0f172a; font-size: 1rem;">
             ລາຍງານປະເພດສິນຄ້າທັງໝົດ
           </h6>
         </div>
@@ -191,7 +191,7 @@ require_once __DIR__ . '/components/form_edit_category.php';
       Swal.fire({
         icon: 'warning',
         title: 'ບໍ່ສາມາດລົບໄດ້!',
-        html: '<div style="font-family: \'Noto Sans Lao Looped\', sans-serif;">ໝວດໝູ່ <b>"' + catName + '"</b> ມີລາຍການສິນຄ້າຢູ່ <b>' + productCount + '</b> ລາຍການ.<br><span style="font-size: 0.9rem; color: #64748b; display: inline-block; margin-top: 8px;">ກະລຸນາຍ້າຍ ຫຼື ລົບລາຍການສິນຄ້າໃນໝວດໝູ່ນີ້ອອກກ່ອນ ຈຶ່ງຈະສາມາດລົບໄດ້!</span></div>',
+        html: '<div style="font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', sans-serif;">ໝວດໝູ່ <b>"' + catName + '"</b> ມີລາຍການສິນຄ້າຢູ່ <b>' + productCount + '</b> ລາຍການ.<br><span style="font-size: 0.9rem; color: #64748b; display: inline-block; margin-top: 8px;">ກະລຸນາຍ້າຍ ຫຼື ລົບລາຍການສິນຄ້າໃນໝວດໝູ່ນີ້ອອກກ່ອນ ຈຶ່ງຈະສາມາດລົບໄດ້!</span></div>',
         confirmButtonColor: '#2563eb',
         confirmButtonText: 'ຕົກລົງ',
         heightAuto: false

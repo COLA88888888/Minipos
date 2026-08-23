@@ -90,7 +90,7 @@
 
     <!-- Add Item Button -->
     <div class="col-md-2">
-      <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8);" onclick="addCurrentItemToCart()">
+      <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886);" onclick="addCurrentItemToCart()">
         <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
       </button>
     </div>

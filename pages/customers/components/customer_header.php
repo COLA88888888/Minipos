@@ -3,11 +3,11 @@
   <div class="container-fluid">
     <div class="row align-items-center">
       <div class="col-sm-6 col-md-5">
-        <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped'; font-size: 18px;">
+        <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 18px;">
           <i class="fas fa-user-friends text-info mr-2"></i> ລາຍງານລູກຄ້າທັງໝົດ
         </h5>
       </div>
-      <div class="col-sm-6 col-md-7 text-right d-flex align-items-center justify-content-end" style="gap: 10px;">
+      <div class="col-sm-6 col-md-7 text-right d-flex align-items-center justify-content-end mt-3 mt-sm-0" style="gap: 10px;">
         <?php if ($isAdmin || $isMain): ?>
           <form method="GET" action="" class="m-0 d-inline-block">
             <select name="store_id" class="form-control form-control-sm font-weight-bold border-info text-info" style="height: 38px; border-radius: 8px; background-color: #f0f9ff; min-width: 170px;" onchange="this.form.submit()">
@@ -21,7 +21,7 @@
           </form>
         <?php endif; ?>
         <?php if (hasPermission('customers', 'add')): ?>
-          <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCustomerModal" style="border-radius: 8px; height: 38px;">
+          <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCustomerModal" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-user-plus mr-1"></i> ເພີ່ມລູກຄ້າໃໝ່
           </button>
         <?php endif; ?>

@@ -31,7 +31,7 @@
           </div>
           <input type="date" id="toDateInput" class="form-control font-weight-bold" title="ຫາວັນທີ" value="<?php echo date('Y-m-d'); ?>" oninput="filterCustomerTable()" onchange="filterCustomerTable()" style="height: 38px; font-size: 0.88rem; border-radius: 0 8px 8px 0; border: 1px solid #cbd5e1;">
         </div>
-        <button type="button" class="btn btn-primary font-weight-bold px-3 shadow-sm" onclick="filterCustomerTable()" title="ຄົ້ນຫາ" style="border-radius: 8px; height: 38px; font-size: 0.88rem; white-space: nowrap; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none;">
+        <button type="button" class="btn btn-primary font-weight-bold px-3 shadow-sm" onclick="filterCustomerTable()" title="ຄົ້ນຫາ" style="border-radius: 8px; height: 38px; font-size: 0.88rem; white-space: nowrap; display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
           <i class="fas fa-search"></i> ຄົ້ນຫາ
         </button>
       </div>

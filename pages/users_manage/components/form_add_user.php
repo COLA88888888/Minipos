@@ -11,7 +11,7 @@
 
         <!-- HEADER -->
         <div class="modal-header bg-primary text-white py-3 px-4" style="border-radius: 16px 16px 0 0;">
-          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.2rem;">
+          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.2rem;">
             <i class="fas fa-user-plus mr-2"></i> ເພີ່ມຜູ້ໃຊ້ໃໝ່
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
@@ -172,7 +172,7 @@
           <button type="button" class="btn btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius:6px;">
             <i class="fas fa-times mr-1"></i> ຍົກເລີກ
           </button>
-          <button type="submit" class="btn btn-primary px-4 font-weight-bold shadow-sm" style="border-radius:6px;">
+          <button type="submit" class="btn btn-primary px-4 font-weight-bold shadow-sm" style="border-radius:6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-save mr-1"></i> ບັນທຶກ
           </button>
         </div>

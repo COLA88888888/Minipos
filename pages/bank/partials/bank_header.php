@@ -18,7 +18,7 @@ if (!defined('MINIPOS_APP')) {
 <!-- Bank Management Header with Date Range & Store Filter -->
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
   <div>
-    <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+    <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
       <i class="fas fa-university text-primary mr-2"></i> ຈັດການທະນາຄານ
     </h5>
   </div>
@@ -57,7 +57,7 @@ if (!defined('MINIPOS_APP')) {
         <input type="date" name="end_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($end_date); ?>" style="border-radius: 0 6px 6px 0;">
       </div>
 
-      <button type="submit" class="btn btn-sm btn-info font-weight-bold shadow-xs px-2.5" style="border-radius: 6px; font-size: 0.82rem;" title="ຄົ້ນຫາຕາມຊ່ວງວັນທີ ແລະ ສາຂາ">
+      <button type="submit" class="btn btn-sm btn-info font-weight-bold shadow-xs px-2.5" style="border-radius: 6px; font-size: 0.82rem; background: linear-gradient(135deg, #2c5aa0, #244886); border: none; color: #fff;" title="ຄົ້ນຫາຕາມຊ່ວງວັນທີ ແລະ ສາຂາ">
         <i class="fas fa-search mr-1"></i> ຄົ້ນຫາ
       </button>
 
@@ -67,12 +67,22 @@ if (!defined('MINIPOS_APP')) {
     </form>
 
     <?php if (hasPermission('accounting', 'add') || hasPermission('bank', 'add')): ?>
-      <button type="button" class="btn btn-sm btn-primary font-weight-bold shadow-sm ml-md-2" data-toggle="modal" data-target="#addBankAccountModal" style="border-radius: 6px; font-size: 0.82rem; padding: 6px 14px;">
+      <button type="button" id="btnAddBankAccount" class="btn btn-sm btn-primary font-weight-bold shadow-sm ml-md-2" data-toggle="modal" data-target="#addBankAccountModal" style="border-radius: 6px; font-size: 0.82rem; padding: 6px 14px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
         <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມບັນຊີທະນາຄານ
       </button>
     <?php endif; ?>
   </div>
 </div>
+
+<style>
+  /* On mobile, the filter form wraps onto its own line(s) and the Add button drops below
+     it — align that button to the right edge instead of leaving it stuck on the left. */
+  @media (max-width: 767.98px) {
+    #btnAddBankAccount {
+      margin-left: auto !important;
+    }
+  }
+</style>
 
 <?php if (!empty($message)): ?>
   <script>

@@ -150,7 +150,7 @@ function addProductToCart(product, specificUnit) {
   var htmlOptions = allUnits.map(function(u, uIdx) {
     return `<button class="unit-pick-btn" data-unit-idx="${uIdx}"
       style="display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:8px; padding:10px 16px; border:1.5px solid #e2e8f0; border-radius:10px; background:#fff; cursor:pointer; transition:all 0.15s ease; font-family:inherit;"
-      onmouseover="this.style.borderColor='#2563eb'; this.style.background='#eff6ff';"
+      onmouseover="this.style.borderColor='#244886'; this.style.background='#eef2fb';"
       onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='#fff';">
       <span style="font-size:0.95rem; font-weight:700; color:#1e293b;">${u.unit_name}</span>
       <span style="font-size:1.0rem; font-weight:800; color:#16a34a;">${Number(u.price).toLocaleString()} ₭</span>

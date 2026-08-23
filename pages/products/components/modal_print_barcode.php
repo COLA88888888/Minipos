@@ -1,7 +1,7 @@
 <?php
-// ດຶງຂໍ້ມູນຊື່ຮ້ານ
-$comp_stmt = $pdo->query("SELECT com_name_la FROM tbcompanyinfo LIMIT 1");
-$company_name = $comp_stmt ? ($comp_stmt->fetchColumn() ?: 'MiniPos') : 'MiniPos';
+// ດຶງຂໍ້ມູນຊື່ຮ້ານ (ຊື່ຮ້ານແມ່ນຂໍ້ມູນຮ່ວມກັນ ມາຈາກສາຂາຫຼັກ)
+$company_name = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo))['com_name_la'] ?? 'MiniPos';
+if (empty($company_name)) $company_name = 'MiniPos';
 
 // ຈັດຮູບແບບຂໍ້ມູນສິນຄ້າ ສຳລັບສົ່ງໃຫ້ JavaScript ໃຊ້ງານ
 $products_for_js = [];
@@ -22,7 +22,7 @@ if (!empty($products) && is_array($products)) {
       
       <!-- HEADER -->
       <div class="modal-header barcode-modal-header text-white py-3 px-4 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
-        <h5 class="modal-title font-weight-bold mb-0" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.15rem;">
+        <h5 class="modal-title font-weight-bold mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.15rem;">
           <i class="fas fa-barcode mr-2"></i> ປິ່ນສະຕິກເກີບາໂຄ້ດ (ເລືອກລາຍການ ແລະ ຈຳນວນດວງ)
         </h5>
         <div class="d-flex align-items-center" style="gap: 12px;">
@@ -491,7 +491,7 @@ function executeBarcodePrint() {
       body {
         margin: 0;
         padding: 6px;
-        font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', Arial, sans-serif;
+        font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif;
         background: #fff;
         color: #000;
         -webkit-print-color-adjust: exact;

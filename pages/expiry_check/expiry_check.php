@@ -15,7 +15,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 <div class="container-fluid p-4">
   <div class="row mb-3">
     <div class="col-12">
-      <h3 style="font-family: 'Noto Sans Lao Looped'; color: #1a252f;"><i class="fas fa-hourglass-end mr-2 text-danger"></i> ກວດສອບວັນໝົດອາຍຸ (Expiry & Disposal Manager)</h3>
+      <h3 style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; color: #1a252f;"><i class="fas fa-hourglass-end mr-2 text-danger"></i> ກວດສອບວັນໝົດອາຍຸ (Expiry & Disposal Manager)</h3>
       <p class="text-muted">ກວດສອບ ແລະ ຕັດຈຳໜ່າຍສິນຄ້າທີ່ໃກ້ໝົດອາຍຸ ແລະ ໝົດອາຍຸແລ້ວ</p>
     </div>
   </div>
@@ -146,7 +146,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <input type="hidden" name="action" value="dispose_batch">
         <input type="hidden" name="batch_id" id="dispose_batch_id">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped';">ຢືນຢັນການຕັດຈຳໜ່າຍສິນຄ້າ</h5>
+          <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">ຢືນຢັນການຕັດຈຳໜ່າຍສິນຄ້າ</h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>

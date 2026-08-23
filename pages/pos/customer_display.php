@@ -15,7 +15,7 @@ $company = [
 
 try {
     if (isset($pdo)) {
-        $cinfo = $pdo->query("SELECT * FROM tbcompanyinfo LIMIT 1")->fetch();
+        $cinfo = getCompanyInfoForBranch($pdo, getActiveStoreId($pdo));
         if ($cinfo) {
             $company['com_name']    = !empty($cinfo['com_name_la']) ? $cinfo['com_name_la'] : 'POS Retail Store';
             $company['com_tel']     = $cinfo['com_tel'] ?? '';
@@ -38,23 +38,36 @@ $base_path = '../../';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Customer Display - <?php echo htmlspecialchars($company['com_name']); ?></title>
-  
+
   <link rel="shortcut icon" href="<?php echo htmlspecialchars($company['com_logo']); ?>" type="image/x-icon">
   <link rel="icon" href="<?php echo htmlspecialchars($company['com_logo']); ?>" type="image/png">
-  
+
   <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
   <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/main.min.css">
   <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css">
-  
+
   <style>
+    @keyframes pulseHeart {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+    }
+    @keyframes glowTotal {
+      0%, 100% { box-shadow: 0 6px 20px rgba(5, 150, 105, 0.30); }
+      50% { box-shadow: 0 8px 32px rgba(5, 150, 105, 0.55); }
+    }
+    @keyframes headerShine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      background: #f8fafc;
+      background: #eef3fb;
       color: #0f172a;
-      font-family: 'Noto Sans Lao Looped', 'Noto Sans Lao', sans-serif;
+      font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;
       overflow: hidden;
       user-select: none;
     }
@@ -63,46 +76,79 @@ $base_path = '../../';
       display: flex;
       flex-direction: column;
       height: 100vh;
-      background: #f8fafc;
+      background: radial-gradient(circle at 15% 10%, #e3ecfb 0%, #eef3fb 45%, #e8eef9 100%);
     }
-    
-    /* ===== 1. TOP HEADER BAR: BLUE THEME & SYSTEM TITLE ===== */
+
+    /* ===== 1. TOP HEADER BAR: SYSTEM BRAND COLOR, SINGLE ROW ===== */
     .display-header {
-      background: linear-gradient(135deg, #0263ff 0%, #004ed6 100%);
-      padding: 14px 28px;
-      display: flex;
-      justify-content: space-between;
+      background: linear-gradient(120deg, #2c5aa0 0%, #244886 50%, #1a3666 100%);
+      background-size: 200% 200%;
+      animation: headerShine 8s ease infinite;
+      padding: 8px 24px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      box-shadow: 0 4px 20px rgba(2, 99, 255, 0.35);
+      box-shadow: 0 4px 16px rgba(36, 72, 134, 0.35);
       z-index: 100;
     }
-    .header-system-title {
+    .header-left-spacer {
+      grid-column: 1;
+    }
+
+    .fullscreen-toggle-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 200;
+      background: rgba(255,255,255,0.18);
+      border: 1.5px solid rgba(255,255,255,0.4);
       color: #ffffff;
-      font-size: 1.45rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .fullscreen-toggle-btn:hover {
+      background: rgba(255,255,255,0.32);
+      transform: scale(1.08);
+    }
+    .header-system-title {
+      grid-column: 2;
+      color: #ffffff;
+      font-size: 1.9rem;
       font-weight: 800;
       letter-spacing: 0.5px;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
 
-    .customer-info-badge {
-      background: rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(10px);
-      padding: 8px 20px;
-      border-radius: 40px;
-      border: 1.5px solid rgba(255, 255, 255, 0.4);
+    .header-datetime {
+      grid-column: 3;
+      justify-self: end;
+      margin-right: 42px;
       display: flex;
-      align-items: center;
-      color: #ffffff;
+      align-items: baseline;
       gap: 10px;
+      color: #ffffff;
     }
-
-    .clock-badge {
-      background: rgba(0, 0, 0, 0.22);
-      padding: 6px 18px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.25);
+    .header-datetime .header-clock {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffd45a;
+    }
+    .header-datetime .header-date {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.75);
     }
 
     /* ===== MAIN DUAL PANEL (Left = Large Logo & Store Info, Right = Order List & Payment) ===== */
@@ -123,8 +169,8 @@ $base_path = '../../';
     }
     .store-card {
       flex: 1;
-      background: #ffffff;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #eef2fb 0%, #ffffff 50%, #eef2fb 100%);
+      border-radius: 14px;
       border: 2px solid #cbd5e1;
       display: flex;
       flex-direction: column;
@@ -132,8 +178,25 @@ $base_path = '../../';
       align-items: center;
       text-align: center;
       padding: 36px 28px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 28px rgba(2, 99, 255, 0.08);
       position: relative;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .particle-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .store-card-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .large-logo-box {
@@ -172,13 +235,19 @@ $base_path = '../../';
     }
 
     .welcome-banner-box {
-      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-      border: 2px solid #bfdbfe;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #eef2fb 0%, #dbe3f3 100%);
+      border: 2px solid #c7d2e8;
+      border-radius: 12px;
       padding: 20px 24px;
       width: 92%;
       margin-top: 15px;
-      box-shadow: 0 6px 20px rgba(2, 99, 255, 0.08);
+      box-shadow: 0 6px 20px rgba(36, 72, 134, 0.08);
+      position: relative;
+      z-index: 1;
+    }
+    .welcome-banner-box i.fa-heart {
+      display: inline-block;
+      animation: pulseHeart 1.4s ease-in-out infinite;
     }
 
     /* ===== RIGHT PANEL: ORDER LIST & PAYMENT SUMMARY (60%) ===== */
@@ -186,10 +255,10 @@ $base_path = '../../';
       flex: 1.15;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
       overflow: hidden;
     }
-    
+
     .cart-card {
       flex: 1;
       background: #ffffff;
@@ -201,16 +270,26 @@ $base_path = '../../';
       box-shadow: 0 6px 20px rgba(0,0,0,0.06);
     }
 
+    /* Header and body are separate <table>s so columns stay aligned via a shared
+       colgroup + fixed layout instead of each table auto-sizing its own columns. */
+    .display-cols-table {
+      table-layout: fixed;
+    }
+
     .display-table-head {
-      background: linear-gradient(135deg, #0263ff 0%, #004ed6 100%);
       color: #ffffff;
       font-weight: 700;
-      font-size: 1.0rem;
+      font-size: 0.92rem;
     }
     .display-table-head th {
-      padding: 12px 14px;
+      background: linear-gradient(135deg, #2c5aa0 0%, #244886 100%);
+      padding: 9px 14px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      border: none;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     .display-table-body {
@@ -221,12 +300,20 @@ $base_path = '../../';
     .display-table-body::-webkit-scrollbar {
       display: none;
     }
+    .display-table-body > table {
+      height: 100%;
+    }
+    .display-empty-state td {
+      vertical-align: middle !important;
+    }
     .display-table-body td {
       padding: 12px 14px;
       vertical-align: middle;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: none;
       font-size: 1.1rem;
       color: #0f172a;
+      height: 112px;
+      box-sizing: border-box;
     }
     .display-table-body tr:nth-child(even) {
       background: #f8fafc;
@@ -234,8 +321,8 @@ $base_path = '../../';
 
     /* ENLARGED PRODUCT IMAGE & DETAILS */
     .display-pro-img {
-      width: 62px;
-      height: 62px;
+      width: 84px;
+      height: 84px;
       object-fit: cover;
       border-radius: 8px;
       border: 2px solid #cbd5e1;
@@ -254,89 +341,107 @@ $base_path = '../../';
       box-shadow: 0 3px 8px rgba(2, 99, 255, 0.3);
     }
 
-    /* PAYMENT SUMMARY & BREAKDOWN CARD */
+    /* PAYMENT SUMMARY & BREAKDOWN CARD — 6 stats in a 3-col x 2-row grid, plus grand total below */
     .summary-card {
       background: #ffffff;
       border-radius: 8px;
       border: 2px solid #cbd5e1;
-      padding: 14px 20px;
+      padding: 12px 18px;
       box-shadow: 0 6px 18px rgba(0,0,0,0.05);
     }
 
+    .summary-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 18px;
+      margin-bottom: 10px;
+    }
+
+    .summary-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
     .summary-item-label {
-      color: #334155;
+      color: #64748b;
       font-weight: 700;
-      font-size: 1.02rem;
+      font-size: 0.86rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .summary-item-value {
+      font-weight: 800;
+      font-size: 1.2rem;
     }
 
     .grand-total-banner {
       background: linear-gradient(135deg, #059669 0%, #047857 100%);
-      border-radius: 8px;
-      padding: 10px 20px;
+      border-radius: 10px;
+      padding: 10px 18px;
+      box-sizing: border-box;
       text-align: center;
       color: #ffffff;
       box-shadow: 0 6px 20px rgba(5, 150, 105, 0.30);
-      margin-top: 8px;
+      animation: glowTotal 2.4s ease-in-out infinite;
     }
   </style>
 </head>
 <body>
 
 <div class="display-wrapper">
-  <!-- 1. TOP HEADER BAR: BLUE THEME & SYSTEM TITLE -->
+  <button type="button" class="fullscreen-toggle-btn" id="fullscreenToggleBtn" title="ເຕັມຈໍ / ອອກຈາກເຕັມຈໍ">
+    <i class="fas fa-expand" id="fullscreenToggleIcon"></i>
+  </button>
+
+  <!-- 1. TOP HEADER BAR: SYSTEM NAME (CENTERED) + TIME/DATE, SINGLE ROW, NO BOXES -->
   <div class="display-header">
+    <div class="header-left-spacer"></div>
+
     <div class="header-system-title">
       <i class="fas fa-desktop text-warning"></i>
-      <span><?php echo htmlspecialchars($company['com_name']); ?> - ໜ້າຈໍສະແດງຜົນລູກຄ້າ</span>
+      <span>Wlaodev POS</span>
     </div>
 
-    <!-- Customer Badge -->
-    <div class="customer-info-badge">
-      <div class="rounded-circle bg-white d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; color: #0263ff; font-size: 1.1rem;">
-        <i class="fas fa-user font-weight-bold"></i>
-      </div>
-      <div>
-        <small class="text-white-50 d-block font-weight-bold" style="font-size: 0.72rem; line-height: 1;">ລູກຄ້າ / ສະມາຊິກ:</small>
-        <span class="font-weight-bold text-white" id="displayCustomerName" style="font-size: 1.1rem;">ລູກຄ້າທົ່ວໄປ</span>
-      </div>
-    </div>
-
-    <!-- Realtime Clock -->
-    <div class="clock-badge text-right">
-      <h4 class="mb-0 font-weight-bold text-warning" id="liveClock" style="font-size: 1.45rem; letter-spacing: 1px;">00:00:00</h4>
-      <small class="text-white-50 font-weight-bold" id="liveDate">--/--/----</small>
+    <div class="header-datetime">
+      <span class="header-clock" id="liveClock">00:00:00</span>
+      <span class="header-date" id="liveDate">--/--/----</span>
     </div>
   </div>
 
   <!-- MAIN DUAL PANEL -->
   <div class="display-main">
-    
+
     <!-- LEFT PANEL: LARGE STORE LOGO & ADDRESS INFO (40%) -->
     <div class="left-store-panel">
       <div class="store-card">
-        <!-- Large Store Logo -->
-        <div class="large-logo-box">
-          <img src="<?php echo htmlspecialchars($company['com_logo']); ?>" alt="Store Logo" class="large-logo-img"
-               onerror="this.style.display='none'; document.getElementById('largeFallbackIcon').style.display='block';">
-          <i class="fas fa-store large-fallback-icon" id="largeFallbackIcon" style="display:none;"></i>
-        </div>
+        <canvas class="particle-canvas" id="storeCardParticles"></canvas>
+        <div class="store-card-content">
+          <!-- Large Store Logo -->
+          <div class="large-logo-box">
+            <img src="<?php echo htmlspecialchars($company['com_logo']); ?>" alt="Store Logo" class="large-logo-img"
+                 onerror="this.style.display='none'; document.getElementById('largeFallbackIcon').style.display='block';">
+            <i class="fas fa-store large-fallback-icon" id="largeFallbackIcon" style="display:none;"></i>
+          </div>
 
-        <!-- Store Name & Info -->
-        <div class="store-name-title"><?php echo htmlspecialchars($company['com_name']); ?></div>
-        
-        <div class="store-info-text">
-          <?php if(!empty($company['com_address'])): ?>
-            <div class="mb-1"><i class="fas fa-map-marker-alt text-danger mr-2"></i><?php echo htmlspecialchars($company['com_address']); ?></div>
-          <?php endif; ?>
-          <?php if(!empty($company['com_tel'])): ?>
-            <div><i class="fas fa-phone-alt text-primary mr-2"></i>ເບີໂທ: <strong><?php echo htmlspecialchars($company['com_tel']); ?></strong></div>
-          <?php endif; ?>
-        </div>
+          <!-- Store Name & Info -->
+          <div class="store-name-title"><?php echo htmlspecialchars($company['com_name']); ?></div>
 
-        <div class="welcome-banner-box">
-          <i class="fas fa-heart text-danger fa-2x mb-2 animated pulse infinite"></i>
-          <h4 class="font-weight-bold text-dark mb-1" style="font-size: 1.35rem;">ຂໍຂອບໃຈທີ່ມາອຸດໜູນ</h4>
-          <p class="text-secondary mb-0" style="font-size: 1.02rem; font-weight: 600;">ຍິນດີຕ້ອນຮັບ! ຂໍໃຫ້ທ່ານມີຄວາມສຸກໃນການຊື້ສິນຄ້າ</p>
+          <div class="store-info-text">
+            <?php if(!empty($company['com_address'])): ?>
+              <div class="mb-1"><i class="fas fa-map-marker-alt text-danger mr-2"></i> <?php echo htmlspecialchars($company['com_address']); ?></div>
+            <?php endif; ?>
+            <?php if(!empty($company['com_tel'])): ?>
+              <div><i class="fas fa-phone-alt text-primary mr-2"></i> ເບີໂທ: <strong><?php echo htmlspecialchars($company['com_tel']); ?></strong></div>
+            <?php endif; ?>
+          </div>
+
+          <div class="welcome-banner-box">
+            <i class="fas fa-heart text-danger fa-2x mb-2"></i>
+            <h4 class="font-weight-bold text-dark mb-1" style="font-size: 1.35rem;">ຂໍຂອບໃຈທີ່ມາອຸດໜູນ</h4>
+            <p class="text-secondary mb-0" style="font-size: 1.02rem; font-weight: 600;">ຍິນດີຕ້ອນຮັບ! ຂໍໃຫ້ທ່ານມີຄວາມສຸກໃນການຊື້ສິນຄ້າ</p>
+          </div>
         </div>
       </div>
     </div>
@@ -345,24 +450,31 @@ $base_path = '../../';
     <div class="right-order-panel">
       <!-- Order Items Table -->
       <div class="cart-card">
-        <table class="w-100 border-0 mb-0">
-          <thead class="display-table-head">
-            <tr>
-              <th class="text-center" style="width: 50px;">ລຳດັບ</th>
-              <th class="text-center" style="width: 75px;">ຮູບສິນຄ້າ</th>
-              <th>ຊື່ສິນຄ້າ (Product Name)</th>
-              <th class="text-center" style="width: 100px;">ຫົວໜ່ວຍ</th>
-              <th class="text-center" style="width: 100px;">ຈຳນວນ</th>
-              <th class="text-right" style="width: 130px;">ລາຄາ</th>
-              <th class="text-right" style="width: 145px;">ລວມ (₭)</th>
-            </tr>
-          </thead>
-        </table>
         <div class="display-table-body">
-          <table class="w-100 border-0 mb-0">
-            <tbody id="displayCartBody">
+          <table class="w-100 border-0 mb-0 display-cols-table">
+            <colgroup>
+              <col style="width: 6%;">
+              <col style="width: 12%;">
+              <col style="width: 21%;">
+              <col style="width: 10%;">
+              <col style="width: 12%;">
+              <col style="width: 18%;">
+              <col style="width: 21%;">
+            </colgroup>
+            <thead class="display-table-head">
               <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <th class="text-center">ລຳດັບ</th>
+                <th class="text-center">ຮູບສິນຄ້າ</th>
+                <th class="text-center">ຊື່ສິນຄ້າ</th>
+                <th class="text-center">ຫົວໜ່ວຍ</th>
+                <th class="text-center">ຈຳນວນ</th>
+                <th class="text-right">ລາຄາ</th>
+                <th class="text-right">ລວມ</th>
+              </tr>
+            </thead>
+            <tbody id="displayCartBody">
+              <tr class="display-empty-state">
+                <td colspan="7" class="text-center text-muted">
                   <i class="fas fa-shopping-basket fa-3x mb-3 text-secondary opacity-40"></i>
                   <h4 class="font-weight-bold text-secondary">ຍັງບໍ່ມີລາຍການສິນຄ້າ</h4>
                   <p class="mb-0 text-muted">ກະລຸນາລໍຖ້າພະນັກງານສະແກນ ຫຼື ເລືອກສິນຄ້າ...</p>
@@ -373,46 +485,38 @@ $base_path = '../../';
         </div>
       </div>
 
-      <!-- FULL PAYMENT BREAKDOWN SUMMARY CARD -->
+      <!-- FULL PAYMENT BREAKDOWN SUMMARY CARD: 6 stats in a 2-row grid + grand total banner -->
       <div class="summary-card">
-        <div class="row align-items-center">
-          <div class="col-6 pr-3 border-right" style="border-color: #cbd5e1 !important;">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="summary-item-label"><i class="fas fa-boxes mr-1 text-primary"></i> ລາຍການສິນຄ້າ:</span>
-              <span class="font-weight-bold text-dark" id="displayItemCount" style="font-size: 1.1rem;">0 ລາຍການ (0 ຈຳນວນ)</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="summary-item-label"><i class="fas fa-calculator mr-1 text-primary"></i> ຍອດລວມ:</span>
-              <span class="font-weight-bold text-dark" id="displaySubtotal" style="font-size: 1.18rem;">0 ₭</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="summary-item-label"><i class="fas fa-percent mr-1 text-danger"></i> ສ່ວນຫຼຸດ:</span>
-              <span class="font-weight-bold text-danger" id="displayDiscount" style="font-size: 1.18rem;">0 ₭</span>
-            </div>
+        <div class="summary-stats-grid">
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-boxes text-primary"></i> ລາຍການສິນຄ້າ</span>
+            <span class="summary-item-value text-dark" id="displayItemCount">0 ລາຍການ (0 ຈຳນວນ)</span>
           </div>
-
-          <div class="col-6 pl-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="summary-item-label"><i class="fas fa-money-bill-wave mr-1 text-success"></i> ຮັບເງິນສົດ:</span>
-              <span class="font-weight-bold text-success" id="displayCashReceived" style="font-size: 1.18rem;">0 ₭</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="summary-item-label"><i class="fas fa-qrcode mr-1 text-info"></i> ຮັບເງິນໂອນ:</span>
-              <span class="font-weight-bold text-info" id="displayQrReceived" style="font-size: 1.18rem;">0 ₭</span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="summary-item-label"><i class="fas fa-hand-holding-usd mr-1 text-warning"></i> ເງິນທອນ:</span>
-              <span class="font-weight-bold text-warning" id="displayChangeAmount" style="font-size: 1.3rem; font-weight: 800;">0 ₭</span>
-            </div>
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-calculator text-primary"></i> ຍອດລວມ</span>
+            <span class="summary-item-value text-dark" id="displaySubtotal">0 ₭</span>
+          </div>
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-percent text-danger"></i> ສ່ວນຫຼຸດ</span>
+            <span class="summary-item-value text-danger" id="displayDiscount">0 ₭</span>
+          </div>
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-qrcode text-info"></i> ຮັບເງິນໂອນ</span>
+            <span class="summary-item-value text-info" id="displayQrReceived">0 ₭</span>
+          </div>
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-money-bill-wave text-success"></i> ຮັບເງິນສົດ</span>
+            <span class="summary-item-value text-success" id="displayCashReceived">0 ₭</span>
+          </div>
+          <div class="summary-stat-item">
+            <span class="summary-item-label"><i class="fas fa-hand-holding-usd text-warning"></i> ເງິນທອນ</span>
+            <span class="summary-item-value text-warning" id="displayChangeAmount">0 ₭</span>
           </div>
         </div>
 
-        <!-- Grand Total Net Amount Banner -->
-        <div class="grand-total-banner">
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="text-uppercase font-weight-bold" style="color: #dcfce7; letter-spacing: 0.5px; font-size: 1.05rem;">ຍອດຊຳລະ (ຍອດລວມ - ສ່ວນຫຼຸດ):</span>
-            <h2 class="font-weight-bold mb-0 text-white" id="displayGrandTotal" style="font-size: 2.3rem; font-family: 'Noto Sans Lao Looped', sans-serif; text-shadow: 0 3px 6px rgba(0,0,0,0.2);">0 ₭</h2>
-          </div>
+        <div class="grand-total-banner d-flex flex-column justify-content-center align-items-center">
+          <span class="text-uppercase font-weight-bold" style="color: #dcfce7; letter-spacing: 0.5px; font-size: 0.76rem;">ຍອດຊຳລະ (ຍອດລວມ - ສ່ວນຫຼຸດ)</span>
+          <h2 class="font-weight-bold mb-0 text-white" id="displayGrandTotal" style="font-size: 1.75rem; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; text-shadow: 0 3px 6px rgba(0,0,0,0.2);">0 ₭</h2>
         </div>
       </div>
 
@@ -423,6 +527,114 @@ $base_path = '../../';
 
 <script src="<?php echo $base_path; ?>plugins/jquery/jquery.min.js"></script>
 <script>
+// Fullscreen: try automatically on load (works when opened via a user click), and
+// always offer the manual toggle button since browsers can silently block the auto request.
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    (document.documentElement.requestFullscreen && document.documentElement.requestFullscreen())?.catch(function(){});
+  } else {
+    document.exitFullscreen && document.exitFullscreen().catch(function(){});
+  }
+}
+document.getElementById('fullscreenToggleBtn').addEventListener('click', toggleFullscreen);
+document.addEventListener('fullscreenchange', function() {
+  var icon = document.getElementById('fullscreenToggleIcon');
+  icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+});
+try {
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(function(){});
+  }
+} catch(e) {}
+
+// Particle Background — soft drifting dots behind the store logo/info panel
+(function() {
+  var canvas = document.getElementById('storeCardParticles');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var card = canvas.closest('.store-card');
+  var particles = [];
+  var colors = ['rgba(2,99,255,0.55)', 'rgba(109,40,217,0.50)', 'rgba(5,150,105,0.50)', 'rgba(255,212,90,0.55)'];
+  var dpr = window.devicePixelRatio || 1;
+  var w = 0, h = 0;
+
+  function resize() {
+    w = card.clientWidth;
+    h = card.clientHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function makeParticle() {
+    var r = 1.5 + Math.random() * 3;
+    return {
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: r,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      twinkle: Math.random() * Math.PI * 2
+    };
+  }
+
+  function init() {
+    resize();
+    var count = Math.max(24, Math.round((w * h) / 9000));
+    particles = [];
+    for (var i = 0; i < count; i++) particles.push(makeParticle());
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, w, h);
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.twinkle += 0.02;
+
+      if (p.x < -10) p.x = w + 10;
+      if (p.x > w + 10) p.x = -10;
+      if (p.y < -10) p.y = h + 10;
+      if (p.y > h + 10) p.y = -10;
+
+      var pulse = 0.55 + Math.sin(p.twinkle) * 0.35;
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = pulse;
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Faint connecting lines between nearby particles for a "network" feel
+    ctx.strokeStyle = 'rgba(100,116,139,0.12)';
+    ctx.lineWidth = 1;
+    for (var a = 0; a < particles.length; a++) {
+      for (var b = a + 1; b < particles.length; b++) {
+        var dx = particles[a].x - particles[b].x;
+        var dy = particles[a].y - particles[b].y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 90) {
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  init();
+  requestAnimationFrame(step);
+  window.addEventListener('resize', init);
+})();
+
 // Live Clock
 function updateClock() {
   var now = new Date();
@@ -462,22 +674,15 @@ loadInitialData();
 function renderDisplayData(data) {
   if (!data) return;
 
-  // 1. Customer Name
-  var cusName = (data.customer && data.customer.customer_name) ? data.customer.customer_name : 'ລູກຄ້າທົ່ວໄປ';
-  if (data.customer && data.customer.member_card) {
-    cusName += ' (💳 ' + data.customer.member_card + ')';
-  }
-  $('#displayCustomerName').text(cusName);
-
-  // 2. Cart Table (Enlarged Image, Name, Unit, Qty, Price, Total)
+  // 1. Cart Table (Enlarged Image, Name, Unit, Qty, Price, Total)
   var tbody = $('#displayCartBody');
   tbody.empty();
 
   var cart = data.cart || [];
   if (cart.length === 0) {
     tbody.append(`
-      <tr>
-        <td colspan="7" class="text-center py-5 text-muted">
+      <tr class="display-empty-state">
+        <td colspan="7" class="text-center text-muted">
           <i class="fas fa-shopping-basket fa-3x mb-3 text-secondary opacity-40"></i>
           <h4 class="font-weight-bold text-secondary">ຍັງບໍ່ມີລາຍການສິນຄ້າ</h4>
           <p class="mb-0 text-muted">ກະລຸນາລໍຖ້າພະນັກງານສະແກນ ຫຼື ເລືອກສິນຄ້າ...</p>
@@ -490,8 +695,8 @@ function renderDisplayData(data) {
       var itemTotal = isGift ? '0 ₭' : (item.quantity * item.unit_price).toLocaleString() + ' ₭';
       var unitPriceStr = isGift ? '0 ₭' : parseFloat(item.unit_price).toLocaleString() + ' ₭';
       var unitNameStr = item.unit_name ? item.unit_name : 'ອັນ';
-      var giftBadgeHtml = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.75rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
-      
+      var giftBadgeHtml = isGift ? `<span class="badge badge-success font-weight-bold ml-1" style="font-size:0.82rem; padding:2px 6px; border-radius:4px;"><i class="fas fa-gift mr-1"></i>ແຖມຟຣີ</span>` : '';
+
       var rawImg = item.image || item.img_url || '';
       var imgName = rawImg ? rawImg.split('/').pop().split('\\').pop() : 'image.jpg';
       var imgSrc = (!imgName || imgName === 'image.jpg') ? '../../assets/img/image.jpg' : '../../assets/product_img/' + imgName;
@@ -504,18 +709,18 @@ function renderDisplayData(data) {
           </td>
           <td class="font-weight-bold text-dark" style="font-size: 1.1rem;">
             ${item.product_name} ${giftBadgeHtml}
-            ${item.barcode ? `<small class="text-muted d-block font-weight-normal" style="font-size:0.80rem;">${item.barcode}</small>` : ''}
+            <small class="text-muted d-block font-weight-normal" style="font-size:0.80rem; ${item.barcode ? '' : 'visibility:hidden;'}">${item.barcode || ' '}</small>
           </td>
           <td class="text-center font-weight-bold text-primary">${unitNameStr}</td>
           <td class="text-center"><span class="badge-qty">x${item.quantity}</span></td>
-          <td class="text-right ${isGift ? 'text-success' : 'text-primary'} font-weight-bold">${unitPriceStr}</td>
-          <td class="text-right text-success font-weight-bold" style="font-size: 1.15rem;">${itemTotal}</td>
+          <td class="text-right ${isGift ? 'text-success' : 'text-primary'} font-weight-bold" style="white-space: nowrap;">${unitPriceStr}</td>
+          <td class="text-right text-success font-weight-bold" style="font-size: 1.15rem; white-space: nowrap;">${itemTotal}</td>
         </tr>
       `);
     });
   }
 
-  // 3. Summary Totals Calculation
+  // 2. Summary Totals Calculation
   var lineCount = cart.length;
   var totalQty = 0;
   var subtotal = 0;
@@ -559,7 +764,7 @@ function renderDisplayData(data) {
   animateNumber('displayDiscount', discountVal, ' ₭');
   animateNumber('displayGrandTotal', netGrandTotal, ' ₭');
 
-  // 4. Cash, QR, and Change Breakdown
+  // 3. Cash, QR, and Change Breakdown
   var cashRec = parseFloat(data.cashReceived || 0);
   var qrRec = parseFloat(data.qrReceived || 0);
   var changeAmt = parseFloat(data.changeAmount || 0);

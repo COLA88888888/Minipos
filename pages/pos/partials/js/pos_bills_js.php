@@ -73,10 +73,12 @@ window.createNewBillModal = function() {
     loadBillState(newId);
 
     Swal.fire({
+      toast: true,
+      position: 'top-end',
       icon: 'success',
       title: 'ເປີດບິນທີ 1 ສຳເລັດ!',
-      text: 'ທ່ານສາມາດເພີ່ມລາຍການຂາຍໃນ ບິນທີ 1 ໄດ້ເລີຍ',
-      timer: 1200,
+      timer: 1500,
+      timerProgressBar: true,
       showConfirmButton: false
     });
     return;
@@ -92,10 +94,12 @@ window.createNewBillModal = function() {
     isBillOpened = true;
     localStorage.setItem('pos_bill_opened', '1');
     Swal.fire({
+      toast: true,
+      position: 'top-end',
       icon: 'success',
       title: 'ເປີດບິນໃໝ່ສຳເລັດ!',
-      text: 'ທ່ານສາມາດເພີ່ມລາຍການຂາຍໃນ ' + (currentBill.name) + ' ໄດ້ເລີຍ',
-      timer: 1000,
+      timer: 1500,
+      timerProgressBar: true,
       showConfirmButton: false
     });
     updateActiveBillsUI();
@@ -124,10 +128,12 @@ window.createNewBillModal = function() {
   loadBillState(newId);
 
   Swal.fire({
+    toast: true,
+    position: 'top-end',
     icon: 'success',
     title: 'ເປີດບິນໃໝ່ສຳເລັດ!',
-    text: 'ທ່ານສາມາດເພີ່ມລາຍການຂາຍໃນ ' + newBill.name + ' ໄດ້ເລີຍ',
-    timer: 1200,
+    timer: 1500,
+    timerProgressBar: true,
     showConfirmButton: false
   });
 }
@@ -200,7 +206,7 @@ function renderActiveBills() {
         <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color: #f1f5f9 !important;">
           <span class="text-dark font-weight-bold text-truncate" style="max-width: 180px;">• ${i.product_name}</span>
           <span class="text-nowrap">
-            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.78rem;">x${i.quantity}${unitStr}</span>
+            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.86rem;">x${i.quantity}${unitStr}</span>
             <strong class="text-dark">${itemTotal.toLocaleString()} ₭</strong>
           </span>
         </div>
@@ -270,7 +276,7 @@ function holdCurrentCart() {
 
 function holdCurrentOrder() {
   if (cart.length === 0) {
-    Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າ ບໍ່ສາມາດພັກບິນໄດ້! ກະລຸນາເພີ່ມສິນຄ້າລົງກະຕ່າກ່ອນ', confirmButtonColor: '#2563eb' });
+    Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: 'ກະຕ່າສິນຄ້າຫວ່າງເປົ່າ ບໍ່ສາມາດພັກບິນໄດ້! ກະລຸນາເພີ່ມສິນຄ້າລົງກະຕ່າກ່ອນ', confirmButtonColor: '#244886' });
     return;
   }
 
@@ -343,7 +349,7 @@ function renderHeldOrders() {
         <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="border-color: #f1f5f9 !important;">
           <span class="text-dark font-weight-bold text-truncate" style="max-width: 220px;">• ${i.product_name}</span>
           <span class="text-nowrap">
-            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.78rem;">x${i.quantity}${unitStr}</span>
+            <span class="badge badge-light border text-primary font-weight-bold mr-1" style="font-size: 0.86rem;">x${i.quantity}${unitStr}</span>
             <strong class="text-dark">${itemTotal.toLocaleString()} ₭</strong>
           </span>
         </div>

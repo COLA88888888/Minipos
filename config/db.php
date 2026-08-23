@@ -1,5 +1,13 @@
 <?php
 date_default_timezone_set('Asia/Vientiane');
+
+// Don't leak PHP errors/warnings to visitors in production; still log them to the
+// server's error log so `tail error.log` keeps working the same way it does in dev.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
+
+// TODO before going live: replace with the production MySQL host/user/password.
 $server = "localhost";
 $username = "root";
 $password = "";
@@ -13,7 +21,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
         'lifetime' => 0,
         'path' => '/',
-        'httponly' => true
+        'httponly' => true,
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
     ]);
     session_start();
 }
@@ -175,7 +184,7 @@ try {
     } catch (Throwable $ex) {}
 
     // Ensure store_id column exists in all core data tables for multi-branch isolation
-    $coreTablesForStore = ['sales', 'tbsale_save', 'products', 'accounting_records', 'imports', 'customers', 'tbuser'];
+    $coreTablesForStore = ['sales', 'tbsale_save', 'products', 'accounting_records', 'imports', 'customers', 'tbuser', 'categories'];
     foreach ($coreTablesForStore as $tblName) {
         try {
             $hasCol = $pdo->query("SHOW COLUMNS FROM `{$tblName}` LIKE 'store_id'")->fetch();
@@ -337,35 +346,6 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     } catch (Throwable $ex) {}
 
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `shelves` (
-            `shelf_id` INT AUTO_INCREMENT PRIMARY KEY,
-            `shelf_name` VARCHAR(150) NOT NULL,
-            `category_id` INT NOT NULL,
-            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-        $shelfCount = (int)$pdo->query("SELECT COUNT(*) FROM shelves")->fetchColumn();
-        if ($shelfCount === 0) {
-            $pdo->exec("INSERT INTO shelves (shelf_name, category_id) VALUES 
-                ('ຕູ້ແຊ່ເຄື່ອງດື່ມ A1', 1),
-                ('ຊັ້ນວາງຂະໜົມ B1', 2)");
-        }
-    } catch (Throwable $ex) {}
-
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS accounting_records (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            record_type VARCHAR(20) NOT NULL DEFAULT 'expense',
-            category VARCHAR(100) NOT NULL,
-            amount DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-            record_date DATE NOT NULL,
-            note TEXT NULL,
-            created_by INT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    } catch (Throwable $ex) {}
-
     // Ensure tbcompanyinfo exists and has DB record
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `tbcompanyinfo` (
@@ -413,28 +393,6 @@ try {
         if ($storeCount === 0) {
             $pdo->exec("INSERT INTO tbstore (store_code, store_name, address, tel, logo_path, status) VALUES 
                 ('STORE01', 'Mini POS Store', 'ນະຄອນຫຼວງວຽງຈັນ', '020-55555555', 'assets/img/logo/logo.png', 'active')");
-        }
-    } catch (Throwable $ex) {}
-
-    // Ensure accounting_categories exists and has DB records
-    try {
-        $pdo->exec("CREATE TABLE IF NOT EXISTS `accounting_categories` (
-            `id` INT AUTO_INCREMENT PRIMARY KEY,
-            `category_name` VARCHAR(100) NOT NULL,
-            `record_type` VARCHAR(20) NOT NULL DEFAULT 'expense',
-            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
-        $accCatCount = (int)$pdo->query("SELECT COUNT(*) FROM accounting_categories")->fetchColumn();
-        if ($accCatCount === 0) {
-            $pdo->exec("INSERT INTO accounting_categories (category_name, record_type) VALUES 
-                ('ຄ່າໄຟຟ້າ', 'expense'),
-                ('ຄ່ານໍ້າປະປາ', 'expense'),
-                ('ຄ່າເຊົ່າສະຖານທີ່', 'expense'),
-                ('ເງິນດ່ວນ/ເງິນເດືອນ', 'expense'),
-                ('ຄ່າຕົ້ນທຶນ/ເຄື່ອງໃຊ້', 'expense'),
-                ('ລາຍຮັບຄ່ານາຍໜ້າ', 'income'),
-                ('ລາຍຮັບບໍລິການ', 'income')");
         }
     } catch (Throwable $ex) {}
 
@@ -967,6 +925,37 @@ if (!function_exists('getActiveStoreId')) {
             return intval($_SESSION['active_store_id']);
         }
         return $userStoreId;
+    }
+}
+
+if (!function_exists('getCompanyInfoForBranch')) {
+    // Store profile (name/address/phone/tax/receipt-footer/QR) is shared across all branches
+    // and lives only on the main branch's tbcompanyinfo row — sub-branches don't re-enter it.
+    // The LOGO is the one field that's branch-specific: each branch may have its own row with
+    // just its own img_url, which overrides the shared logo when present.
+    function getCompanyInfoForBranch($pdo, $storeId) {
+        $mainStoreId = intval($pdo->query("SELECT store_id FROM tbstore WHERE is_main = 1 ORDER BY store_id ASC LIMIT 1")->fetchColumn() ?: 1);
+
+        $stmt = $pdo->prepare("SELECT * FROM tbcompanyinfo WHERE branch_id = ? LIMIT 1");
+        $stmt->execute([$mainStoreId]);
+        $company = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$company) {
+            $stmt = $pdo->prepare("SELECT store_name as com_name_la, address as com_address, tel as com_tel, 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!' as barcode, logo_path as img_url FROM tbstore WHERE store_id = ? LIMIT 1");
+            $stmt->execute([$mainStoreId]);
+            $company = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+        }
+
+        if (intval($storeId) !== $mainStoreId) {
+            $logoStmt = $pdo->prepare("SELECT img_url FROM tbcompanyinfo WHERE branch_id = ? LIMIT 1");
+            $logoStmt->execute([$storeId]);
+            $branchRow = $logoStmt->fetch(PDO::FETCH_ASSOC);
+            if ($branchRow && !empty($branchRow['img_url'])) {
+                $company['img_url'] = $branchRow['img_url'];
+            }
+        }
+
+        return $company;
     }
 }
 

@@ -171,7 +171,9 @@ if (!$isMain && !$isAdmin) {
 }
 
 // Fetch categories for modal filter
-$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+$catStmt = $pdo->prepare("SELECT category_id, category_name FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$sourceStoreId]);
+$categories = $catStmt->fetchAll();
 
 // Fetch products of source store with categories & units
 $sourceProductsStmt = $pdo->prepare("
@@ -205,7 +207,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 <link rel="stylesheet" href="../../themes/import_stock.css?v=<?php echo filemtime(__DIR__ . '/../../themes/import_stock.css'); ?>">
 <link rel="stylesheet" href="../../themes/stock_transfer.css?v=<?php echo filemtime(__DIR__ . '/../../themes/stock_transfer.css'); ?>">
 
-<div class="content-wrapper bg-light" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+<div class="content-wrapper bg-light" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
   
   <!-- Page Header -->
   <section class="content-header py-3">

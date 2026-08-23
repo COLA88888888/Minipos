@@ -80,42 +80,37 @@ if ($selected_store > 0) {
 $whereClause = implode(" AND ", $where);
 
 // 4. Fetch 4 Main Cards Stats: Total Sales, Total Cost, Total Profit, Profit %
+// ຕົ້ນທຶນ = ເງິນທີ່ຊື້ສິນຄ້າເຂົ້າໃນຮ້ານທັງໝົດ (ຈາກ imports.total_cost) ໃນຊ່ວງວັນທີ/ສາຂາທີ່ເລືອກ —
+// ບໍ່ແມ່ນຕົ້ນທຶນສະເພາະສິນຄ້າທີ່ຂາຍໄດ້ (COGS) ຕາມທີ່ຮ້ານຕ້ອງການ (ເບິ່ງເປັນເງິນສົດທີ່ຈ່າຍອອກຈິງ).
 $total_sales  = 0.00;
 $total_cost   = 0.00;
 $total_profit = 0.00;
 $profit_pct   = 0.00;
 
 try {
-    $stmtCards = $pdo->prepare("
-        SELECT 
-            COALESCE(SUM(s.sale_barlance), SUM(s.sale_amount - COALESCE(s.sale_discount_bill, 0)), 0) AS total_sales,
-            COALESCE(SUM(
-                (SELECT SUM(COALESCE(d.cost_price, p.bprice, d.save_price * 0.7) * d.save_qty) 
-                 FROM tbsale_save_detail d 
-                 LEFT JOIN products p ON d.save_proid = p.product_id 
-                 WHERE d.save_bill = s.sale_save_bill)
-            ), 0) AS total_cost
+    $stmtSales = $pdo->prepare("
+        SELECT COALESCE(SUM(s.sale_barlance), SUM(s.sale_amount - COALESCE(s.sale_discount_bill, 0)), 0) AS total_sales
         FROM tbsale_save s
         WHERE {$whereClause}
     ");
-    $stmtCards->execute($params);
-    $cardRes = $stmtCards->fetch(PDO::FETCH_ASSOC);
+    $stmtSales->execute($params);
+    $total_sales = floatval($stmtSales->fetchColumn() ?? 0);
 
-    $total_sales = floatval($cardRes['total_sales'] ?? 0);
-    $total_cost  = floatval($cardRes['total_cost'] ?? 0);
-
-    if ($total_sales <= 0) {
-        $total_sales  = 0.00;
-        $total_cost   = 0.00;
-        $total_profit = 0.00;
-        $profit_pct   = 0.0;
-    } else {
-        $total_profit = $total_sales - $total_cost;
-        if ($total_profit < 0) {
-            $total_profit = 0.00;
-        }
-        $profit_pct = round(($total_profit / $total_sales) * 100, 1);
+    $importWhere = ["DATE(i.import_date) >= :imp_from_date", "DATE(i.import_date) <= :imp_to_date"];
+    $importParams = [':imp_from_date' => $from_date, ':imp_to_date' => $to_date];
+    if ($selected_store > 0) {
+        $importWhere[] = "i.store_id = :imp_store_id";
+        $importParams[':imp_store_id'] = $selected_store;
     }
+    $importWhereClause = implode(" AND ", $importWhere);
+
+    $stmtCost = $pdo->prepare("SELECT COALESCE(SUM(i.total_cost), 0) FROM imports i WHERE {$importWhereClause}");
+    $stmtCost->execute($importParams);
+    $total_cost = floatval($stmtCost->fetchColumn() ?? 0);
+
+    // ຖ້າຍັງບໍ່ມີຍອດຂາຍເລີຍໃນຊ່ວງນີ້ ໃຫ້ກຳໄລເປັນ 0 (ບໍ່ໃຫ້ເປັນຄ່າລົບ) — ຄ່າລົບຈິງໆ (ຂາຍໄດ້ແຕ່ຕົ້ນທຶນສູງກວ່າ) ຍັງສະແດງໄດ້ຕາມປົກກະຕິ
+    $total_profit = ($total_sales > 0) ? ($total_sales - $total_cost) : 0.00;
+    $profit_pct = ($total_sales > 0) ? round(($total_profit / $total_sales) * 100, 1) : 0.0;
 } catch (Exception $e) {}
 
 // 5. Monthly Revenue & Profit % Chart Data for Selected Year
@@ -124,43 +119,57 @@ $monthly_cost   = array_fill(1, 12, 0.00);
 $monthly_profit = array_fill(1, 12, 0.00);
 $monthly_margin = array_fill(1, 12, 0.0);
 
-if ($total_sales > 0) {
-    try {
-        $monthlyWhere = ["YEAR(s.sale_date) = :yr", "(s.sale_status IS NULL OR s.sale_status != 'CANCEL')"];
-        $monthlyParams = [':yr' => $selected_year];
-        if ($selected_store > 0) {
-            $monthlyWhere[] = "s.store_id = :store_id";
-            $monthlyParams[':store_id'] = $selected_store;
-        }
-        $monthlyWhereClause = implode(" AND ", $monthlyWhere);
+try {
+    $monthlyWhere = ["YEAR(s.sale_date) = :yr", "(s.sale_status IS NULL OR s.sale_status != 'CANCEL')"];
+    $monthlyParams = [':yr' => $selected_year];
+    if ($selected_store > 0) {
+        $monthlyWhere[] = "s.store_id = :store_id";
+        $monthlyParams[':store_id'] = $selected_store;
+    }
+    $monthlyWhereClause = implode(" AND ", $monthlyWhere);
 
-        $stmtMonthly = $pdo->prepare("
-            SELECT 
-                MONTH(s.sale_date) AS m,
-                COALESCE(SUM(s.sale_barlance), 0) AS sales,
-                COALESCE(SUM(
-                    (SELECT SUM(COALESCE(d.cost_price, p.bprice, d.save_price * 0.7) * d.save_qty) 
-                     FROM tbsale_save_detail d 
-                     LEFT JOIN products p ON d.save_proid = p.product_id 
-                     WHERE d.save_bill = s.sale_save_bill)
-                ), 0) AS cost
-            FROM tbsale_save s
-            WHERE {$monthlyWhereClause}
-            GROUP BY MONTH(s.sale_date)
-        ");
-        $stmtMonthly->execute($monthlyParams);
-        while ($mRow = $stmtMonthly->fetch(PDO::FETCH_ASSOC)) {
-            $m = (int)$mRow['m'];
-            $s = floatval($mRow['sales']);
-            $c = floatval($mRow['cost']);
-            $p = $s - $c;
-            $monthly_sales[$m]  = $s;
-            $monthly_cost[$m]   = $c;
-            $monthly_profit[$m] = $p;
-            $monthly_margin[$m] = ($s > 0) ? round(($p / $s) * 100, 1) : 0;
-        }
-    } catch (Exception $e) {}
-}
+    $stmtMonthly = $pdo->prepare("
+        SELECT MONTH(s.sale_date) AS m, COALESCE(SUM(s.sale_barlance), 0) AS sales
+        FROM tbsale_save s
+        WHERE {$monthlyWhereClause}
+        GROUP BY MONTH(s.sale_date)
+    ");
+    $stmtMonthly->execute($monthlyParams);
+    while ($mRow = $stmtMonthly->fetch(PDO::FETCH_ASSOC)) {
+        $m = (int)$mRow['m'];
+        $monthly_sales[$m] = floatval($mRow['sales']);
+    }
+
+    // ຕົ້ນທຶນລາຍເດືອນ = ເງິນນຳເຂົ້າສິນຄ້າຕົວຈິງໃນເດືອນນັ້ນ (ຈາກ imports), ບໍ່ແມ່ນ COGS
+    $monthlyImportWhere = ["YEAR(i.import_date) = :imp_yr"];
+    $monthlyImportParams = [':imp_yr' => $selected_year];
+    if ($selected_store > 0) {
+        $monthlyImportWhere[] = "i.store_id = :imp_store_id";
+        $monthlyImportParams[':imp_store_id'] = $selected_store;
+    }
+    $monthlyImportWhereClause = implode(" AND ", $monthlyImportWhere);
+
+    $stmtMonthlyCost = $pdo->prepare("
+        SELECT MONTH(i.import_date) AS m, COALESCE(SUM(i.total_cost), 0) AS cost
+        FROM imports i
+        WHERE {$monthlyImportWhereClause}
+        GROUP BY MONTH(i.import_date)
+    ");
+    $stmtMonthlyCost->execute($monthlyImportParams);
+    while ($mcRow = $stmtMonthlyCost->fetch(PDO::FETCH_ASSOC)) {
+        $m = (int)$mcRow['m'];
+        $monthly_cost[$m] = floatval($mcRow['cost']);
+    }
+
+    for ($m = 1; $m <= 12; $m++) {
+        $s = $monthly_sales[$m];
+        $c = $monthly_cost[$m];
+        // ເດືອນທີ່ຍັງບໍ່ມີຍອດຂາຍ ໃຫ້ກຳໄລເປັນ 0 (ບໍ່ໃຫ້ເປັນຄ່າລົບ)
+        $p = ($s > 0) ? ($s - $c) : 0.00;
+        $monthly_profit[$m] = $p;
+        $monthly_margin[$m] = ($s > 0) ? round(($p / $s) * 100, 1) : 0;
+    }
+} catch (Exception $e) {}
 
 // 6. Yearly Sales Comparison Chart (Include selected year with 0 if no sales)
 $yearly_sales_map = [];
@@ -235,7 +244,7 @@ require_once __DIR__ . '/../layouts/header.php';
   <!-- Header Title & Controls -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3.5 gap-2">
     <div>
-      <h4 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <h4 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
         <i class="fas fa-chart-pie text-primary mr-2"></i> ດາດສ໌ບອດບໍລິຫານ & ວິເຄາະການຂາຍ
       </h4>
       <p class="text-muted mb-0" style="font-size: 0.85rem;">ສະຫຼຸບພາບລວມຍອດຂາຍ, ຕົ້ນທຶນ, ກຳໄລ ແລະ ສະຖິຕິການຂາຍປະຈຳປີ</p>
@@ -393,7 +402,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="col-lg-8 mb-4 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
-          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-chart-area text-primary mr-2"></i> ກາຟລາຍຮັບປະຈຳເດືອນ (ປີ <?php echo $selected_year; ?>)
           </h6>
           <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1">12 ເດືອນ</span>
@@ -410,7 +419,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="col-lg-4">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
-          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-calendar-alt text-info mr-2"></i> ກາຟປຽບທຽບຍອດຂາຍປະຈຳປີ
           </h6>
         </div>
@@ -429,7 +438,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="col-lg-5 mb-4 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
-          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-percentage text-warning mr-2"></i> ກາຟອັດຕາກຳໄລ % (ປີ <?php echo $selected_year; ?>)
           </h6>
         </div>
@@ -445,7 +454,7 @@ require_once __DIR__ . '/../layouts/header.php';
     <div class="col-lg-7">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
-          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+          <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-fire text-danger mr-2"></i> ກາຟ 10 ລາຍການສິນຄ້າທີ່ຂາຍດີ
           </h6>
           <span class="badge badge-light border text-danger font-weight-bold px-2.5 py-1">Top 10</span>
@@ -509,7 +518,7 @@ $(document).ready(function() {
 
   try {
     Chart.defaults.font = Chart.defaults.font || {};
-    Chart.defaults.font.family = "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif";
+    Chart.defaults.font.family = "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif";
   } catch(e) {}
 
   // Function to format long labels into multi-line arrays
@@ -739,7 +748,7 @@ $(document).ready(function() {
             beginAtZero: true,
             ticks: {
               font: {
-                family: "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif"
+                family: "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif"
               }
             }
           },
@@ -747,7 +756,7 @@ $(document).ready(function() {
             ticks: {
               autoSkip: false,
               font: {
-                family: "'Noto Sans Lao Looped', 'Phetsarath OT', sans-serif",
+                family: "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif",
                 size: 11
               }
             }

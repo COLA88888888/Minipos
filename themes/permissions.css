@@ -14,7 +14,7 @@
 
 body {
   background-color: #f8fafc;
-  font-family: 'Noto Sans Lao Looped', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .user-list-card {
@@ -33,6 +33,29 @@ body {
   padding: 12px 14px;
   background: #ffffff;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.user-items-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.user-items-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.user-items-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.user-items-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+.user-items-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .user-search-box {

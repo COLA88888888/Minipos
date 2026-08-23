@@ -1,16 +1,20 @@
-<?php $bp = $base_path ?? ''; ?>
+<?php 
+  $bp = $base_path ?? ''; 
+  $headerLogoImg = $bp . 'assets/img/logosystem/Wlaodev.jpg';
+  $headerBrandText = 'Wlaodev POS';
+?>
 <!-- UNIFIED SIDEBAR (ແຖບເມນູໄດນາມິກກວດສອບຕາມສິດ) -->
-<aside class="main-sidebar elevation-0 sidebar-dark-primary" style="background-color: rgb(2, 99, 255); position: fixed; top: 0; bottom: 0; left: 0; z-index: 1038; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; box-shadow: none !important;">
+<aside class="main-sidebar elevation-0 sidebar-dark-primary" style="background-color: #244886; position: fixed; top: 0; bottom: 0; left: 0; z-index: 1038; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; box-shadow: none !important;">
   <!-- Logo & Brand -->
   <?php if (hasPermission('dashboard')): ?>
-    <a href="<?php echo $bp; ?>home/home.php" target="frame" class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; background-color: rgb(2, 99, 255); height: 64px;">
+    <a href="<?php echo $bp; ?>home/home.php" target="frame" class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; background-color: #244886; height: 64px;">
   <?php else: ?>
-    <div class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; background-color: rgb(2, 99, 255); height: 64px; cursor: default;">
+    <div class="brand-link" style="padding: 0 16px; display: flex; align-items: center; justify-content: flex-start; gap: 12px; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important; border-right: 1px solid rgba(255, 255, 255, 0.18) !important; background-color: #244886; height: 64px; cursor: default;">
   <?php endif; ?>
-    <div class="brand-logo-wrap" style="background: #ffffff; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.18); width: 42px; height: 42px; min-width: 42px; flex-shrink: 0;">
-      <img src="<?php echo $bp; ?>assets/img/logo/logo.png" alt="POS Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+    <div style="background: #ffffff; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.18); width: 44px; height: 44px; min-width: 44px;">
+      <img src="<?php echo htmlspecialchars($headerLogoImg); ?>" alt="POS Logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
     </div>
-    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap;"> Wlaodev POS</span>
+    <span class="brand-text font-weight-bold" style="font-size: 1.05rem; color: #ffffff; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;"><?php echo htmlspecialchars($headerBrandText); ?></span>
   <?php if (hasPermission('dashboard')): ?>
     </a>
   <?php else: ?>

@@ -371,10 +371,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // ====== Fetch data ======
-$categories = $pdo->query("SELECT * FROM categories ORDER BY category_name ASC")->fetchAll();
+$currentStoreId = getActiveStoreId($pdo);
+$catStmt = $pdo->prepare("SELECT * FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$currentStoreId]);
+$categories = $catStmt->fetchAll();
 $stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-$currentStoreId = getActiveStoreId($pdo);
 $userStoreId = intval($_SESSION['store_id'] ?? 1);
 $isMain = isMainBranch($pdo, $userStoreId);
 
@@ -424,7 +426,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     </div>
     <div class="col-sm-6 text-right">
       <?php if (hasPermission('products', 'add')): ?>
-        <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600;">
+        <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
           <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
         </button>
       <?php endif; ?>

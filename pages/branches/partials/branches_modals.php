@@ -42,7 +42,7 @@ if (!defined('MINIPOS_APP')) {
         </div>
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold"><i class="fas fa-save mr-1"></i> ບັນທຶກ</button>
+          <button type="submit" class="btn btn-primary font-weight-bold" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;"><i class="fas fa-save mr-1"></i> ບັນທຶກ</button>
         </div>
       </form>
     </div>

@@ -67,7 +67,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 $pdo->commit();
             } catch (Exception $e) {
-                $pdo->rollBack();
+                // MySQL can auto-rollback the whole transaction itself (deadlock, lock-wait
+                // timeout, etc.) before we get here — calling rollBack() on an already-gone
+                // transaction throws "There is no active transaction" and crashes the page
+                // with an uncaught fatal, masking the real error. Guard it.
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
                 $message = $e->getMessage();
                 $message_type = 'danger';
             }
@@ -118,7 +124,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 $pdo->commit();
             } catch (Exception $e) {
-                $pdo->rollBack();
+                // MySQL can auto-rollback the whole transaction itself (deadlock, lock-wait
+                // timeout, etc.) before we get here — calling rollBack() on an already-gone
+                // transaction throws "There is no active transaction" and crashes the page
+                // with an uncaught fatal, masking the real error. Guard it.
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
                 $message = $e->getMessage();
                 $message_type = 'danger';
             }
@@ -193,7 +205,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                 $pdo->commit();
             } catch (Exception $e) {
-                $pdo->rollBack();
+                // MySQL can auto-rollback the whole transaction itself (deadlock, lock-wait
+                // timeout, etc.) before we get here — calling rollBack() on an already-gone
+                // transaction throws "There is no active transaction" and crashes the page
+                // with an uncaught fatal, masking the real error. Guard it.
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';
             }
@@ -245,10 +263,12 @@ if (!$isAdmin && !$isMain) {
 }
 
 // Fetch categories for modal filter
-$categories = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name ASC")->fetchAll();
+$targetProdStore = ($filter_store > 0) ? $filter_store : $userStoreId;
+$catStmt = $pdo->prepare("SELECT category_id, category_name FROM categories WHERE store_id = ? ORDER BY category_name ASC");
+$catStmt->execute([$targetProdStore]);
+$categories = $catStmt->fetchAll();
 
 // Fetch products for modal filter (filtered by active/selected store)
-$targetProdStore = ($filter_store > 0) ? $filter_store : $userStoreId;
 $pStmt = $pdo->prepare("
     SELECT p.product_id, p.product_name, p.barcode, p.unit, p.bprice, p.price, p.qty, p.category_id, c.category_name 
     FROM products p 
@@ -403,12 +423,12 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="container-fluid">
       <div class="row align-items-center">
         <div class="col-sm-6">
-          <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao Looped';">
+          <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
             <i class="fas fa-list-alt text-success mr-2"></i> ລາຍການສິນຄ້າຮັບເຂົ້າ
           </h4>
         </div>
         <div class="col-sm-6 text-right">
-          <a href="import_stock.php" class="btn btn-primary font-weight-bold shadow-sm" style="border-radius: 8px;">
+          <a href="import_stock.php" class="btn btn-primary font-weight-bold shadow-sm" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
             <i class="fas fa-plus-circle mr-1"></i> ນຳເຂົ້າສິນຄ້າ
           </a>
         </div>
@@ -455,7 +475,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <div class="card-header bg-white border-bottom py-3 px-4">
           <div class="row align-items-center">
             <div class="col-md-6">
-              <h5 class="card-title font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao Looped';">
+              <h5 class="card-title font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
                 <i class="fas fa-table text-primary mr-2"></i> ຕາຕະລາງລາຍການສິນຄ້າຮັບເຂົ້າ 
                 <!-- <small class="text-primary font-weight-bold">(<?php echo ($view_type === 'bill') ? 'ສະແດງຕາມໃບບິນ' : 'ສະແດງລາຍລະອຽດ'; ?>)</small> -->
               </h5>
@@ -604,7 +624,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
               <?php else: ?>
                 <!-- HEADER FOR MODE 2: ລາຍລະອຽດ (Blue Header) -->
-                <thead class="bg-primary text-white font-weight-bold">
+                <thead class="font-weight-bold">
                   <tr>
                     <th class="text-center" style="width: 50px;">ລຳດັບ</th>
                     <th class="text-center">ວັນທີຮັບເຂົ້າ</th>

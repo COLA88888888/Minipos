@@ -174,7 +174,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 <link rel="stylesheet" href="../../themes/reports.css?v=<?php echo filemtime(__DIR__ . '/../../themes/reports.css'); ?>">
 <link rel="stylesheet" href="../../themes/transfer_history.css?v=<?php echo filemtime(__DIR__ . '/../../themes/transfer_history.css'); ?>">
 
-<div class="container-fluid p-3 p-md-4" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+<div class="container-fluid p-3 p-md-4" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
   
   <!-- Page Header -->
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 10px;">
@@ -185,7 +185,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <span class="text-muted" style="font-size: 0.85rem;">ຕິດຕາມ ແລະ ກວດສອບລາຍການໂອນສິນຄ້າລະຫວ່າງສາຂາ</span>
     </div>
     <div>
-      <a href="stock_transfer.php" class="btn btn-primary btn-sm font-weight-bold px-3 py-2" style="border-radius: 8px; background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+      <a href="stock_transfer.php" class="btn btn-primary btn-sm font-weight-bold px-3 py-2" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886);">
         <i class="fas fa-exchange-alt mr-1"></i> ໂອນສິນຄ້າໃໝ່
       </a>
     </div>

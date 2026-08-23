@@ -4,11 +4,11 @@
 <!-- Modal: Select Product Popup -->
 <div class="modal fade" id="productSelectModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
-    <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden;">
-      
-      <!-- Header with Gradient Background -->
-      <div class="modal-header bg-primary text-white py-3 px-4">
-        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao Looped'; font-size: 1.1rem;">
+    <div class="modal-content shadow-lg border-0" style="border-radius: 16px; overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;">
+
+      <!-- Header with Gradient Background (always pinned, never scrolls) -->
+      <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important; flex-shrink: 0;">
+        <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.1rem;">
           ເລືອກສິນຄ້າຈາກຄັງ
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
@@ -16,7 +16,7 @@
         </button>
       </div>
 
-      <div class="modal-body p-4" style="background-color: #f8fafc;">
+      <div class="modal-body p-4" style="background-color: #f8fafc; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; min-height: 0;">
         
         <!-- Filter Bar: Page Size + Category Select + Search Input -->
         <div class="row align-items-center mb-3">
@@ -77,7 +77,7 @@
         </div>
 
         <!-- Products List Table inside Modal -->
-        <div class="table-responsive bg-white rounded border shadow-sm mb-3" style="max-height: 420px; overflow-y: auto; border-radius: 12px !important;">
+        <div class="table-responsive bg-white rounded border shadow-sm mb-3" style="height: 420px; overflow-y: auto; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; border-radius: 12px !important;">
           <table class="table table-hover mb-0 align-middle text-nowrap">
             <thead class="text-dark font-weight-bold" style="position: sticky; top: 0; z-index: 10; background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
               <tr>
@@ -192,16 +192,16 @@
           </table>
         </div>
 
-        <!-- Modal Footer: Page Info & Circular Pagination (Right Aligned) -->
-        <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between pt-3 px-1 border-top" style="border-color: #cbd5e1 !important;">
-
-          <div class="d-flex justify-content-end ml-sm-auto">
-            <ul class="pagination pagination-circle mb-0 justify-content-end" id="modalProductPagination">
-            </ul>
-          </div>
-        </div>
-
       </div>
+
+      <!-- Modal Footer: Page Info & Circular Pagination (always pinned, never scrolls) -->
+      <div class="d-flex flex-column flex-sm-row align-items-center justify-content-between py-3 px-4 border-top bg-white" style="border-color: #cbd5e1 !important; flex-shrink: 0;">
+        <div class="d-flex justify-content-end ml-sm-auto">
+          <ul class="pagination pagination-circle mb-0 justify-content-end" id="modalProductPagination">
+          </ul>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

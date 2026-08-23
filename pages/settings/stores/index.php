@@ -8,7 +8,7 @@ $base_path = '../../../';
 require_once __DIR__ . '/../../../config/db.php';
 
 // Check authorization
-if (empty($_SESSION['user_id']) || (!hasPermission('setup') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
+if (empty($_SESSION['user_id']) || (!hasPermission('stores') && !hasPermission('setup') && ($_SESSION['status'] ?? '') !== 'ຜູ້ບໍລິຫານ')) {
     echo "<script>window.top.location.href = '" . $base_path . "index.php';</script>";
     exit();
 }
@@ -33,10 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $license_start_date  = trim($_POST['license_start_date'] ?? '2026-01-01');
         $license_expire_date = trim($_POST['license_expire_date'] ?? '2026-12-31');
 
-        if ($com_name_la !== '') {
+        $branch_id_save = getActiveStoreId($pdo);
+        $isMainBranchSave = isMainBranch($pdo, $branch_id_save);
+
+        // Only the main branch can set the shared name/address/phone/tax/etc — sub-branches only
+        // ever change their own logo, so this required check doesn't apply to them.
+        if ($com_name_la !== '' || !$isMainBranchSave) {
             try {
-                // Get existing images for cleanup
-                $curComp = $pdo->query("SELECT img_url, qr_img FROM tbcompanyinfo WHERE Id = 1")->fetch();
+                // Each branch has its own tbcompanyinfo row, but only for its LOGO — the rest of
+                // the profile (name/address/phone/tax/etc) is shared and lives on the main
+                // branch's row only, so sub-branches don't need to re-enter it.
+                $stmtCurComp = $pdo->prepare("SELECT * FROM tbcompanyinfo WHERE branch_id = ? LIMIT 1");
+                $stmtCurComp->execute([$branch_id_save]);
+                $curComp = $stmtCurComp->fetch();
 
                 $newLogoName = null;
                 if (isset($_FILES['logo_img']) && !empty($_FILES['logo_img']['name']) && $_FILES['logo_img']['error'] === UPLOAD_ERR_OK) {
@@ -74,38 +83,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                // Check if record exists in tbcompanyinfo
-                $cnt = $pdo->query("SELECT COUNT(*) FROM tbcompanyinfo")->fetchColumn();
-                if ($cnt > 0) {
-                    $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, tax_id = ?, barcode = ?, tax_type = ?, vat_percent = ?, license_start_date = ?, license_expire_date = ?";
-                    $params = [$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $tax_type, $vat_percent, $license_start_date, $license_expire_date];
+                if ($isMainBranchSave) {
+                    // Main branch: this is the one shared source of truth — save everything.
+                    if ($curComp) {
+                        $sql = "UPDATE tbcompanyinfo SET com_name_la = ?, com_address = ?, com_tel = ?, com_email = ?, tax_id = ?, barcode = ?, tax_type = ?, vat_percent = ?, license_start_date = ?, license_expire_date = ?";
+                        $params = [$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $tax_type, $vat_percent, $license_start_date, $license_expire_date];
 
-                    if ($newLogoName) {
-                        $sql .= ", img_url = ?";
-                        $params[] = $newLogoName;
-                    }
-                    if ($newQrName) {
-                        $sql .= ", qr_img = ?";
-                        $params[] = $newQrName;
-                    }
-                    $hasIdCol = $pdo->query("SHOW COLUMNS FROM tbcompanyinfo LIKE 'Id'")->fetch();
-                    $pkCol = $hasIdCol ? 'Id' : ($pdo->query("SHOW COLUMNS FROM tbcompanyinfo LIKE 'com_id'")->fetch() ? 'com_id' : '1');
-                    $sql .= " WHERE {$pkCol} = 1";
+                        if ($newLogoName) {
+                            $sql .= ", img_url = ?";
+                            $params[] = $newLogoName;
+                        }
+                        if ($newQrName) {
+                            $sql .= ", qr_img = ?";
+                            $params[] = $newQrName;
+                        }
+                        $sql .= " WHERE Id = ?";
+                        $params[] = $curComp['Id'];
 
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute($params);
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute($params);
+                    } else {
+                        $logo = $newLogoName ? $newLogoName : 'logo.png';
+                        $qr = $newQrName ? $newQrName : '';
+                        $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (com_name_la, com_address, com_tel, com_email, tax_id, barcode, img_url, qr_img, tax_type, vat_percent, license_start_date, license_expire_date, branch_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                        $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $logo, $qr, $tax_type, $vat_percent, $license_start_date, $license_expire_date, $branch_id_save]);
+                    }
+
+                    // tbstore's shared name/address/tel is also only owned by the main branch
+                    $stmtStore = $pdo->prepare("UPDATE tbstore SET store_name = ?, address = ?, tel = ? WHERE store_id = ?");
+                    $stmtStore->execute([$com_name_la, $com_address, $com_tel, $branch_id_save]);
                 } else {
-                    $logo = $newLogoName ? $newLogoName : 'logo.png';
-                    $qr = $newQrName ? $newQrName : '';
-                    $stmt = $pdo->prepare("INSERT INTO tbcompanyinfo (Id, com_name_la, com_address, com_tel, com_email, tax_id, barcode, img_url, qr_img, tax_type, vat_percent, license_start_date, license_expire_date, branch_id) VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)");
-                    $stmt->execute([$com_name_la, $com_address, $com_tel, $com_email, $tax_id, $receipt_footer, $logo, $qr, $tax_type, $vat_percent, $license_start_date, $license_expire_date]);
-                }
-
-                // Sync with main store in tbstore if exists
-                $storeCnt = $pdo->query("SELECT COUNT(*) FROM tbstore WHERE store_id = 1 OR is_main = 1")->fetchColumn();
-                if ($storeCnt > 0) {
-                    $stmtStore = $pdo->prepare("UPDATE tbstore SET store_name = ?, address = ?, tel = ? WHERE store_id = 1 OR is_main = 1");
-                    $stmtStore->execute([$com_name_la, $com_address, $com_tel]);
+                    // Sub-branch: only the logo is branch-specific — everything else stays on
+                    // the main branch's row untouched, even though this form submitted the
+                    // (read-only, inherited) values for those fields too.
+                    if ($newLogoName) {
+                        if ($curComp) {
+                            $pdo->prepare("UPDATE tbcompanyinfo SET img_url = ? WHERE Id = ?")->execute([$newLogoName, $curComp['Id']]);
+                        } else {
+                            $pdo->prepare("INSERT INTO tbcompanyinfo (com_name_la, img_url, branch_id) VALUES ('', ?, ?)")->execute([$newLogoName, $branch_id_save]);
+                        }
+                    }
                 }
 
                 $message = 'ບັນທຶກຂໍ້ມູນຮ້ານຄ້າສຳເລັດແລ້ວ!';
@@ -219,11 +236,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ດຶງຂໍ້ມູນຮ້ານຄ້າຕາມ branch_id ຂອງ Session (ຮອງຮັບຫຼາຍສາຂາ)
-$branch_id = $_SESSION['branch_id'] ?? 1;
-$stmtComp = $pdo->prepare("SELECT * FROM tbcompanyinfo WHERE branch_id = ? OR Id = 1 ORDER BY branch_id DESC, Id ASC LIMIT 1");
-$stmtComp->execute([$branch_id]);
+// ຊື່ຮ້ານ/ທີ່ຢູ່/ເບີໂທ/ອາກອນ ແມ່ນຂໍ້ມູນຮ່ວມກັນ ດຶງມາຈາກສາຂາຫຼັກສະເໝີ (ບໍ່ຕ້ອງປ້ອນຊ້ຳໃນແຕ່ລະສາຂາ)
+$branch_id = getActiveStoreId($pdo);
+$mainStoreRow = $pdo->query("SELECT store_id FROM tbstore WHERE is_main = 1 ORDER BY store_id ASC LIMIT 1")->fetch();
+$mainStoreId = $mainStoreRow ? intval($mainStoreRow['store_id']) : 1;
+$isMainBranchView = isMainBranch($pdo, $branch_id);
+
+$stmtComp = $pdo->prepare("SELECT * FROM tbcompanyinfo WHERE branch_id = ? LIMIT 1");
+$stmtComp->execute([$mainStoreId]);
 $company = $stmtComp->fetch(PDO::FETCH_ASSOC);
+
+// ...ຍົກເວັ້ນ "ໂລໂກ້" ທີ່ເປັນຂອງສະເພາະສາຂາທີ່ກຳລັງໃຊ້ງານຢູ່ ບໍ່ປົນກັບສາຂາອື່ນ
+if (!$isMainBranchView) {
+    $stmtBranchLogo = $pdo->prepare("SELECT img_url FROM tbcompanyinfo WHERE branch_id = ? LIMIT 1");
+    $stmtBranchLogo->execute([$branch_id]);
+    $branchLogoRow = $stmtBranchLogo->fetch(PDO::FETCH_ASSOC);
+    if (!is_array($company)) $company = [];
+    $company['img_url'] = $branchLogoRow['img_url'] ?? '';
+}
 
 if (!$company) {
     $company = [];
@@ -309,35 +339,41 @@ require_once __DIR__ . '/../../../layouts/header.php';
             </div>
           </div>
 
+          <?php
+            // Everything below the logo (name/address/phone/tax/etc) is shared across all
+            // branches and lives on the main branch's row — only the main branch can edit it.
+            $sharedReadonly = $isMainBranchView ? '' : 'readonly';
+            $sharedDisabled = $isMainBranchView ? '' : 'disabled';
+            $sharedFieldClass = $isMainBranchView ? '' : 'bg-light';
+          ?>
+
+          <?php if (!$isMainBranchView): ?>
+            <div class="alert alert-info border-0 mb-4" style="border-radius: 10px; font-size: 0.88rem;">
+              <i class="fas fa-info-circle mr-1"></i> ຊື່ຮ້ານ, ທີ່ຢູ່, ເບີໂທ ແລະ ຂໍ້ມູນອາກອນ ແມ່ນໃຊ້ຮ່ວມກັນຈາກສາຂາຫຼັກ ແກ້ໄຂໄດ້ສະເພາະຈາກສາຂາຫຼັກເທົ່ານັ້ນ — ມີແຕ່ "ໂລໂກ້" ດ້ານເທິງນີ້ທີ່ປ່ຽນສະເພາະສາຂານີ້ໄດ້.
+            </div>
+          <?php endif; ?>
+
           <!-- Store Name & Phone -->
           <div class="row">
             <div class="col-md-7 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ຊື່ຮ້ານຄ້າ / ບໍລິສັດ: <span class="text-danger">*</span></label>
-              <input type="text" name="com_name_la" id="input_store_name" class="form-control font-weight-bold text-primary" 
-                     value="<?php echo htmlspecialchars($company['com_name_la'] ?? ''); ?>" 
-                     placeholder="ປ້ອນຊື່ຮ້ານຄ້າ..." required>
+              <input type="text" name="com_name_la" id="input_store_name" class="form-control font-weight-bold text-primary <?php echo $sharedFieldClass; ?>"
+                     value="<?php echo htmlspecialchars($company['com_name_la'] ?? ''); ?>"
+                     placeholder="ປ້ອນຊື່ຮ້ານຄ້າ..." <?php echo $sharedReadonly; ?> required>
             </div>
             <div class="col-md-5 mb-3">
               <label class="font-weight-bold text-dark small mb-1">ເບີໂທລະສັບຕິດຕໍ່: <span class="text-danger">*</span></label>
-              <input type="text" name="com_tel" id="input_store_tel" class="form-control" 
-                     value="<?php echo htmlspecialchars($company['com_tel'] ?? ''); ?>" 
-                     placeholder="020 xxxxxxxx" required>
+              <input type="text" name="com_tel" id="input_store_tel" class="form-control <?php echo $sharedFieldClass; ?>"
+                     value="<?php echo htmlspecialchars($company['com_tel'] ?? ''); ?>"
+                     placeholder="020 xxxxxxxx" <?php echo $sharedReadonly; ?> required>
             </div>
           </div>
 
           <!-- Store Address -->
           <div class="form-group mb-3">
             <label class="font-weight-bold text-dark small mb-1">ທີ່ຢູ່ຮ້ານຄ້າ (ສະແດງໃນໃບບິນ):</label>
-            <textarea name="com_address" id="input_store_address" rows="2" class="form-control" 
-                      placeholder="ບ້ານ, ເມືອງ, ແຂວງ..."><?php echo htmlspecialchars($company['com_address'] ?? ''); ?></textarea>
-          </div>
-
-          <!-- Email / Contact -->
-          <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark small mb-1">ອີເມວ ຫຼື ຊ່ອງທາງຕິດຕໍ່ອື່ນໆ:</label>
-            <input type="text" name="com_email" class="form-control" 
-                   value="<?php echo htmlspecialchars($company['com_email'] ?? ''); ?>" 
-                   placeholder="example@gmail.com ຫຼື Facebook Page...">
+            <textarea name="com_address" id="input_store_address" rows="2" class="form-control <?php echo $sharedFieldClass; ?>"
+                      placeholder="ບ້ານ, ເມືອງ, ແຂວງ..." <?php echo $sharedReadonly; ?>><?php echo htmlspecialchars($company['com_address'] ?? ''); ?></textarea>
           </div>
 
           <!-- Taxpayer ID / Tax Number -->
@@ -345,9 +381,9 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <label class="font-weight-bold text-dark small mb-1">
               <i class="fas fa-id-card text-primary mr-1"></i> ເລກປະຈຳຕົວຜູ້ເສຍອາກອນ:
             </label>
-            <input type="text" name="tax_id" class="form-control font-weight-bold" 
-                   value="<?php echo htmlspecialchars($company['tax_id'] ?? ''); ?>" 
-                   placeholder="ປ້ອນເລກປະຈຳຕົວຜູ້ເສຍອາກອນ (ຖ້າບໍ່ປ້ອນ ຈະບໍ່ສະແດງໃນໃບບິນ)...">
+            <input type="text" name="tax_id" class="form-control font-weight-bold <?php echo $sharedFieldClass; ?>"
+                   value="<?php echo htmlspecialchars($company['tax_id'] ?? ''); ?>"
+                   placeholder="ປ້ອນເລກປະຈຳຕົວຜູ້ເສຍອາກອນ (ຖ້າບໍ່ປ້ອນ ຈະບໍ່ສະແດງໃນໃບບິນ)..." <?php echo $sharedReadonly; ?>>
             <small class="text-muted"><i class="fas fa-info-circle mr-1"></i> ໝາຍເຫດ: ຖ້າປ້ອນເລກປະຈຳຕົວຜູ້ເສຍອາກອນ ລະບົບຈະສະແດງໃນໃບບິນອັດໂນມັດ, ຖ້າປະຫວ່າງໄວ້ ຈະບໍ່ສະແດງໃນໃບບິນ.</small>
           </div>
 
@@ -359,19 +395,19 @@ require_once __DIR__ . '/../../../layouts/header.php';
             <div class="row align-items-center">
               <div class="col-md-7 mb-2 mb-md-0">
                 <div class="custom-control custom-radio custom-control-inline">
-                  <input type="radio" id="tax_inc" name="tax_type" value="inclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'inclusive') ? 'checked' : ''; ?>>
+                  <input type="radio" id="tax_inc" name="tax_type" value="inclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'inclusive') ? 'checked' : ''; ?> <?php echo $sharedDisabled; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_inc">
                     ອາກອນພາຍໃນ <span class="text-muted">(Inclusive - ລາຄາລວມ ອມພ ແລ້ວ)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
-                  <input type="radio" id="tax_exc" name="tax_type" value="exclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'exclusive') ? 'checked' : ''; ?>>
+                  <input type="radio" id="tax_exc" name="tax_type" value="exclusive" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'exclusive') ? 'checked' : ''; ?> <?php echo $sharedDisabled; ?>>
                   <label class="custom-control-label font-weight-bold text-dark small" for="tax_exc">
                     ອາກອນພາຍນອກ <span class="text-muted">(Exclusive - ບວກເພີ່ມ ອມພ %)</span>
                   </label>
                 </div>
                 <div class="custom-control custom-radio custom-control-inline mt-1">
-                  <input type="radio" id="tax_none" name="tax_type" value="none" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'none') ? 'checked' : ''; ?>>
+                  <input type="radio" id="tax_none" name="tax_type" value="none" class="custom-control-input" <?php echo (($company['tax_type'] ?? '') === 'none') ? 'checked' : ''; ?> <?php echo $sharedDisabled; ?>>
                   <label class="custom-control-label font-weight-bold text-muted small" for="tax_none">
                     ບໍ່ມີອາກອນມູນຄ່າເພີ່ມ (0%)
                   </label>
@@ -380,8 +416,8 @@ require_once __DIR__ . '/../../../layouts/header.php';
               <div class="col-md-5" id="vat_percent_wrap">
                 <label class="font-weight-bold text-dark small mb-1">ອັດຕາ ອມພ (%):</label>
                 <div class="input-group">
-                  <input type="number" step="any" min="0" max="100" name="vat_percent" class="form-control font-weight-bold text-primary" 
-                         value="<?php echo htmlspecialchars($company['vat_percent'] ?? ''); ?>" placeholder="ກະລຸນາປ້ອນອັດຕາ ອມພ %">
+                  <input type="number" step="any" min="0" max="100" name="vat_percent" class="form-control font-weight-bold text-primary <?php echo $sharedFieldClass; ?>"
+                         value="<?php echo htmlspecialchars($company['vat_percent'] ?? ''); ?>" placeholder="ກະລຸນາປ້ອນອັດຕາ ອມພ %" <?php echo $sharedReadonly; ?>>
                   <div class="input-group-append">
                     <span class="input-group-text font-weight-bold">%</span>
                   </div>
@@ -395,15 +431,15 @@ require_once __DIR__ . '/../../../layouts/header.php';
           <!-- Receipt Footer Message -->
           <div class="form-group mb-4">
             <label class="font-weight-bold text-dark small mb-1">ຂໍ້ຄວາມທ້າຍໃບບິນ:</label>
-            <input type="text" name="receipt_footer" id="input_store_footer" class="form-control" 
-                   value="<?php echo htmlspecialchars($company['barcode'] ?? ''); ?>" 
-                   placeholder="ເຊັ່ນ: ຂອບໃຈທີ່ມາອຸດໜູນ, ສິນຄ້າຊື້ແລ້ວບໍ່ຮັບປ່ຽນຄືນ...">
+            <input type="text" name="receipt_footer" id="input_store_footer" class="form-control <?php echo $sharedFieldClass; ?>"
+                   value="<?php echo htmlspecialchars($company['barcode'] ?? ''); ?>"
+                   placeholder="ເຊັ່ນ: ຂອບໃຈທີ່ມາອຸດໜູນ, ສິນຄ້າຊື້ແລ້ວບໍ່ຮັບປ່ຽນຄືນ..." <?php echo $sharedReadonly; ?>>
           </div>
 
           <!-- Submit Button (Aligned to the Right) -->
           <div class="pt-3 border-top text-right d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary px-4 py-2 font-weight-bold shadow-sm" style="border-radius: 8px;">
-              <i class="fas fa-save mr-2"></i> ບັນທຶກຂໍ້ມູນຮ້ານຄ້າ
+            <button type="submit" class="btn btn-primary px-4 py-2 font-weight-bold shadow-sm" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
+              <i class="fas fa-save mr-2"></i> ບັນທຶກ<?php echo $isMainBranchView ? 'ຂໍ້ມູນຮ້ານຄ້າ' : 'ໂລໂກ້'; ?>
             </button>
           </div>
         </form>

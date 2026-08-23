@@ -282,7 +282,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Header & Page Meta -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
     <div>
-      <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+      <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
         <i class="fas fa-calendar-day text-info"></i> ລາຍງານປະຈຳວັນ
       </h5>
     </div>
@@ -326,7 +326,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
       <!-- Search & Refresh Buttons -->
       <div class="d-flex align-items-center" style="gap: 6px; flex: 0 0 auto;">
-        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); white-space: nowrap; font-size: 0.85rem;">
+        <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); white-space: nowrap; font-size: 0.85rem;">
           <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
         </button>
         <a href="daily_report.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">
@@ -342,7 +342,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ລວມຍອດ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_gross_sales; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -353,7 +353,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ສ່ວນຫຼຸດສິນຄ້າ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_item_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -364,7 +364,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ສ່ວນຫຼຸດໃບບິນ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_bill_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -375,7 +375,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title text-nowrap" style="white-space: nowrap !important;"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ <?php if ($daily_promo_gifts_count > 0): ?><span class="text-warning font-weight-normal ml-1" style="font-size: 0.75rem;">(ແຖມ: <?php echo number_format($daily_promo_gifts_count); ?>)</span><?php endif; ?></div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val text-nowrap" style="white-space: nowrap !important; font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val text-nowrap" style="white-space: nowrap !important; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_promo_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -386,7 +386,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ສ່ວນຫຼຸດທັງໝົດ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_total_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -397,7 +397,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ຍອດຂາຍສຸດທິ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_net_sales; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -408,7 +408,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ເງິນສົດ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_cash_payments; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -419,7 +419,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ເງິນໂອນ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_qr_payments; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
       </div>
@@ -430,7 +430,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ບິນ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_bills_count; ?>" data-suffix=" ບິນ">0 ບິນ</span>
         </div>
       </div>
@@ -441,7 +441,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);">
       <div style="z-index: 2; min-width: 0;">
         <div class="kpi-card-title">ລາຍການ</div>
-        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao Looped', sans-serif;">
+        <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_items_qty; ?>" data-suffix=" ອັນ">0 ອັນ</span>
         </div>
       </div>
@@ -576,7 +576,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 document.addEventListener('DOMContentLoaded', function () {
 
   // ຕັ້ງຟ້ອນ Chart.js ໃຫ້ຄືກັນກັບໜ້າ
-  Chart.defaults.font.family = "'Noto Sans Lao Looped', 'Noto Sans Lao', 'Phetsarath OT', sans-serif";
+  Chart.defaults.font.family = "'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif";
   Chart.defaults.font.size   = 11;
 
   // CountUp Animation

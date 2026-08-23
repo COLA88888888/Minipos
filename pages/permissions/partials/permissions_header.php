@@ -13,7 +13,7 @@
   
   <!-- Title ຫົວຂໍ້ໜ້າ -->
   <div>
-    <h4 class="fw-bold mb-1" style="font-family: 'Noto Sans Lao Looped'; color: #0f172a;">
+    <h4 class="fw-bold mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; color: #0f172a;">
       <i class="fas fa-user-shield text-warning mr-2"></i> ກຳນົດສິດການໃຊ້ງານ
     </h4>
   </div>
