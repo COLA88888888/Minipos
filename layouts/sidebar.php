@@ -46,7 +46,7 @@
           <?php echo htmlspecialchars($sb_display_name); ?>
         </span>
         <span style="font-size: 0.72rem; color: #4ade80; font-weight: 600; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
-          <i class="fas fa-circle" style="font-size: 6px;"></i> ກຳລັງໃຊ້ງານ
+          <i class="fas fa-circle" style="font-size: 6px;"></i> <span data-i18n="layout.online_status"><?php echo htmlspecialchars(t('layout.online_status', 'ກຳລັງໃຊ້ງານ')); ?></span>
         </span>
       </div>
     </div>
@@ -58,13 +58,13 @@
         
         <?php if (hasPermission('dashboard')): ?>
           <!-- Header: Main menu -->
-          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px;">ເມນູ</li>
-          
+          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px;" data-i18n="layout.menu_header"><?php echo htmlspecialchars(t('layout.menu_header', 'ເມນູ')); ?></li>
+
           <!-- Menu: Dashboard -->
           <li class="nav-item">
             <a href="home.php" target="frame" class="nav-link">
               <i class="nav-icon fas fa-chart-line text-success"></i>
-              <p>ດາດສ໌ບອດ</p>
+              <p data-i18n="layout.dashboard"><?php echo htmlspecialchars(t('layout.dashboard', 'ດາດສ໌ບອດ')); ?></p>
             </a>
           </li>
         <?php endif; ?>
@@ -75,7 +75,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-cash-register text-warning"></i>
               <p>
-                ຂາຍສິນຄ້າ POS
+                <span data-i18n="layout.pos_group"><?php echo htmlspecialchars(t('layout.pos_group', 'ຂາຍສິນຄ້າ POS')); ?></span>
                 <i class="right fas fa-angle-right"></i>
               </p>
             </a>
@@ -85,7 +85,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/pos/pos.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-shopping-cart text-warning"></i>
-                  <p>ຂາຍສິນຄ້າ</p>
+                  <p data-i18n="layout.pos_sell"><?php echo htmlspecialchars(t('layout.pos_sell', 'ຂາຍສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -95,7 +95,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/item_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-list-alt text-purple"></i>
-                  <p>ລາຍການຂາຍສິນຄ້າ</p>
+                  <p data-i18n="layout.pos_item_sales"><?php echo htmlspecialchars(t('layout.pos_item_sales', 'ລາຍການຂາຍສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -108,7 +108,7 @@
           <li class="nav-item">
             <a href="<?php echo $bp; ?>pages/customers/customers.php" target="frame" class="nav-link">
               <i class="nav-icon fas fa-user-friends text-info"></i>
-              <p>ຈັດການລູກຄ້າ</p>
+              <p data-i18n="layout.customers"><?php echo htmlspecialchars(t('layout.customers', 'ຈັດການລູກຄ້າ')); ?></p>
             </a>
           </li>
         <?php endif; ?>
@@ -122,7 +122,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-boxes text-primary"></i>
               <p>
-                ຂໍ້ມູນສິນຄ້າ
+                <span data-i18n="layout.products_group"><?php echo htmlspecialchars(t('layout.products_group', 'ຂໍ້ມູນສິນຄ້າ')); ?></span>
                 <i class="right fas fa-angle-right"></i>
               </p>
             </a>
@@ -132,7 +132,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/categories/categories.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-th-list text-info"></i>
-                  <p>ໝວດໝູ່ສິນຄ້າ</p>
+                  <p data-i18n="layout.categories"><?php echo htmlspecialchars(t('layout.categories', 'ໝວດໝູ່ສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -142,7 +142,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/products/products.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-box text-primary"></i>
-                  <p>ລາຍການສິນຄ້າ</p>
+                  <p data-i18n="layout.products"><?php echo htmlspecialchars(t('layout.products', 'ລາຍການສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -152,7 +152,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/import_stock.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-truck-loading text-warning"></i>
-                  <p>ນຳເຂົ້າສິນຄ້າ</p>
+                  <p data-i18n="layout.import_stock"><?php echo htmlspecialchars(t('layout.import_stock', 'ນຳເຂົ້າສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -162,7 +162,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/import_list.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-list-alt text-success"></i>
-                  <p>ລາຍການສິນຄ້າຮັບເຂົ້າ</p>
+                  <p data-i18n="layout.import_list"><?php echo htmlspecialchars(t('layout.import_list', 'ລາຍການສິນຄ້າຮັບເຂົ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -171,7 +171,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/stock_transfer.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-exchange-alt text-info"></i>
-                  <p>ໂອນສິນຄ້າລະຫວ່າງສາຂາ</p>
+                  <p data-i18n="layout.stock_transfer"><?php echo htmlspecialchars(t('layout.stock_transfer', 'ໂອນສິນຄ້າລະຫວ່າງສາຂາ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -181,7 +181,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/import_stock/transfer_history.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-history text-secondary"></i>
-                  <p>ປະຫວັດການໂອນສິນຄ້າ</p>
+                  <p data-i18n="layout.transfer_history"><?php echo htmlspecialchars(t('layout.transfer_history', 'ປະຫວັດການໂອນສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -191,13 +191,13 @@
 
         <?php if (hasPermission('accounting')): ?>
           <!-- Header: Reports & Accounting -->
-          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ລາຍງານ & ການເງິນ</li>
+          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;" data-i18n="layout.reports_header"><?php echo htmlspecialchars(t('layout.reports_header', 'ລາຍງານ & ການເງິນ')); ?></li>
 
           <!-- Menu: Bank Management (ຈັດການທະນາຄານ) -->
           <li class="nav-item">
             <a href="<?php echo $bp; ?>pages/bank/bank.php" target="frame" class="nav-link">
               <i class="nav-icon fas fa-university text-info"></i>
-              <p>ຈັດການທະນາຄານ</p>
+              <p data-i18n="layout.bank"><?php echo htmlspecialchars(t('layout.bank', 'ຈັດການທະນາຄານ')); ?></p>
             </a>
           </li>
         <?php endif; ?>
@@ -208,7 +208,7 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-file-invoice-dollar text-orange"></i>
               <p>
-                ລາຍງານ
+                <span data-i18n="layout.reports_group"><?php echo htmlspecialchars(t('layout.reports_group', 'ລາຍງານ')); ?></span>
                 <i class="right fas fa-angle-right"></i>
               </p>
             </a>
@@ -218,7 +218,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/daily_report.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-calendar-day text-info"></i>
-                  <p>ລາຍງານປະຈຳວັນ</p>
+                  <p data-i18n="layout.daily_report"><?php echo htmlspecialchars(t('layout.daily_report', 'ລາຍງານປະຈຳວັນ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -228,7 +228,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/all_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-file-invoice-dollar text-success"></i>
-                  <p>ລາຍງານການຂາຍທັງໝົດ</p>
+                  <p data-i18n="layout.all_sales"><?php echo htmlspecialchars(t('layout.all_sales', 'ລາຍງານການຂາຍທັງໝົດ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -238,7 +238,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/best_seller.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-fire text-danger"></i>
-                  <p>ລາຍງານສິນຄ້າຂາຍດີ</p>
+                  <p data-i18n="layout.best_seller"><?php echo htmlspecialchars(t('layout.best_seller', 'ລາຍງານສິນຄ້າຂາຍດີ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -248,7 +248,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/profit_cost.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-chart-line text-warning"></i>
-                  <p>ລາຍງານກຳໄລ-ຕົ້ນທຶນ</p>
+                  <p data-i18n="layout.profit_cost"><?php echo htmlspecialchars(t('layout.profit_cost', 'ລາຍງານກຳໄລ-ຕົ້ນທຶນ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -258,7 +258,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/financial.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-wallet text-info"></i>
-                  <p>ລາຍງານການເງິນ</p>
+                  <p data-i18n="layout.financial"><?php echo htmlspecialchars(t('layout.financial', 'ລາຍງານການເງິນ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -268,7 +268,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/category_sales.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-layer-group text-primary"></i>
-                  <p>ລາຍງານຕາມປະເພດສິນຄ້າ</p>
+                  <p data-i18n="layout.category_sales"><?php echo htmlspecialchars(t('layout.category_sales', 'ລາຍງານຕາມປະເພດສິນຄ້າ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -278,7 +278,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/reports/delete_bills.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-trash-alt text-danger"></i>
-                  <p>ປະຫວັດການລົບບິນຂາຍ</p>
+                  <p data-i18n="layout.delete_bills"><?php echo htmlspecialchars(t('layout.delete_bills', 'ປະຫວັດການລົບບິນຂາຍ')); ?></p>
                 </a>
               </li>
               <?php endif; ?>
@@ -288,14 +288,14 @@
 
         <?php if (hasPermission('users') || hasPermission('permissions') || hasPermission('branches') || hasPermission('stores') || hasPermission('print_barcode') || hasPermission('exchange_rate') || hasPermission('promotions') || hasPermission('price_adjustment') || hasPermission('printers') || hasPermission('database')): ?>
           <!-- Header: Administration & Settings -->
-          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ການຈັດການລະບົບ</li>
+          <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;" data-i18n="layout.admin_header"><?php echo htmlspecialchars(t('layout.admin_header', 'ການຈັດການລະບົບ')); ?></li>
 
           <?php if (hasPermission('users')): ?>
             <!-- Menu: Users Management -->
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/users_manage/users_manage.php" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-users text-info"></i>
-                <p>ຈັດການຜູ້ນຳໃຊ້</p>
+                <p data-i18n="layout.users"><?php echo htmlspecialchars(t('layout.users', 'ຈັດການຜູ້ນຳໃຊ້')); ?></p>
               </a>
             </li>
           <?php endif; ?>
@@ -305,7 +305,7 @@
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/permissions/permissions.php" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-user-shield text-warning"></i>
-                <p>ກຳນົດສິດ</p>
+                <p data-i18n="layout.permissions"><?php echo htmlspecialchars(t('layout.permissions', 'ກຳນົດສິດ')); ?></p>
               </a>
             </li>
           <?php endif; ?>
@@ -315,7 +315,7 @@
             <li class="nav-item">
               <a href="<?php echo $bp; ?>pages/branches/branches.php" target="frame" class="nav-link">
                 <i class="nav-icon fas fa-network-wired text-success"></i>
-                <p>ຈັດການສາຂາ</p>
+                <p data-i18n="layout.branches"><?php echo htmlspecialchars(t('layout.branches', 'ຈັດການສາຂາ')); ?></p>
               </a>
             </li>
           <?php endif; ?>
@@ -326,7 +326,7 @@
               <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-cogs text-secondary"></i>
                 <p>
-                  ຕັ້ງຄ່າລະບົບ
+                  <span data-i18n="layout.settings_group"><?php echo htmlspecialchars(t('layout.settings_group', 'ຕັ້ງຄ່າລະບົບ')); ?></span>
                   <i class="right fas fa-angle-right"></i>
                 </p>
               </a>
@@ -336,7 +336,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/stores/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-store text-primary"></i>
-                    <p>ຂໍ້ມູນຮ້ານ</p>
+                    <p data-i18n="layout.stores"><?php echo htmlspecialchars(t('layout.stores', 'ຂໍ້ມູນຮ້ານ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -346,7 +346,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/print_barcode/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-barcode text-info"></i>
-                    <p>ພິມບາໂຄ້ດ</p>
+                    <p data-i18n="layout.print_barcode"><?php echo htmlspecialchars(t('layout.print_barcode', 'ພິມບາໂຄ້ດ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -356,7 +356,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/exchange_rate/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-exchange-alt text-success"></i>
-                    <p>ອັດຕາເເລກປ່ຽນເງິນ</p>
+                    <p data-i18n="layout.exchange_rate"><?php echo htmlspecialchars(t('layout.exchange_rate', 'ອັດຕາເເລກປ່ຽນເງິນ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -366,7 +366,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/promotions/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-percent text-danger"></i>
-                    <p>ໂປຣໂມຊັ່ນ</p>
+                    <p data-i18n="layout.promotions"><?php echo htmlspecialchars(t('layout.promotions', 'ໂປຣໂມຊັ່ນ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -376,7 +376,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/price_adjustment/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-tags text-warning"></i>
-                    <p>ປັບລາຄາສິນຄ້າ</p>
+                    <p data-i18n="layout.price_adjustment"><?php echo htmlspecialchars(t('layout.price_adjustment', 'ປັບລາຄາສິນຄ້າ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -386,7 +386,7 @@
                 <li class="nav-item">
                   <a href="<?php echo $bp; ?>pages/settings/printers/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-print text-teal"></i>
-                    <p>ຕັ້ງຄ່າປິ່ນເຕີ</p>
+                    <p data-i18n="layout.printers"><?php echo htmlspecialchars(t('layout.printers', 'ຕັ້ງຄ່າປິ່ນເຕີ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>
@@ -398,7 +398,7 @@
               <li class="nav-item">
                 <a href="<?php echo $bp; ?>pages/database/database.php" target="frame" class="nav-link">
                   <i class="nav-icon fas fa-database text-info"></i>
-                  <p>ຖານຂໍ້ມູນ</p>
+                  <p data-i18n="layout.database"><?php echo htmlspecialchars(t('layout.database', 'ຖານຂໍ້ມູນ')); ?></p>
                 </a>
               </li>
             <?php endif; ?>

@@ -1,0 +1,28 @@
+<?php
+// pages/settings/print_barcode/* strings - English
+return [
+    'print_barcode.page_title' => 'Print Barcodes',
+    'print_barcode.search_placeholder' => 'Search product name or barcode...',
+    'print_barcode.category_all_option' => '-- All Categories --',
+    'print_barcode.select_all' => 'Select All',
+    'print_barcode.deselect_all' => 'Deselect All',
+    'print_barcode.set_copies_label' => 'Set Copies:',
+    'print_barcode.display_options_label' => 'Display Options:',
+    'print_barcode.opt_shop_name' => 'Shop Name',
+    'print_barcode.opt_product_name' => 'Product Name',
+    'print_barcode.opt_sale_price' => 'Sale Price',
+    'print_barcode.sticker_size_label' => 'Sticker Size:',
+    'print_barcode.size_40x30' => '40mm x 30mm (Standard Roll)',
+    'print_barcode.size_50x30' => '50mm x 30mm (Medium Roll)',
+    'print_barcode.size_a4' => 'A4 Paper (Grid)',
+    'print_barcode.footer_summary_initial' => 'Selected: 0 items (0 stickers total)',
+    'print_barcode.summary_selected_label' => 'Selected',
+    'print_barcode.summary_items_suffix' => 'items',
+    'print_barcode.summary_total_label' => 'Total',
+    'print_barcode.summary_stickers_suffix' => 'stickers',
+    'print_barcode.print_button' => 'Print Barcode',
+    'print_barcode.empty_search_state' => 'No products match your search',
+    'print_barcode.no_selection_title' => 'No Items Selected',
+    'print_barcode.no_selection_text' => 'Please select at least one product and set at least 1 sticker to print!',
+    'print_barcode.ok_button' => 'OK',
+];

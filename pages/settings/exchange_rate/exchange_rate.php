@@ -24,14 +24,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($action === 'save_rate') {
         $thb_rate = floatval(str_replace(',', '', $_POST['ex_kip_bath'] ?? '0'));
         $usd_rate = floatval(str_replace(',', '', $_POST['ex_kip_us'] ?? '0'));
+        $cny_rate = floatval(str_replace(',', '', $_POST['ex_kip_cn'] ?? '0'));
 
         if ($thb_rate > 0 && $usd_rate > 0) {
             try {
-                $stmt = $pdo->prepare("INSERT INTO tbexchange (ex_date, ex_time, ex_kip_bath, ex_kip_us, ex_status, ex_userlogin, branch_id) VALUES (CURDATE(), CURTIME(), ?, ?, 'Active', ?, 1)");
-                $stmt->execute([$thb_rate, $usd_rate, $username]);
+                $stmt = $pdo->prepare("INSERT INTO tbexchange (ex_date, ex_time, ex_kip_bath, ex_kip_us, ex_kip_cn, ex_status, ex_userlogin, branch_id) VALUES (CURDATE(), CURTIME(), ?, ?, ?, 'Active', ?, 1)");
+                $stmt->execute([$thb_rate, $usd_rate, $cny_rate, $username]);
                 $message = 'ອັບເດດອັດຕາແລກປ່ຽນເງິນສຳເລັດແລ້ວ!';
                 $message_type = 'success';
-                logActivity($pdo, "ອັບເດດອັດຕາແລກປ່ຽນ", "THB: $thb_rate ₭, USD: $usd_rate ₭");
+                logActivity($pdo, "ອັບເດດອັດຕາແລກປ່ຽນ", "THB: $thb_rate ₭, USD: $usd_rate ₭, CNY: $cny_rate ₭");
             } catch (Exception $e) {
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';
@@ -44,14 +45,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $rate_id = intval($_POST['rate_id'] ?? 0);
         $thb_rate = floatval(str_replace(',', '', $_POST['ex_kip_bath'] ?? '0'));
         $usd_rate = floatval(str_replace(',', '', $_POST['ex_kip_us'] ?? '0'));
+        $cny_rate = floatval(str_replace(',', '', $_POST['ex_kip_cn'] ?? '0'));
 
         if ($rate_id > 0 && $thb_rate > 0 && $usd_rate > 0) {
             try {
-                $stmt = $pdo->prepare("UPDATE tbexchange SET ex_kip_bath = ?, ex_kip_us = ?, ex_userlogin = ? WHERE Id = ?");
-                $stmt->execute([$thb_rate, $usd_rate, $username, $rate_id]);
+                $stmt = $pdo->prepare("UPDATE tbexchange SET ex_kip_bath = ?, ex_kip_us = ?, ex_kip_cn = ?, ex_userlogin = ? WHERE Id = ?");
+                $stmt->execute([$thb_rate, $usd_rate, $cny_rate, $username, $rate_id]);
                 $message = 'ດຳເນີນການອັບເດດອັດຕາແລກປ່ຽນສຳເລັດ!';
                 $message_type = 'success';
-                logActivity($pdo, "ແກ້ໄຂອັດຕາແລກປ່ຽນ", "ID: $rate_id, THB: $thb_rate ₭, USD: $usd_rate ₭");
+                logActivity($pdo, "ແກ້ໄຂອັດຕາແລກປ່ຽນ", "ID: $rate_id, THB: $thb_rate ₭, USD: $usd_rate ₭, CNY: $cny_rate ₭");
             } catch (Exception $e) {
                 $message = 'ຜິດພາດ: ' . $e->getMessage();
                 $message_type = 'danger';

@@ -613,3 +613,44 @@ body {
     transform: translateZ(0);
     will-change: auto;
 }
+
+/* Clean block flow positioning for navbar */
+.main-header {
+    position: relative !important;
+    z-index: 1030 !important;
+}
+
+.container-fluid {
+    padding-top: 18px !important;
+}
+
+/* Mobile responsive modal & page container top padding */
+@media (max-width: 991.98px) {
+    body {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+    .wrapper .main-header {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: 64px !important;
+        z-index: 1030 !important;
+        margin-left: 0 !important;
+    }
+    .wrapper .content-wrapper {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        height: calc(100vh - 64px - 42px) !important;
+        height: calc(100dvh - 64px - 42px) !important;
+    }
+    .modal-dialog {
+        margin: 0.75rem auto !important;
+    }
+    .container-fluid {
+        padding-top: 18px !important;
+        margin-top: 0 !important;
+    }
+}

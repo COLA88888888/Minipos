@@ -1,0 +1,28 @@
+<?php
+// pages/settings/print_barcode/* strings - Chinese
+return [
+    'print_barcode.page_title' => '打印条码 (Print Barcodes)',
+    'print_barcode.search_placeholder' => '搜索商品名称或条码...',
+    'print_barcode.category_all_option' => '-- 选择全部商品分类 --',
+    'print_barcode.select_all' => '全选',
+    'print_barcode.deselect_all' => '取消全选',
+    'print_barcode.set_copies_label' => '设置数量:',
+    'print_barcode.display_options_label' => '显示选项:',
+    'print_barcode.opt_shop_name' => '店铺名称',
+    'print_barcode.opt_product_name' => '商品名称',
+    'print_barcode.opt_sale_price' => '销售价格',
+    'print_barcode.sticker_size_label' => '标签尺寸:',
+    'print_barcode.size_40x30' => '40mm x 30mm (标准卷)',
+    'print_barcode.size_50x30' => '50mm x 30mm (中号卷)',
+    'print_barcode.size_a4' => 'A4 纸张 (表格)',
+    'print_barcode.footer_summary_initial' => '已选择: 0 项 (共 0 张)',
+    'print_barcode.summary_selected_label' => '已选择',
+    'print_barcode.summary_items_suffix' => '项',
+    'print_barcode.summary_total_label' => '总计',
+    'print_barcode.summary_stickers_suffix' => '张',
+    'print_barcode.print_button' => '打印条码',
+    'print_barcode.empty_search_state' => '未找到符合搜索条件的商品',
+    'print_barcode.no_selection_title' => '未选择任何项目',
+    'print_barcode.no_selection_text' => '请选择商品并设置至少 1 张要打印的标签！',
+    'print_barcode.ok_button' => '确定',
+];

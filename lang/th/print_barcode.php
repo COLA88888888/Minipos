@@ -1,0 +1,28 @@
+<?php
+// pages/settings/print_barcode/* strings - Thai
+return [
+    'print_barcode.page_title' => 'พิมพ์บาร์โค้ดสินค้า (Print Barcodes)',
+    'print_barcode.search_placeholder' => 'ค้นหาชื่อสินค้า หรือ บาร์โค้ด...',
+    'print_barcode.category_all_option' => '-- เลือกหมวดหมู่สินค้าทั้งหมด --',
+    'print_barcode.select_all' => 'เลือกทั้งหมด',
+    'print_barcode.deselect_all' => 'ยกเลิกทั้งหมด',
+    'print_barcode.set_copies_label' => 'ตั้งจำนวน:',
+    'print_barcode.display_options_label' => 'ตัวเลือกการแสดงผล:',
+    'print_barcode.opt_shop_name' => 'ชื่อร้าน',
+    'print_barcode.opt_product_name' => 'ชื่อสินค้า',
+    'print_barcode.opt_sale_price' => 'ราคาขาย',
+    'print_barcode.sticker_size_label' => 'ขนาดสติกเกอร์:',
+    'print_barcode.size_40x30' => '40mm x 30mm (ม้วนมาตรฐาน)',
+    'print_barcode.size_50x30' => '50mm x 30mm (ม้วนกลาง)',
+    'print_barcode.size_a4' => 'กระดาษ A4 (ตาราง)',
+    'print_barcode.footer_summary_initial' => 'เลือกแล้ว: 0 รายการ (รวม 0 ดวง)',
+    'print_barcode.summary_selected_label' => 'เลือกแล้ว',
+    'print_barcode.summary_items_suffix' => 'รายการ',
+    'print_barcode.summary_total_label' => 'รวมทั้งหมด',
+    'print_barcode.summary_stickers_suffix' => 'ดวง',
+    'print_barcode.print_button' => 'พิมพ์บาร์โค้ด',
+    'print_barcode.empty_search_state' => 'ไม่พบรายการสินค้าที่ตรงกับคำค้นหา',
+    'print_barcode.no_selection_title' => 'ไม่มีรายการที่เลือก',
+    'print_barcode.no_selection_text' => 'กรุณาเลือกรายการสินค้า และกำหนดจำนวนที่จะพิมพ์อย่างน้อย 1 ดวง!',
+    'print_barcode.ok_button' => 'ตกลง',
+];

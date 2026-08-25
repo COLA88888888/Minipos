@@ -1,0 +1,28 @@
+<?php
+// pages/settings/print_barcode/* strings - Lao baseline
+return [
+    'print_barcode.page_title' => 'ພິມບາໂຄ້ດສິນຄ້າ (Print Barcodes)',
+    'print_barcode.search_placeholder' => 'ຄົ້ນຫາຊື່ສິນຄ້າ ຫຼື ບາໂຄ້ດ...',
+    'print_barcode.category_all_option' => '-- ເລືອກປະເພດສິນຄ້າທັງໝົດ --',
+    'print_barcode.select_all' => 'ເລືອກທັງໝົດ',
+    'print_barcode.deselect_all' => 'ຍົກເລີກທັງໝົດ',
+    'print_barcode.set_copies_label' => 'ຕັ້ງດວງ:',
+    'print_barcode.display_options_label' => 'ຕົວເລືອກສະແດງ:',
+    'print_barcode.opt_shop_name' => 'ຊື່ຮ້ານ',
+    'print_barcode.opt_product_name' => 'ຊື່ສິນຄ້າ',
+    'print_barcode.opt_sale_price' => 'ລາຄາຂາຍ',
+    'print_barcode.sticker_size_label' => 'ຂະໜາດສະຕິກເກີ:',
+    'print_barcode.size_40x30' => '40mm x 30mm (ມ້ວນມາດຕະຖານ)',
+    'print_barcode.size_50x30' => '50mm x 30mm (ມ້ວນກາງ)',
+    'print_barcode.size_a4' => 'ເຈ້ຍ A4 (ຕາຕະລາງ)',
+    'print_barcode.footer_summary_initial' => 'ເລືອກແລ້ວ: 0 ລາຍການ (ລວມ 0 ດວງ)',
+    'print_barcode.summary_selected_label' => 'ເລືອກແລ້ວ',
+    'print_barcode.summary_items_suffix' => 'ລາຍການ',
+    'print_barcode.summary_total_label' => 'ລວມທັງໝົດ',
+    'print_barcode.summary_stickers_suffix' => 'ດວງ',
+    'print_barcode.print_button' => 'ພິມບາໂຄ້ດ',
+    'print_barcode.empty_search_state' => 'ບໍ່ພົບລາຍການສິນຄ້າທີ່ກົງກັບຄຳຄົ້ນຫາ',
+    'print_barcode.no_selection_title' => 'ບໍ່ມີລາຍການຖືກເລືອກ',
+    'print_barcode.no_selection_text' => 'ກະລຸນາເລືອກລາຍການສິນຄ້າ ແລະ ກຳນົດຈຳນວນດວງທີ່ຈະພິມຢ່າງນ້ອຍ 1 ດວງ!',
+    'print_barcode.ok_button' => 'ຕົກລົງ',
+];

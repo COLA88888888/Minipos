@@ -9,10 +9,13 @@ function formatPriceInput(input) {
 }
 
 // ຟັງຊັ້ນເປີດ Modal ແກ້ໄຂອັດຕາແລກປ່ຽນ ພ້ອມໂຫຼດຄ່າເກົ່າໃສ່ Input
-function editRate(id, thb, usd) {
+function editRate(id, thb, usd, cny) {
   document.getElementById('edit_rate_id').value = id;
   document.getElementById('edit_ex_kip_bath').value = thb;
   document.getElementById('edit_ex_kip_us').value = usd;
+  if (document.getElementById('edit_ex_kip_cn')) {
+    document.getElementById('edit_ex_kip_cn').value = cny || '0';
+  }
   $('#editRateModal').modal('show');
 }
 

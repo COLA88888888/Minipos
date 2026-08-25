@@ -1,3 +1,6 @@
+<?php
+$bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
+?>
 <!-- ============================================================
      exchange_rate_table.php - ຕາຕະລາງສະແດງປະຫວັດອັດຕາແລກປ່ຽນເງິນ
      ============================================================ -->
@@ -20,9 +23,26 @@
           <th class="text-center" style="width: 70px;">ລຳດັບ</th>
           <th class="text-center" style="width: 120px;">ວັນທີ</th>
           <th class="text-center" style="width: 110px;">ເວລາ</th>
-          <th class="text-right" style="width: 140px;">ກີບ</th>
-          <th class="text-right" style="width: 160px;">ບາດ</th>
-          <th class="text-right" style="width: 160px;">ໂດລາ</th>
+          <th class="text-right" style="width: 150px;">
+            <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Laos.webp" alt="LAK" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+            <span class="flag-icon flag-icon-la mr-1" style="display:none;"></span>
+            ກີບ (LAK)
+          </th>
+          <th class="text-right" style="width: 170px;">
+            <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+            <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
+            ບາດ (THB)
+          </th>
+          <th class="text-right" style="width: 170px;">
+            <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+            <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
+            ໂດລາ (USD)
+          </th>
+          <th class="text-right" style="width: 170px;">
+            <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+            <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
+            ຢວນ (CNY)
+          </th>
           <th class="text-center" style="width: 150px;">ຜູ້ບັນທຶກ</th>
           <th class="text-center" style="width: 130px;">ຈັດການ</th>
         </tr>
@@ -30,7 +50,7 @@
       <tbody>
         <?php if (empty($historyRates)): ?>
           <tr>
-            <td colspan="8" class="text-center py-5 text-muted">
+            <td colspan="9" class="text-center py-5 text-muted">
               <i class="fas fa-exchange-alt fa-2x mb-2 d-block text-muted opacity-50"></i>
               ບໍ່ມີຂໍ້ມູນອັດຕາແລກປ່ຽນເງິນ
             </td>
@@ -40,17 +60,39 @@
             <?php 
               $thbVal = floatval($r['ex_kip_bath']);
               $usdVal = floatval($r['ex_kip_us']);
+              $cnyVal = floatval($r['ex_kip_cn'] ?? 0);
             ?>
             <tr>
               <td class="text-center font-weight-bold text-muted"><?php echo $i++; ?></td>
               <td class="text-center font-weight-bold text-dark"><?php echo date('d/m/Y', strtotime($r['ex_date'])); ?></td>
               <td class="text-center text-muted"><?php echo htmlspecialchars($r['ex_time']); ?></td>
-              <td class="text-right font-weight-bold text-dark">1,000 ₭</td>
-              <td class="text-right font-weight-bold text-success" style="font-size: 0.92rem;">
-                <?php echo number_format($thbVal, 0); ?> ₭
+              <td class="text-right">
+                <span class="badge border px-2.5 py-1.5 font-weight-bold text-dark d-inline-flex align-items-center" style="font-size: 0.88rem; border-radius: 6px; background-color: #f8fafc; border-color: #cbd5e1;">
+                  <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Laos.webp" alt="LAK" style="width: 24px; height: 16px; margin-right: 6px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                  <span class="flag-icon flag-icon-la mr-1.5" style="display:none;"></span>
+                  1,000 ₭
+                </span>
               </td>
-              <td class="text-right font-weight-bold text-primary" style="font-size: 0.92rem;">
-                <?php echo number_format($usdVal, 0); ?> ₭
+              <td class="text-right">
+                <span class="badge border px-2.5 py-1.5 font-weight-bold text-success d-inline-flex align-items-center" style="font-size: 0.88rem; background-color: #f0fdf4; border-color: #bbf7d0; border-radius: 6px;">
+                  <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                  <span class="flag-icon flag-icon-th mr-1.5" style="display:none;"></span>
+                  <?php echo number_format($thbVal, 0); ?> ₭
+                </span>
+              </td>
+              <td class="text-right">
+                <span class="badge border px-2.5 py-1.5 font-weight-bold text-primary d-inline-flex align-items-center" style="font-size: 0.88rem; background-color: #eff6ff; border-color: #bfdbfe; border-radius: 6px;">
+                  <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                  <span class="flag-icon flag-icon-us mr-1.5" style="display:none;"></span>
+                  <?php echo number_format($usdVal, 0); ?> ₭
+                </span>
+              </td>
+              <td class="text-right">
+                <span class="badge border px-2.5 py-1.5 font-weight-bold text-warning d-inline-flex align-items-center" style="font-size: 0.88rem; background-color: #fffbeb; border-color: #fde68a; border-radius: 6px; color: #b45309 !important;">
+                  <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                  <span class="flag-icon flag-icon-cn mr-1.5" style="display:none;"></span>
+                  <?php echo number_format($cnyVal, 0); ?> ₭
+                </span>
               </td>
               <td class="text-center">
                 <span class="badge badge-light border text-dark font-weight-bold px-2.5 py-1" style="font-size: 0.80rem;">
@@ -63,7 +105,7 @@
                   <div class="btn-group btn-group-sm" role="group">
                     <?php if (hasPermission('exchange_rate', 'edit')): ?>
                       <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ" 
-                              onclick="editRate(<?php echo $r['Id']; ?>, '<?php echo number_format($thbVal, 0); ?>', '<?php echo number_format($usdVal, 0); ?>')">
+                              onclick="editRate(<?php echo $r['Id']; ?>, '<?php echo number_format($thbVal, 0); ?>', '<?php echo number_format($usdVal, 0); ?>', '<?php echo number_format($cnyVal, 0); ?>')">
                         <i class="fas fa-edit"></i>
                       </button>
                     <?php endif; ?>

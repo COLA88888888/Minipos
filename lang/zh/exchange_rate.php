@@ -1,0 +1,41 @@
+<?php
+// pages/settings/exchange_rate/* strings - Chinese (Simplified)
+return [
+    'exchange_rate.msg_save_success' => '更新汇率成功!',
+    'exchange_rate.msg_update_success' => '汇率修改成功!',
+    'exchange_rate.msg_delete_success' => '删除汇率记录成功!',
+    'exchange_rate.msg_invalid_rate' => '请输入正确的汇率!',
+    'exchange_rate.msg_error_prefix' => '错误: ',
+
+    'exchange_rate.header_title' => '汇率设置 (Exchange Rates)',
+    'exchange_rate.btn_add_new' => '更新新汇率',
+    'exchange_rate.swal_success_title' => '成功',
+    'exchange_rate.swal_error_title' => '提示',
+
+    'exchange_rate.confirm_delete_title' => '确认删除?',
+    'exchange_rate.confirm_delete_text' => '您确定要删除此汇率记录吗?',
+    'exchange_rate.btn_delete_confirm' => '立即删除',
+    'exchange_rate.btn_cancel' => '取消',
+
+    'exchange_rate.modal_add_title' => '更新新汇率',
+    'exchange_rate.label_thb' => '1 泰铢 (THB ➔ LAK):',
+    'exchange_rate.label_usd' => '1 美元 (USD ➔ LAK):',
+    'exchange_rate.btn_save' => '保存',
+    'exchange_rate.modal_edit_title' => '修改汇率',
+    'exchange_rate.btn_update' => '更新',
+
+    'exchange_rate.table_title' => '汇率记录表',
+    'exchange_rate.total_records' => '共计: %s 条',
+    'exchange_rate.col_no' => '序号',
+    'exchange_rate.col_date' => '日期',
+    'exchange_rate.col_time' => '时间',
+    'exchange_rate.col_kip' => '基普',
+    'exchange_rate.col_thb' => '泰铢',
+    'exchange_rate.col_usd' => '美元',
+    'exchange_rate.col_user' => '记录人',
+    'exchange_rate.col_action' => '操作',
+    'exchange_rate.empty_state' => '暂无汇率数据',
+    'exchange_rate.title_edit' => '编辑',
+    'exchange_rate.title_delete' => '删除',
+    'exchange_rate.view_only' => '仅查看',
+];

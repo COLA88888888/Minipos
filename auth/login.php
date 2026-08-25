@@ -12,10 +12,11 @@ if (isset($_SESSION['checked']) && $_SESSION['checked'] === 1 && !empty($_SESSIO
     exit();
 }
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../lang/translator.php';
 $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 ?>
 <!DOCTYPE html>
-<html lang="lo">
+<html lang="<?php echo htmlspecialchars(getCurrentLang()); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,6 +41,38 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
     <div class="login-card-container">
         <!-- Main Card -->
         <div class="login-card">
+            <!-- Language Switcher Dropdown (Top Right of Card) -->
+            <div class="dropdown" style="position: absolute; top: 16px; right: 16px; z-index: 100;">
+                <?php $loginCurrentLang = getCurrentLang(); ?>
+                <button class="btn border-0 p-0 d-flex align-items-center justify-content-center" 
+                        type="button" 
+                        id="loginLangDropdown" 
+                        data-toggle="dropdown" 
+                        aria-haspopup="true" 
+                        aria-expanded="false" 
+                        style="background: transparent; border: none; padding: 0 !important; outline: none;"
+                        title="<?php echo htmlspecialchars(t('layout.lang_switch_title', 'ປ່ຽນພາສາ')); ?>">
+                    <img src="../assets/img/flag_img/<?php echo POS_LANG_META[$loginCurrentLang]['img']; ?>"
+                         alt="<?php echo $loginCurrentLang; ?>"
+                         style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 1.5px 4px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.8);">
+                </button>
+                <div class="dropdown-menu dropdown-menu-right shadow-lg py-1 px-1 text-center" 
+                     aria-labelledby="loginLangDropdown" 
+                     style="min-width: 60px; width: 60px; border-radius: 10px; border: 1px solid #e2e8f0; background: #ffffff;">
+                    <?php foreach (POS_LANG_META as $langCode => $meta): ?>
+                        <a class="dropdown-item p-1.5 d-flex align-items-center justify-content-center my-1 login-lang-flag-btn<?php echo $loginCurrentLang === $langCode ? ' active' : ''; ?>" 
+                           href="javascript:void(0);" 
+                           data-lang="<?php echo htmlspecialchars($langCode); ?>" 
+                           style="border-radius: 6px; background: <?php echo $loginCurrentLang === $langCode ? '#eaf2ff' : 'transparent'; ?>; transition: background 0.15s;" 
+                           title="<?php echo htmlspecialchars($meta['label']); ?>">
+                            <img src="../assets/img/flag_img/<?php echo $meta['img']; ?>"
+                                 alt="<?php echo $langCode; ?>"
+                                 style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; box-shadow: 0 1.5px 3px rgba(0,0,0,0.25);">
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
             <!-- Overlapping Circle Logo Badge -->
             <div class="logo-badge">
                 <img src="<?php echo htmlspecialchars($site_logo); ?>" alt="POS Logo">
@@ -47,7 +80,7 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 
             <!-- Title Header -->
             <div class="login-header-text">
-                <h4>ເຂົ້າສູ່ລະບົບ Wlaodev POS</h4>
+                <h4><?php echo htmlspecialchars(t('login.title', 'ເຂົ້າສູ່ລະບົບ Wlaodev POS')); ?></h4>
                 <!-- <p>POS Wlaodev</p> -->
                 <!-- <div class="login-hint">ກະລຸນາເຂົ້າສູ່ລະບົບ...</div> -->
             </div>
@@ -60,19 +93,19 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 
                 <!-- Username Input -->
                 <div class="custom-input-group">
-                    <label for="username">ຊື່ຜູ້ໃຊ້:</label>
+                    <label for="username"><?php echo htmlspecialchars(t('login.username_label', 'ຊື່ຜູ້ໃຊ້:')); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-user input-icon"></i>
-                        <input type="text" id="username" name="username" class="form-control-custom" placeholder="ປ້ອນຊື່ຜູ້ໃຊ້ງານ..." autocomplete="off" required>
+                        <input type="text" id="username" name="username" class="form-control-custom" placeholder="<?php echo htmlspecialchars(t('login.username_placeholder', 'ປ້ອນຊື່ຜູ້ໃຊ້ງານ...')); ?>" autocomplete="off" required>
                     </div>
                 </div>
 
                 <!-- Password Input -->
                 <div class="custom-input-group">
-                    <label for="password">ລະຫັດຜ່ານ:</label>
+                    <label for="password"><?php echo htmlspecialchars(t('login.password_label', 'ລະຫັດຜ່ານ:')); ?></label>
                     <div class="input-wrapper">
                         <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="password" name="password" class="form-control-custom" placeholder="ປ້ອນລະຫັດຜ່ານ..." autocomplete="new-password" style="padding-right: 42px !important;" required>
+                        <input type="password" id="password" name="password" class="form-control-custom" placeholder="<?php echo htmlspecialchars(t('login.password_placeholder', 'ປ້ອນລະຫັດຜ່ານ...')); ?>" autocomplete="new-password" style="padding-right: 42px !important;" required>
                         <button type="button" class="btn-toggle-pass" id="togglePassword" tabindex="-1">
                             <i class="fas fa-eye" id="eyeIcon"></i>
                         </button>
@@ -81,7 +114,7 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 
                 <!-- Submit Button -->
                 <button type="submit" class="btn-login-custom" id="btnLogin">
-                    <i class="fas fa-user-check mr-1"></i> ເຂົ້າສູ່ລະບົບ
+                    <i class="fas fa-user-check mr-1"></i> <?php echo htmlspecialchars(t('login.btn_login', 'ເຂົ້າສູ່ລະບົບ')); ?>
                 </button>
             </form>
         </div>
@@ -106,7 +139,36 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
     <script src="../sweetalert/dist/sweetalert2.all.min.js"></script>
 
     <script>
+        var I18N_LOGIN = <?php echo tjson([
+            'login.btn_login' => 'ເຂົ້າສູ່ລະບົບ',
+            'login.btn_login_loading' => 'ກຳລັງກວດສອບ...',
+            'login.token_expired_title' => 'Token ໝົດອາຍຸແລ້ວ',
+            'login.token_expired_text' => 'ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່',
+            'login.ok' => 'ຕົກລົງ',
+            'login.warning_title' => 'ແຈ້ງເຕືອນ',
+            'login.err_both_required' => 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ງານ ແລະ ລະຫັດຜ່ານ!',
+            'login.err_username_required' => 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ງານ!',
+            'login.err_password_required' => 'ກະລຸນາປ້ອນລະຫັດຜ່ານ!',
+            'login.err_invalid' => 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່',
+        ]); ?>;
+
         $(document).ready(function() {
+            document.querySelectorAll('.login-lang-flag-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var lang = btn.getAttribute('data-lang');
+                    if (!lang) return;
+                    fetch('../lang/set_lang.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'lang=' + encodeURIComponent(lang)
+                    }).then(function() {
+                        window.location.reload();
+                    }).catch(function() {
+                        window.location.reload();
+                    });
+                });
+            });
+
             sessionStorage.removeItem('isSessionActive');
 
             setTimeout(function() {
@@ -118,10 +180,10 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
             <?php if (isset($_GET['expired'])): ?>
             Swal.fire({
                 icon: 'warning',
-                title: 'Token ໝົດອາຍຸແລ້ວ',
-                text: 'ກະລຸນາເຂົ້າສູ່ລະບົບໃໝ່',
+                title: I18N_LOGIN['login.token_expired_title'],
+                text: I18N_LOGIN['login.token_expired_text'],
                 confirmButtonColor: '#007bff',
-                confirmButtonText: 'ຕົກລົງ'
+                confirmButtonText: I18N_LOGIN['login.ok']
             }).then(function() {
                 window.history.replaceState({}, document.title, window.location.pathname);
             });
@@ -146,10 +208,10 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                 if (!username && !password) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'ແຈ້ງເຕືອນ',
-                        text: 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ງານ ແລະ ລະຫັດຜ່ານ!',
+                        title: I18N_LOGIN['login.warning_title'],
+                        text: I18N_LOGIN['login.err_both_required'],
                         confirmButtonColor: '#007bff',
-                        confirmButtonText: 'ຕົກລົງ',
+                        confirmButtonText: I18N_LOGIN['login.ok'],
                         heightAuto: false
                     }).then(function() {
                         $('#username').focus();
@@ -160,10 +222,10 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                 if (!username) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'ແຈ້ງເຕືອນ',
-                        text: 'ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ງານ!',
+                        title: I18N_LOGIN['login.warning_title'],
+                        text: I18N_LOGIN['login.err_username_required'],
                         confirmButtonColor: '#007bff',
-                        confirmButtonText: 'ຕົກລົງ',
+                        confirmButtonText: I18N_LOGIN['login.ok'],
                         heightAuto: false
                     }).then(function() {
                         $('#username').focus();
@@ -174,10 +236,10 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                 if (!password) {
                     Swal.fire({
                         icon: 'warning',
-                        title: 'ແຈ້ງເຕືອນ',
-                        text: 'ກະລຸນາປ້ອນລະຫັດຜ່ານ!',
+                        title: I18N_LOGIN['login.warning_title'],
+                        text: I18N_LOGIN['login.err_password_required'],
                         confirmButtonColor: '#007bff',
-                        confirmButtonText: 'ຕົກລົງ',
+                        confirmButtonText: I18N_LOGIN['login.ok'],
                         heightAuto: false
                     }).then(function() {
                         $('#password').focus();
@@ -185,7 +247,7 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                     return;
                 }
 
-                btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i> ກຳລັງກວດສອບ...');
+                btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i> ' + I18N_LOGIN['login.btn_login_loading']);
 
                 $.ajax({
                     url: 'check_user.php',
@@ -199,17 +261,17 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                             sessionStorage.setItem('isSessionActive', 'true');
                             window.location.href = response.redirect;
                         } else {
-                            btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ເຂົ້າສູ່ລະບົບ');
+                            btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ' + I18N_LOGIN['login.btn_login']);
                             $('#loginForm')[0].reset();
                             $('#username').val('').focus();
                             $('#password').val('');
 
                             Swal.fire({
                                 icon: 'error',
-                                title: 'ແຈ້ງເຕືອນ',
-                                text: response.message || 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່',
+                                title: I18N_LOGIN['login.warning_title'],
+                                text: response.message || I18N_LOGIN['login.err_invalid'],
                                 confirmButtonColor: '#007bff',
-                                confirmButtonText: 'ຕົກລົງ',
+                                confirmButtonText: I18N_LOGIN['login.ok'],
                                 heightAuto: false
                             }).then(function() {
                                 $('#username').focus();
@@ -217,17 +279,17 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                         }
                     },
                     error: function(xhr, status, error) {
-                        btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ເຂົ້າສູ່ລະບົບ');
+                        btn.prop('disabled', false).html('<i class="fas fa-user-check mr-1"></i> ' + I18N_LOGIN['login.btn_login']);
                         $('#loginForm')[0].reset();
                         $('#username').val('').focus();
                         $('#password').val('');
 
                         Swal.fire({
                             icon: 'error',
-                            title: 'ແຈ້ງເຕືອນ',
-                            text: 'ລະຫັດບໍ່ຖືກຕ້ອງ ກະລຸນາລອງໃໝ່',
+                            title: I18N_LOGIN['login.warning_title'],
+                            text: I18N_LOGIN['login.err_invalid'],
                             confirmButtonColor: '#007bff',
-                            confirmButtonText: 'ຕົກລົງ',
+                            confirmButtonText: I18N_LOGIN['login.ok'],
                             heightAuto: false
                         }).then(function() {
                             $('#username').focus();

@@ -34,7 +34,7 @@ $header_site_logo = $base_path . 'assets/img/logosystem/Wlaodev.jpg';
     <link rel="stylesheet" href="<?php echo $base_path; ?>dist/css/adminlte.min.css">
     <!-- overlayScrollbars -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
-    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css?v=34">
+    <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/global-custom.css?v=<?php echo time(); ?>">
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="<?php echo $base_path; ?>plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
     <!-- Select2 Searchable Dropdown -->

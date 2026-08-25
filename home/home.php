@@ -80,8 +80,8 @@ if ($selected_store > 0) {
 $whereClause = implode(" AND ", $where);
 
 // 4. Fetch 4 Main Cards Stats: Total Sales, Total Cost, Total Profit, Profit %
-// ຕົ້ນທຶນ = ເງິນທີ່ຊື້ສິນຄ້າເຂົ້າໃນຮ້ານທັງໝົດ (ຈາກ imports.total_cost) ໃນຊ່ວງວັນທີ/ສາຂາທີ່ເລືອກ —
-// ບໍ່ແມ່ນຕົ້ນທຶນສະເພາະສິນຄ້າທີ່ຂາຍໄດ້ (COGS) ຕາມທີ່ຮ້ານຕ້ອງການ (ເບິ່ງເປັນເງິນສົດທີ່ຈ່າຍອອກຈິງ).
+// ຕົ້ນທຶນ = ເງິນທີ່ນຳສິນຄ້າເຂົ້າສາຂາ (ຈາກ imports.total_cost) ໃນຊ່ວງວັນທີ/ສາຂາທີ່ເລືອກ — ນັບທັງສິນຄ້າທີ່ຊື້ເຂົ້າໂດຍກົງ
+// ແລະ ສິນຄ້າທີ່ໂອນມາຈາກສາຂາອື່ນ (stock_transfer.php ຈະສ້າງແຖວ imports ໃຫ້ສາຂາປາຍທາງອັດຕະໂນມັດ, ເບິ່ງ execute_transfer)
 $total_sales  = 0.00;
 $total_cost   = 0.00;
 $total_profit = 0.00;
@@ -140,7 +140,7 @@ try {
         $monthly_sales[$m] = floatval($mRow['sales']);
     }
 
-    // ຕົ້ນທຶນລາຍເດືອນ = ເງິນນຳເຂົ້າສິນຄ້າຕົວຈິງໃນເດືອນນັ້ນ (ຈາກ imports), ບໍ່ແມ່ນ COGS
+    // ຕົ້ນທຶນລາຍເດືອນ = ເງິນນຳເຂົ້າສິນຄ້າຕົວຈິງໃນເດືອນນັ້ນ (ຈາກ imports, ນັບທັງໂອນລະຫວ່າງສາຂານຳ)
     $monthlyImportWhere = ["YEAR(i.import_date) = :imp_yr"];
     $monthlyImportParams = [':imp_yr' => $selected_year];
     if ($selected_store > 0) {
@@ -205,9 +205,16 @@ ksort($yearly_sales_map);
 $yearly_labels = [];
 $yearly_sales  = [];
 foreach ($yearly_sales_map as $yrKey => $yrSalesVal) {
-    $yearly_labels[] = 'ປີ ' . $yrKey;
+    $yearly_labels[] = sprintf(t('home.year_label', 'ປີ %d'), $yrKey);
     $yearly_sales[]  = $yrSalesVal;
 }
+
+$month_labels_i18n = [
+    t('home.month_1', 'ມ.ກ'), t('home.month_2', 'ກ.ພ'), t('home.month_3', 'ມີ.ນາ'),
+    t('home.month_4', 'ເມ.ສາ'), t('home.month_5', 'ພຶ.ພາ'), t('home.month_6', 'ມິ.ຖຸ'),
+    t('home.month_7', 'ກໍ.ກົດ'), t('home.month_8', 'ສ.ຫ'), t('home.month_9', 'ກ.ຍ'),
+    t('home.month_10', 'ຕ.ລ'), t('home.month_11', 'ພ.ຈ'), t('home.month_12', 'ທ.ວ'),
+];
 
 // 7. Top 10 Best Selling Products Chart
 $top10_names = [];
@@ -245,9 +252,9 @@ require_once __DIR__ . '/../layouts/header.php';
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3.5 gap-2">
     <div>
       <h4 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-chart-pie text-primary mr-2"></i> ດາດສ໌ບອດບໍລິຫານ & ວິເຄາະການຂາຍ
+        <i class="fas fa-chart-pie text-primary mr-2"></i> <?php echo htmlspecialchars(t('home.title', 'ດາດສ໌ບອດບໍລິຫານ & ວິເຄາະການຂາຍ')); ?>
       </h4>
-      <p class="text-muted mb-0" style="font-size: 0.85rem;">ສະຫຼຸບພາບລວມຍອດຂາຍ, ຕົ້ນທຶນ, ກຳໄລ ແລະ ສະຖິຕິການຂາຍປະຈຳປີ</p>
+      <p class="text-muted mb-0" style="font-size: 0.85rem;"><?php echo htmlspecialchars(t('home.subtitle', 'ສະຫຼຸບພາບລວມຍອດຂາຍ, ຕົ້ນທຶນ, ກຳໄລ ແລະ ສະຖິຕິການຂາຍປະຈຳປີ')); ?></p>
     </div>
   </div>
 
@@ -257,13 +264,13 @@ require_once __DIR__ . '/../layouts/header.php';
       <!-- Branch / Store Selector -->
       <div style="flex: 1 1 170px; min-width: 150px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-store text-success mr-1"></i> ເລືອກສາຂາ:
+          <i class="fas fa-store text-success mr-1"></i> <?php echo htmlspecialchars(t('home.select_branch', 'ເລືອກສາຂາ:')); ?>
         </label>
         <select name="store_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit();" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #10b981; color: #047857; background: #ecfdf5;">
-          <option value="0" <?php echo ($selected_store === 0) ? 'selected' : ''; ?>>-- ທຸກສາຂາ --</option>
+          <option value="0" <?php echo ($selected_store === 0) ? 'selected' : ''; ?>><?php echo htmlspecialchars(t('home.all_branches', '-- ທຸກສາຂາ --')); ?></option>
           <?php foreach ($stores_list as $st): ?>
             <option value="<?php echo $st['store_id']; ?>" <?php echo ($selected_store == $st['store_id']) ? 'selected' : ''; ?>>
-              <?php echo htmlspecialchars($st['store_name']); ?><?php echo (!empty($st['is_main']) ? ' (ສາຂາໃຫຍ່)' : ''); ?>
+              <?php echo htmlspecialchars($st['store_name']); ?><?php echo (!empty($st['is_main']) ? htmlspecialchars(t('home.main_branch_suffix', ' (ສາຂາໃຫຍ່)')) : ''); ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -272,11 +279,11 @@ require_once __DIR__ . '/../layouts/header.php';
       <!-- Year Select (Auto-Generated) -->
       <div style="flex: 1 1 140px; min-width: 130px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-check text-primary mr-1"></i> ເລືອກປີ:
+          <i class="fas fa-calendar-check text-primary mr-1"></i> <?php echo htmlspecialchars(t('home.select_year', 'ເລືອກປີ:')); ?>
         </label>
         <select name="year" class="form-control form-control-sm font-weight-bold" onchange="this.form.from_date.value=''; this.form.to_date.value=''; this.form.submit();" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #2563eb; color: #1e40af; background: #eff6ff;">
           <?php foreach ($available_years as $yr): ?>
-            <option value="<?php echo $yr; ?>" <?php echo ($selected_year == $yr) ? 'selected' : ''; ?>>ປີ <?php echo $yr; ?></option>
+            <option value="<?php echo $yr; ?>" <?php echo ($selected_year == $yr) ? 'selected' : ''; ?>><?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $yr)); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -284,7 +291,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <!-- From Date -->
       <div style="flex: 1 1 150px; min-width: 140px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-alt text-primary mr-1"></i> ຕັ້ງແຕ່ວັນທີ:
+          <i class="fas fa-calendar-alt text-primary mr-1"></i> <?php echo htmlspecialchars(t('home.from_date', 'ຕັ້ງແຕ່ວັນທີ:')); ?>
         </label>
         <input type="date" name="from_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($from_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
       </div>
@@ -292,7 +299,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <!-- To Date -->
       <div style="flex: 1 1 150px; min-width: 140px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-day text-primary mr-1"></i> ຫາວັນທີ:
+          <i class="fas fa-calendar-day text-primary mr-1"></i> <?php echo htmlspecialchars(t('home.to_date', 'ຫາວັນທີ:')); ?>
         </label>
         <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
       </div>
@@ -300,9 +307,9 @@ require_once __DIR__ . '/../layouts/header.php';
       <!-- Action Buttons -->
       <div class="d-flex align-items-center" style="flex: 0 0 auto; gap: 6px;">
         <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2563eb, #1d4ed8); white-space: nowrap; font-size: 0.85rem;">
-          <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
+          <i class="fas fa-search mr-1.5"></i> <?php echo htmlspecialchars(t('home.search', 'ຄົ້ນຫາ')); ?>
         </button>
-        <a href="home.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">
+        <a href="home.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="<?php echo htmlspecialchars(t('home.clear', 'ລ້າງຄ່າ')); ?>" style="border-radius: 8px; height: 38px;">
           <i class="fas fa-redo"></i>
         </a>
       </div>
@@ -316,7 +323,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title">ຍອດຂາຍທັງໝົດ</span>
+            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_sales', 'ຍອດຂາຍທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-cash-register text-white metric-icon"></i>
             </div>
@@ -333,7 +340,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title">ຕົ້ນທຶນທັງໝົດ</span>
+            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_cost', 'ຕົ້ນທຶນທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-boxes text-white metric-icon"></i>
             </div>
@@ -350,7 +357,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title">ກຳໄລທັງໝົດ</span>
+            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_profit', 'ກຳໄລທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-chart-line text-white metric-icon"></i>
             </div>
@@ -367,7 +374,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title">ກຳໄລ %</span>
+            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_profit_pct', 'ກຳໄລ %')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-percentage text-white metric-icon"></i>
             </div>
@@ -403,9 +410,9 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-chart-area text-primary mr-2"></i> ກາຟລາຍຮັບປະຈຳເດືອນ (ປີ <?php echo $selected_year; ?>)
+            <i class="fas fa-chart-area text-primary mr-2"></i> <?php echo htmlspecialchars(t('home.chart_monthly_revenue', 'ກາຟລາຍຮັບປະຈຳເດືອນ')); ?> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
           </h6>
-          <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1">12 ເດືອນ</span>
+          <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1"><?php echo htmlspecialchars(t('home.months_12', '12 ເດືອນ')); ?></span>
         </div>
         <div class="card-body p-3">
           <div style="position: relative; height: 380px; width: 100%;">
@@ -420,7 +427,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-calendar-alt text-info mr-2"></i> ກາຟປຽບທຽບຍອດຂາຍປະຈຳປີ
+            <i class="fas fa-calendar-alt text-info mr-2"></i> <?php echo htmlspecialchars(t('home.chart_yearly_compare', 'ກາຟປຽບທຽບຍອດຂາຍປະຈຳປີ')); ?>
           </h6>
         </div>
         <div class="card-body p-3">
@@ -439,7 +446,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-percentage text-warning mr-2"></i> ກາຟອັດຕາກຳໄລ % (ປີ <?php echo $selected_year; ?>)
+            <i class="fas fa-percentage text-warning mr-2"></i> <?php echo htmlspecialchars(t('home.chart_profit_margin', 'ກາຟອັດຕາກຳໄລ %')); ?> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
           </h6>
         </div>
         <div class="card-body p-3">
@@ -455,7 +462,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-fire text-danger mr-2"></i> ກາຟ 10 ລາຍການສິນຄ້າທີ່ຂາຍດີ
+            <i class="fas fa-fire text-danger mr-2"></i> <?php echo htmlspecialchars(t('home.chart_top10', 'ກາຟ 10 ລາຍການສິນຄ້າທີ່ຂາຍດີ')); ?>
           </h6>
           <span class="badge badge-light border text-danger font-weight-bold px-2.5 py-1">Top 10</span>
         </div>
@@ -476,6 +483,15 @@ require_once __DIR__ . '/../layouts/header.php';
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
 
 <script>
+var I18N_HOME = <?php echo tjson([
+    'home.legend_sales' => 'ຍອດຂາຍ (₭)',
+    'home.legend_cost' => 'ຕົ້ນທຶນ (₭)',
+    'home.legend_profit' => 'ກຳໄລ (₭)',
+    'home.legend_margin' => 'ອັດຕາກຳໄລ (%)',
+    'home.legend_qty_sold' => 'ຈຳນວນຂາຍ',
+    'home.no_sales_data' => 'ບໍ່ມີຂໍ້ມູນການຂາຍ',
+]); ?>;
+
 $(document).ready(function() {
   // CountUp Number Animation for Metrics Cards
   $('.counter-num').each(function() {
@@ -553,7 +569,7 @@ $(document).ready(function() {
   }
 
   // Data variables from PHP
-  var monthLabels   = ['ມ.ກ', 'ກ.ພ', 'ມີ.ນາ', 'ເມ.ສາ', 'ພຶ.ພາ', 'ມິ.ຖຸ', 'ກໍ.ກົດ', 'ສ.ຫ', 'ກ.ຍ', 'ຕ.ລ', 'ພ.ຈ', 'ທ.ວ'];
+  var monthLabels   = <?php echo json_encode($month_labels_i18n, JSON_UNESCAPED_UNICODE); ?>;
   var monthlySales  = <?php echo json_encode(array_values($monthly_sales)); ?>;
   var monthlyCost   = <?php echo json_encode(array_values($monthly_cost)); ?>;
   var monthlyProfit = <?php echo json_encode(array_values($monthly_profit)); ?>;
@@ -566,12 +582,12 @@ $(document).ready(function() {
   var top10Qty      = <?php echo json_encode($top10_qty); ?>;
 
   if (!yearlyLabels.length) {
-    yearlyLabels = ['ປີ <?php echo $selected_year; ?>'];
+    yearlyLabels = [<?php echo json_encode(sprintf(t('home.year_label', 'ປີ %d'), $selected_year), JSON_UNESCAPED_UNICODE); ?>];
     yearlySales  = [0];
   }
 
   if (!top10Names.length) {
-    top10Names = ['ບໍ່ມີຂໍ້ມູນການຂາຍ'];
+    top10Names = [I18N_HOME['home.no_sales_data']];
     top10Qty   = [0];
   }
 
@@ -584,21 +600,21 @@ $(document).ready(function() {
         labels: monthLabels,
         datasets: [
           {
-            label: 'ຍອດຂາຍ (₭)',
+            label: I18N_HOME['home.legend_sales'],
             backgroundColor: '#2563eb',
             borderColor: '#1d4ed8',
             data: monthlySales,
             borderRadius: 6
           },
           {
-            label: 'ຕົ້ນທຶນ (₭)',
+            label: I18N_HOME['home.legend_cost'],
             backgroundColor: '#38bdf8',
             borderColor: '#0284c7',
             data: monthlyCost,
             borderRadius: 6
           },
           {
-            label: 'ກຳໄລ (₭)',
+            label: I18N_HOME['home.legend_profit'],
             backgroundColor: '#22c55e',
             borderColor: '#16a34a',
             data: monthlyProfit,
@@ -639,7 +655,7 @@ $(document).ready(function() {
       data: {
         labels: yearlyLabels,
         datasets: [{
-          label: 'ຍອດຂາຍ (₭)',
+          label: I18N_HOME['home.legend_sales'],
           backgroundColor: ['#2563eb', '#0284c7', '#16a34a', '#d97706', '#8b5cf6'],
           data: yearlySales,
           borderRadius: 8
@@ -671,7 +687,7 @@ $(document).ready(function() {
       data: {
         labels: monthLabels,
         datasets: [{
-          label: 'ອັດຕາກຳໄລ (%)',
+          label: I18N_HOME['home.legend_margin'],
           backgroundColor: 'rgba(217, 119, 6, 0.15)',
           borderColor: '#d97706',
           pointBackgroundColor: '#b45309',
@@ -712,7 +728,7 @@ $(document).ready(function() {
       data: {
         labels: formattedTop10Names,
         datasets: [{
-          label: 'ຈຳນວນຂາຍ',
+          label: I18N_HOME['home.legend_qty_sold'],
           backgroundColor: '#dc2626',
           borderColor: '#b91c1c',
           data: top10Qty,

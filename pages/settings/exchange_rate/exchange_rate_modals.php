@@ -1,3 +1,6 @@
+<?php
+$bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
+?>
 <!-- ============================================================
      exchange_rate_modals.php - ຟອມ Modal ເພີ່ມ, ແກ້ໄຂ ແລະ ລຶບອັດຕາແລກປ່ຽນ
      ============================================================ -->
@@ -16,16 +19,35 @@
         </div>
         <div class="modal-body p-4">
           <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark small mb-1">1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span></label>
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
+              1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span>
+            </label>
             <div class="input-group">
               <input type="text" name="ex_kip_bath" class="form-control text-right font-weight-bold text-success" placeholder="0" value="720" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
               <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
             </div>
           </div>
           <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark small mb-1">1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span></label>
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
+              1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span>
+            </label>
             <div class="input-group">
-              <input type="text" name="ex_kip_us" class="form-control text-right font-weight-bold text-primary" placeholder="0" value="22000" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
+              <input type="text" name="ex_kip_us" class="form-control text-right font-weight-bold text-primary" placeholder="0" value="22,000" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
+              <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
+              1 ຢວນ (CNY ➔ LAK): <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input type="text" name="ex_kip_cn" class="form-control text-right font-weight-bold text-warning" placeholder="0" value="3,100" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem; color: #b45309 !important;">
               <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
             </div>
           </div>
@@ -54,16 +76,35 @@
         </div>
         <div class="modal-body p-4">
           <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark small mb-1">1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span></label>
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
+              1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span>
+            </label>
             <div class="input-group">
               <input type="text" name="ex_kip_bath" id="edit_ex_kip_bath" class="form-control text-right font-weight-bold text-success" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
               <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
             </div>
           </div>
           <div class="form-group mb-3">
-            <label class="font-weight-bold text-dark small mb-1">1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span></label>
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
+              1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span>
+            </label>
             <div class="input-group">
               <input type="text" name="ex_kip_us" id="edit_ex_kip_us" class="form-control text-right font-weight-bold text-primary" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
+              <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label class="font-weight-bold text-dark small mb-1">
+              <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+              <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
+              1 ຢວນ (CNY ➔ LAK): <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input type="text" name="ex_kip_cn" id="edit_ex_kip_cn" class="form-control text-right font-weight-bold text-warning" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem; color: #b45309 !important;">
               <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
             </div>
           </div>

@@ -1,6 +1,8 @@
 <?php
 date_default_timezone_set('Asia/Vientiane');
 
+require_once __DIR__ . '/../lang/translator.php';
+
 // Don't leak PHP errors/warnings to visitors in production; still log them to the
 // server's error log so `tail error.log` keeps working the same way it does in dev.
 ini_set('display_errors', '0');

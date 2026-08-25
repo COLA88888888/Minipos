@@ -1,6 +1,12 @@
 <!-- ============================================================
      exchange_rate_header.php - ສ່ວນหัวຂໍ້ໜ້າ ແລະ ການແຈ້ງເຕືອນອັດຕາແລກປ່ຽນ
      ============================================================ -->
+<?php
+$bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
+?>
+<!-- ດຶງ CSS ສຳລັບ Flag Icons -->
+<link rel="stylesheet" href="<?php echo $bp; ?>plugins/flag-icon-css/css/flag-icon.min.css">
+
 <!-- ແຖບหัวຂໍ້ໜ້າ ແລະ ປຸ່ມເພີ່ມອັດຕາແລກປ່ຽນໃໝ່ -->
 <div class="row mb-3 align-items-center">
   <div class="col-sm-6">

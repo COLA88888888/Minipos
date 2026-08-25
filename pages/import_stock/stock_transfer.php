@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $items = array_values($consolidatedItems);
 
             $transferredCount = 0;
+            $importLines = [];
             foreach ($items as $item) {
                 $product_id = intval($item['product_id'] ?? 0);
                 $qty        = intval($item['quantity'] ?? $item['qty'] ?? 0);
@@ -139,7 +140,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     $srcProd['price']
                 ]);
 
+                $importLines[] = [
+                    'product_id' => $product_id,
+                    'unit_name'  => $srcProd['unit'],
+                    'quantity'   => $qty,
+                    'cost_price' => floatval($srcProd['bprice']),
+                ];
+
                 $transferredCount++;
+            }
+
+            // Register the transfer as an "import" for the destination branch too, so its
+            // ຕົ້ນທຶນ (cost brought into the branch) reports correctly include stock that
+            // arrived via inter-branch transfer, not only stock bought directly from a supplier.
+            if (!empty($importLines)) {
+                $fromStoreName = $pdo->prepare("SELECT store_name FROM tbstore WHERE store_id = ?");
+                $fromStoreName->execute([$from_store_id]);
+                $fromStoreNameVal = $fromStoreName->fetchColumn() ?: "ສາຂາ #{$from_store_id}";
+
+                $transferTotalCost = 0;
+                foreach ($importLines as $line) {
+                    $transferTotalCost += $line['quantity'] * $line['cost_price'];
+                }
+
+                $insImp = $pdo->prepare("INSERT INTO imports (invoice_number, supplier_name, import_date, total_cost, created_by, notes, store_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $insImp->execute([
+                    $transfer_code,
+                    'ໂອນຈາກສາຂາ ' . $fromStoreNameVal,
+                    $full_transfer_date,
+                    $transferTotalCost,
+                    $_SESSION['user_id'],
+                    $notes,
+                    $to_store_id
+                ]);
+                $transferImportId = $pdo->lastInsertId();
+
+                $insDet = $pdo->prepare("INSERT INTO import_details (import_id, product_id, unit_name, multiplier, quantity, total_base_qty, cost_price, total_cost) VALUES (?, ?, ?, 1, ?, ?, ?, ?)");
+                foreach ($importLines as $line) {
+                    $insDet->execute([
+                        $transferImportId,
+                        $line['product_id'],
+                        $line['unit_name'],
+                        $line['quantity'],
+                        $line['quantity'],
+                        $line['cost_price'],
+                        $line['quantity'] * $line['cost_price']
+                    ]);
+                }
+
+                // Deduct the same value back out of the SOURCE branch's cost, so the cost of the
+                // transferred stock moves WITH the goods instead of counting at both branches at once.
+                // (No matching import_details row on purpose — this is a ledger adjustment, not a
+                // purchase invoice line, so it stays out of the "ນຳເຂົ້າສິນຄ້າ" history list; the
+                // actual movement is already visible there in "ປະຫວັດການໂອນສິນຄ້າ".)
+                $toStoreName = $pdo->prepare("SELECT store_name FROM tbstore WHERE store_id = ?");
+                $toStoreName->execute([$to_store_id]);
+                $toStoreNameVal = $toStoreName->fetchColumn() ?: "ສາຂາ #{$to_store_id}";
+
+                $insImpOut = $pdo->prepare("INSERT INTO imports (invoice_number, supplier_name, import_date, total_cost, created_by, notes, store_id) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $insImpOut->execute([
+                    $transfer_code,
+                    'ໂອນອອກໄປສາຂາ ' . $toStoreNameVal,
+                    $full_transfer_date,
+                    -$transferTotalCost,
+                    $_SESSION['user_id'],
+                    $notes,
+                    $from_store_id
+                ]);
             }
 
             $pdo->commit();

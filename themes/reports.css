@@ -3,6 +3,17 @@
    CSS ສະເພາະໂມດູນ ລາຍງານ / Reports
    ============================================================ */
 
+/* Top spacing for container-fluid so title headers are never covered by navbar */
+.container-fluid {
+    padding-top: 24px !important;
+}
+
+@media (max-width: 767.98px) {
+    .container-fluid {
+        padding-top: 28px !important;
+    }
+}
+
 .report-card {
     border-radius: 12px;
     border: none;
