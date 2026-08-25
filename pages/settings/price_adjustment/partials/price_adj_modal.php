@@ -4,7 +4,7 @@
     <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
       <div class="modal-header bg-primary text-white py-3 px-4" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
         <h6 class="modal-title font-weight-bold m-0" id="priceAdjModalLabel">
-          <i class="fas fa-edit mr-1.5"></i> ຟອມປັບປຸງລາຄາສິນຄ້າ
+          <i class="fas fa-edit mr-1.5"></i> <?php echo htmlspecialchars(t('price_adjustment.modal_title', 'ຟອມປັບປຸງລາຄາສິນຄ້າ')); ?>
         </h6>
         <button type="button" class="close text-white opacity-90" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -18,11 +18,11 @@
           <!-- Grid Row 1: Branch & Target Mode -->
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ສາຂາ:</label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_branch', 'ສາຂາ:')); ?></label>
               <select name="store_id" id="modal_store_id" class="form-control" style="height: 42px;" <?php echo (!$isAdmin && !$isMain) ? 'disabled' : ''; ?>>
                 <?php foreach ($stores as $st): ?>
                   <option value="<?php echo $st['store_id']; ?>" <?php echo (($filter_store > 0 ? $filter_store : $userStoreId) == $st['store_id']) ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : ''; ?>
+                    <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? htmlspecialchars(t('price_adjustment.badge_main_branch', '(ສາງຫຼັກ)')) : ''; ?>
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -31,19 +31,19 @@
               <?php endif; ?>
             </div>
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ຮູບແບບການປັບ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_adjust_mode', 'ຮູບແບບການປັບ:')); ?> <span class="text-danger">*</span></label>
               <select name="target_mode" id="target_mode" class="form-control" style="height: 42px;" onchange="onTargetModeChange(this.value)">
-                <option value="product">ຕາມສິນຄ້າ</option>
-                <option value="category">ຕາມໝວດໝູ່ສິນຄ້າ</option>
+                <option value="product"><?php echo htmlspecialchars(t('price_adjustment.opt_by_product', 'ຕາມສິນຄ້າ')); ?></option>
+                <option value="category"><?php echo htmlspecialchars(t('price_adjustment.opt_by_category', 'ຕາມໝວດໝູ່ສິນຄ້າ')); ?></option>
               </select>
             </div>
           </div>
 
           <div class="row">
             <div class="col-12 mb-3" id="category_select_wrap" style="display: none;">
-              <label class="font-weight-bold text-dark small mb-1">ໝວດໝູ່ສິນຄ້າ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_category', 'ໝວດໝູ່ສິນຄ້າ:')); ?> <span class="text-danger">*</span></label>
               <select name="category_id" id="category_id" class="form-control" style="width: 100%; height: 42px;">
-                <option value="">-- ເລືອກໝວດໝູ່ --</option>
+                <option value=""><?php echo htmlspecialchars(t('price_adjustment.opt_select_category', '-- ເລືອກໝວດໝູ່ --')); ?></option>
                 <?php foreach ($categoriesList as $cat): ?>
                   <option value="<?php echo $cat['category_id']; ?>">
                     <?php echo htmlspecialchars($cat['category_name']); ?>
@@ -53,12 +53,12 @@
             </div>
 
             <div class="col-12 mb-3" id="product_scan_wrap">
-              <label class="font-weight-bold text-primary small mb-1"><i class="fas fa-barcode mr-1"></i> ພິມລະຫັດ / ສະແກນບາໂຄ້ດສິນຄ້າ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-primary small mb-1"><i class="fas fa-barcode mr-1"></i> <?php echo htmlspecialchars(t('price_adjustment.label_scan', 'ພິມລະຫັດ / ສະແກນບາໂຄ້ດສິນຄ້າ:')); ?> <span class="text-danger">*</span></label>
               <div class="input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text bg-primary text-white font-weight-bold"><i class="fas fa-search"></i></span>
                 </div>
-                <input type="text" id="quick_search_code" class="form-control font-weight-bold" placeholder="ສະແກນບາໂຄ້ດ ຫຼື ພິມລະຫັດສິນຄ້າ..." autocomplete="off" style="height: 42px; font-size: 0.95rem;" onkeyup="quickFindProduct(this.value)">
+                <input type="text" id="quick_search_code" class="form-control font-weight-bold" placeholder="<?php echo htmlspecialchars(t('price_adjustment.placeholder_scan', 'ສະແກນບາໂຄ້ດ ຫຼື ພິມລະຫັດສິນຄ້າ...')); ?>" autocomplete="off" style="height: 42px; font-size: 0.95rem;" onkeyup="quickFindProduct(this.value)">
               </div>
             </div>
           </div>
@@ -66,13 +66,13 @@
           <!-- Grid Row 2: Product Name Display (Full width across left and right or paired) -->
           <div class="row" id="product_name_wrap">
             <div class="col-12 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ຊື່ສິນຄ້າ (ສະແດງອໍໂຕ້):</label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_product_name', 'ຊື່ສິນຄ້າ (ສະແດງອໍໂຕ້):')); ?></label>
               <input type="hidden" name="product_id" id="product_id_hidden">
-              <input type="text" id="product_name_display" class="form-control bg-light font-weight-bold text-dark" readonly placeholder="-- ລໍຖ້າສະແກນບາໂຄ້ດ / ພິມລະຫັດສິນຄ້າ --" style="height: 42px; font-size: 0.95rem; border: 1.5px solid #cbd5e1;">
+              <input type="text" id="product_name_display" class="form-control bg-light font-weight-bold text-dark" readonly placeholder="<?php echo htmlspecialchars(t('price_adjustment.placeholder_product_name', '-- ລໍຖ້າສະແກນບາໂຄ້ດ / ພິມລະຫັດສິນຄ້າ --')); ?>" style="height: 42px; font-size: 0.95rem; border: 1.5px solid #cbd5e1;">
 
               <!-- Hidden select element for data matching -->
               <select id="product_id" style="display: none;" onchange="onSelectProduct(this)">
-                <option value="">-- ເລືອກສິນຄ້າ --</option>
+                <option value=""><?php echo htmlspecialchars(t('price_adjustment.opt_select_product', '-- ເລືອກສິນຄ້າ --')); ?></option>
                 <?php foreach ($productsList as $p): ?>
                   <?php 
                     $codeStr = !empty($p['barcode']) ? $p['barcode'] : ($p['product_id']);

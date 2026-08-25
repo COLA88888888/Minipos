@@ -4,21 +4,21 @@
     <table class="table table-hover align-middle mb-0 text-nowrap" id="customerTable">
       <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-transform: uppercase;">
         <tr>
-          <th class="py-3 text-center" style="width: 60px;">ລຳດັບ</th>
-          <th class="py-3 text-center" style="width: 120px;">ລະຫັດ</th>
-          <th class="py-3">ຊື່</th>
-          <th class="py-3">ສາຂາ</th>
-          <th class="py-3">ເບີໂທ</th>
-          <th class="py-3 text-center" style="width: 150px;">ເລກບັດສະມາຊິກ</th>
-          <th class="py-3 text-center" style="width: 160px;">ເວລາທີ່ສະໝັກ</th>
-          <th class="text-center py-3" style="width: 120px;">ຈັດການ</th>
+          <th class="py-3 text-center" style="width: 60px;"><?php echo htmlspecialchars(t('customers.col_no', 'ລຳດັບ')); ?></th>
+          <th class="py-3 text-center" style="width: 120px;"><?php echo htmlspecialchars(t('customers.col_code', 'ລະຫັດ')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('customers.col_name', 'ຊື່')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('customers.col_branch', 'ສາຂາ')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('customers.col_phone', 'ເບີໂທ')); ?></th>
+          <th class="py-3 text-center" style="width: 150px;"><?php echo htmlspecialchars(t('customers.col_member_card', 'ເລກບັດສະມາຊິກ')); ?></th>
+          <th class="py-3 text-center" style="width: 160px;"><?php echo htmlspecialchars(t('customers.col_registered', 'ເວລາທີ່ສະໝັກ')); ?></th>
+          <th class="text-center py-3" style="width: 120px;"><?php echo htmlspecialchars(t('customers.col_actions', 'ຈັດການ')); ?></th>
         </tr>
       </thead>
       <tbody style="font-size: 0.95rem;">
         <tr id="noCustomerDataRow" style="<?php echo empty($allCustomers) ? '' : 'display: none;'; ?>">
           <td colspan="8" class="text-center py-5 text-muted">
             <i class="fas fa-user-slash fa-2x mb-2 text-secondary d-block"></i>
-            <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;">ບໍ່ມີຂໍ້ມູນລູກຄ້າໃນລະບົບ</span>
+            <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;"><?php echo htmlspecialchars(t('customers.no_data', 'ບໍ່ມີຂໍ້ມູນລູກຄ້າໃນລະບົບ')); ?></span>
           </td>
         </tr>
 
@@ -43,7 +43,7 @@
 
               <td class="align-middle font-weight-bold">
                 <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.82rem;">
-                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($cust['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($cust['store_name'] ?: t('customers.main_branch', 'ສາຂາຫຼັກ')); ?>
                 </span>
               </td>
 
@@ -76,19 +76,19 @@
                   <div class="btn-group btn-group-sm">
                     <?php if (hasPermission('customers', 'edit')): ?>
                       <!-- Edit Button -->
-                      <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
+                      <button type="button" class="btn btn-outline-warning" title="<?php echo htmlspecialchars(t('customers.edit', 'ແກ້ໄຂ')); ?>" onclick='openEditCustomerModal(<?php echo $custJson; ?>)'>
                         <i class="fas fa-edit"></i>
                       </button>
                     <?php endif; ?>
                     <?php if (hasPermission('customers', 'del')): ?>
                       <!-- Delete Button -->
-                      <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
+                      <button type="button" class="btn btn-outline-danger" title="<?php echo htmlspecialchars(t('customers.delete', 'ລົບ')); ?>" onclick="confirmDeleteCustomer(<?php echo $cust['customer_id']; ?>, '<?php echo htmlspecialchars(addslashes($cust['customer_name'])); ?>')">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
                   </div>
                 <?php else: ?>
-                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('customers.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                 <?php endif; ?>
               </td>
 

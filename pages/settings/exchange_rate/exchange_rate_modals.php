@@ -13,7 +13,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
         <input type="hidden" name="action" value="save_rate">
         <div class="modal-header bg-primary text-white py-3 px-4">
           <h5 class="modal-title font-weight-bold" style="font-size: 1rem;">
-            <i class="fas fa-plus-circle mr-2"></i> ອັບເດດອັດຕາແລກປ່ຽນເງິນໃໝ່
+            <i class="fas fa-plus-circle mr-2"></i> <?php echo htmlspecialchars(t('exchange_rate.modal_add_title', 'ອັບເດດອັດຕາແລກປ່ຽນເງິນໃໝ່')); ?>
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
         </div>
@@ -22,7 +22,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
-              1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_thb', '1 ບາດ (THB ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_bath" class="form-control text-right font-weight-bold text-success" placeholder="0" value="720" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
@@ -33,7 +33,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
-              1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_usd', '1 ໂດລາ (USD ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_us" class="form-control text-right font-weight-bold text-primary" placeholder="0" value="22,000" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
@@ -44,7 +44,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
-              1 ຢວນ (CNY ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_cny', '1 ຢວນ (CNY ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_cn" class="form-control text-right font-weight-bold text-warning" placeholder="0" value="3,100" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem; color: #b45309 !important;">
@@ -53,8 +53,8 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
           </div>
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
-          <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="border: none; background: linear-gradient(135deg, #2c5aa0, #244886);">ບັນທຶກ</button>
+          <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal"><?php echo htmlspecialchars(t('exchange_rate.btn_cancel', 'ຍົກເລີກ')); ?></button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="border: none; background: linear-gradient(135deg, #2c5aa0, #244886);"><?php echo htmlspecialchars(t('exchange_rate.btn_save', 'ບັນທຶກ')); ?></button>
         </div>
       </form>
     </div>
@@ -70,7 +70,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
         <input type="hidden" name="rate_id" id="edit_rate_id" value="">
         <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
           <h5 class="modal-title font-weight-bold" style="font-size: 1rem;">
-            <i class="fas fa-edit mr-2"></i> ແກ້ໄຂອັດຕາແລກປ່ຽນເງິນ
+            <i class="fas fa-edit mr-2"></i> <?php echo htmlspecialchars(t('exchange_rate.modal_edit_title', 'ແກ້ໄຂອັດຕາແລກປ່ຽນເງິນ')); ?>
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
         </div>
@@ -79,7 +79,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
-              1 ບາດ (THB ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_thb', '1 ບາດ (THB ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_bath" id="edit_ex_kip_bath" class="form-control text-right font-weight-bold text-success" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
@@ -90,7 +90,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
-              1 ໂດລາ (USD ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_usd', '1 ໂດລາ (USD ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_us" id="edit_ex_kip_us" class="form-control text-right font-weight-bold text-primary" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem;">
@@ -101,7 +101,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
             <label class="font-weight-bold text-dark small mb-1">
               <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
               <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
-              1 ຢວນ (CNY ➔ LAK): <span class="text-danger">*</span>
+              <?php echo htmlspecialchars(t('exchange_rate.label_cny', '1 ຢວນ (CNY ➔ LAK):')); ?> <span class="text-danger">*</span>
             </label>
             <div class="input-group">
               <input type="text" name="ex_kip_cn" id="edit_ex_kip_cn" class="form-control text-right font-weight-bold text-warning" placeholder="0" oninput="formatPriceInput(this)" required style="height: 42px; font-size: 1.05rem; color: #b45309 !important;">
@@ -110,8 +110,8 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
           </div>
         </div>
         <div class="modal-footer border-0 pb-4 px-4 pt-0">
-          <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">ອັບເດດ</button>
+          <button type="button" class="btn btn-light font-weight-bold px-3" data-dismiss="modal"><?php echo htmlspecialchars(t('exchange_rate.btn_cancel', 'ຍົກເລີກ')); ?></button>
+          <button type="submit" class="btn btn-primary font-weight-bold px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;"><?php echo htmlspecialchars(t('exchange_rate.btn_update', 'ອັບເດດ')); ?></button>
         </div>
       </form>
     </div>

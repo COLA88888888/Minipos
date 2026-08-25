@@ -5,6 +5,18 @@
 var SHOP_NAME = <?php echo json_encode($company_name); ?>;
 var ALL_PRODUCTS_PAGE = <?php echo json_encode($products_for_js); ?>;
 
+var I18N_PRINT_BARCODE = <?php echo tjson([
+    'print_barcode.qty_label' => 'ຈຳນວນດວງ:',
+    'print_barcode.empty_search_state' => 'ບໍ່ພົບລາຍການສິນຄ້າທີ່ກົງກັບຄຳຄົ້ນຫາ',
+    'print_barcode.summary_selected_label' => 'ເລືອກແລ້ວ',
+    'print_barcode.summary_items_suffix' => 'ລາຍການ',
+    'print_barcode.summary_total_label' => 'ລວມທັງໝົດ',
+    'print_barcode.summary_stickers_suffix' => 'ດວງ',
+    'print_barcode.no_selection_title' => 'ບໍ່ມີລາຍການຖືກເລືອກ',
+    'print_barcode.no_selection_text' => 'ກະລຸນາເລືອກລາຍການສິນຄ້າ ແລະ ກຳນົດຈຳນວນດວງທີ່ຈະພິມຢ່າງນ້ອຍ 1 ດວງ!',
+    'print_barcode.ok_button' => 'ຕົກລົງ',
+]); ?>;
+
 // State Structure: { [productId]: { selected: boolean, copies: number } }
 var pageBarcodeState = {};
 
@@ -109,7 +121,7 @@ function renderPageBarcodeBlocks() {
           <!-- Block Footer: Quantity Control -->
           <div class="d-flex align-items-center justify-content-between pt-2 border-top mt-2">
             <small class="font-weight-bold text-dark" style="font-size: 0.82rem;">
-              <i class="fas fa-copy text-primary mr-1"></i> ຈຳນວນດວງ:
+              <i class="fas fa-copy text-primary mr-1"></i> ${I18N_PRINT_BARCODE['print_barcode.qty_label']}
             </small>
 
             <div class="d-flex align-items-center" style="gap: 4px;">
@@ -161,7 +173,7 @@ function renderPageBarcodeBlocks() {
     container.html(`
       <div class="col-12 text-center py-5 text-muted bg-white rounded border">
         <i class="fas fa-search fa-3x mb-3 text-secondary" style="opacity: 0.5;"></i>
-        <h5>ບໍ່ພົບລາຍການສິນຄ້າທີ່ກົງກັບຄຳຄົ້ນຫາ</h5>
+        <h5>${I18N_PRINT_BARCODE['print_barcode.empty_search_state']}</h5>
       </div>
     `);
   }
@@ -261,9 +273,9 @@ function updatePageBarcodeSummary() {
   });
 
   $('#pageBarcodeSummary').html(
-    `<i class="fas fa-check-circle text-success mr-1"></i> ເລືອກແລ້ວ: <strong>${selectedCount}</strong> ລາຍການ 
-     <span class="mx-2">|</span> 
-     <i class="fas fa-print text-info mr-1"></i> ລວມທັງໝົດ: <strong class="text-primary font-weight-bold">${totalStickers}</strong> ດວງ`
+    `<i class="fas fa-check-circle text-success mr-1"></i> ${I18N_PRINT_BARCODE['print_barcode.summary_selected_label']}: <strong>${selectedCount}</strong> ${I18N_PRINT_BARCODE['print_barcode.summary_items_suffix']}
+     <span class="mx-2">|</span>
+     <i class="fas fa-print text-info mr-1"></i> ${I18N_PRINT_BARCODE['print_barcode.summary_total_label']}: <strong class="text-primary font-weight-bold">${totalStickers}</strong> ${I18N_PRINT_BARCODE['print_barcode.summary_stickers_suffix']}`
   );
 }
 
@@ -291,10 +303,10 @@ function executePageBarcodePrint() {
   if (itemsToPrint.length === 0 || totalStickers === 0) {
     Swal.fire({
       icon: 'warning',
-      title: 'ບໍ່ມີລາຍການຖືກເລືອກ',
-      text: 'ກະລຸນາເລືອກລາຍການສິນຄ້າ ແລະ ກຳນົດຈຳນວນດວງທີ່ຈະພິມຢ່າງນ້ອຍ 1 ດວງ!',
+      title: I18N_PRINT_BARCODE['print_barcode.no_selection_title'],
+      text: I18N_PRINT_BARCODE['print_barcode.no_selection_text'],
       confirmButtonColor: '#0284c7',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_PRINT_BARCODE['print_barcode.ok_button']
     });
     return;
   }

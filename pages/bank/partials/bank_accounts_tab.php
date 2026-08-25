@@ -249,10 +249,10 @@ function getBankBrandStyle($bankCode) {
             </button>
             <div class="dropdown-menu dropdown-menu-right shadow border-0" style="border-radius: 8px;">
               <a class="dropdown-item py-1 text-primary" href="#" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>); return false;">
-                <i class="fas fa-edit mr-1"></i> ແກ້ໄຂຂໍ້ມູນ
+                <i class="fas fa-edit mr-1"></i> <?php echo htmlspecialchars(t('bank.edit_info', 'ແກ້ໄຂຂໍ້ມູນ')); ?>
               </a>
               <a class="dropdown-item py-1 text-danger" href="#" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>'); return false;">
-                <i class="fas fa-trash-alt mr-1"></i> ລົບບັນຊີ
+                <i class="fas fa-trash-alt mr-1"></i> <?php echo htmlspecialchars(t('bank.delete_account', 'ລົບບັນຊີ')); ?>
               </a>
             </div>
           </div>
@@ -260,14 +260,14 @@ function getBankBrandStyle($bankCode) {
 
         <div class="pt-2 border-top d-flex align-items-center justify-content-between mt-2" style="border-color: rgba(255,255,255,0.2) !important;">
           <div>
-            <small style="color: <?php echo $brand['text_sub']; ?>;" class="font-weight-bold">ຍອດຮັບເງິນ:</small>
+            <small style="color: <?php echo $brand['text_sub']; ?>;" class="font-weight-bold"><?php echo htmlspecialchars(t('bank.received_amount', 'ຍອດຮັບເງິນ:')); ?></small>
             <div class="font-weight-bold text-white" style="font-size: 1.02rem;">
               <span class="counter-num" data-target="<?php echo $receivedAmt; ?>" data-suffix=" ₭"><?php echo number_format($receivedAmt, 0); ?> ₭</span>
             </div>
           </div>
           <div class="text-right">
             <span class="badge text-white px-2 py-1 shadow-xs" style="font-size: 0.76rem; background-color: <?php echo $brand['badge_bg']; ?>; border: 1px solid rgba(255,255,255,0.25);">
-              <?php echo number_format($txCount); ?> ບິນ (<?php echo $pct; ?>%)
+              <?php echo number_format($txCount); ?> <?php echo htmlspecialchars(t('bank.bill_suffix', 'ບິນ')); ?> (<?php echo $pct; ?>%)
             </span>
           </div>
         </div>
@@ -280,12 +280,12 @@ function getBankBrandStyle($bankCode) {
     <div class="bank-card p-3 rounded-lg border-0 shadow-sm h-100 d-flex flex-column justify-content-center" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #ffffff; min-height: 120px;">
       <div class="d-flex align-items-center justify-content-between">
         <div>
-          <small class="text-white-50 font-weight-bold text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.5px;">ລວມຍອດຮັບເງິນໂອນທັງໝົດ</small>
+          <small class="text-white-50 font-weight-bold text-uppercase" style="font-size: 0.78rem; letter-spacing: 0.5px;"><?php echo htmlspecialchars(t('bank.total_transfer_received', 'ລວມຍອດຮັບເງິນໂອນທັງໝົດ')); ?></small>
           <h4 class="font-weight-bold text-white mb-0 mt-1">
             <span class="counter-num" data-target="<?php echo $total_transfer_sum; ?>" data-suffix=" ₭"><?php echo number_format($total_transfer_sum, 0); ?> ₭</span>
           </h4>
           <small class="text-white-50 font-weight-bold mt-1 d-block">
-            <i class="fas fa-exchange-alt mr-1"></i> ລວມ <?php echo number_format($total_transfer_count); ?> ລາຍການ
+            <i class="fas fa-exchange-alt mr-1"></i> <?php echo htmlspecialchars(sprintf(t('bank.total_items', 'ລວມ %s ລາຍການ'), number_format($total_transfer_count))); ?>
           </small>
         </div>
         <div class="rounded-circle p-3 text-primary" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.95); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
@@ -301,7 +301,7 @@ function getBankBrandStyle($bankCode) {
 <div class="card border-0 shadow-sm rounded-lg overflow-hidden mb-4">
   <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
     <h6 class="font-weight-bold text-dark mb-0">
-      <i class="fas fa-list-alt text-info mr-2"></i> ຕາຕະລາງລາຍການບັນຊີທະນາຄານ ແລະ ຍອດຮັບເງິນໂອນ
+      <i class="fas fa-list-alt text-info mr-2"></i> <?php echo htmlspecialchars(t('bank.table_title', 'ຕາຕະລາງລາຍການບັນຊີທະນາຄານ ແລະ ຍອດຮັບເງິນໂອນ')); ?>
     </h6>
     <!-- <span class="badge badge-light border text-secondary font-weight-bold p-2">
       ລວມບັນຊີທັງໝົດ: <?php echo count($bank_accounts_list); ?> ບັນຊີ
@@ -312,15 +312,15 @@ function getBankBrandStyle($bankCode) {
     <table class="table table-hover align-middle mb-0" style="font-size: 0.9rem;">
       <thead class="bg-light text-uppercase text-secondary font-weight-bold" style="font-size: 0.8rem;">
         <tr>
-          <th class="py-3 px-4" style="width: 60px;">ລຳດັບ</th>
-          <th class="py-3">ທະນາຄານ</th>
-          <th class="py-3">ເລກບັນຊີ</th>
-          <th class="py-3">ຊື່ບັນຊີ</th>
-          <th class="py-3 text-center">QR</th>
-          <th class="py-3 text-right">ຍອດຮັບເງິນໂອນ</th>
-          <th class="py-3 text-center">ຈຳນວນບິນ</th>
-          <th class="py-3 text-center">ສະຖານະ</th>
-          <th class="py-3 text-center" style="width: 110px;">ຈັດການ</th>
+          <th class="py-3 px-4" style="width: 60px;"><?php echo htmlspecialchars(t('bank.col_no', 'ລຳດັບ')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('bank.col_bank', 'ທະນາຄານ')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('bank.col_account_number', 'ເລກບັນຊີ')); ?></th>
+          <th class="py-3"><?php echo htmlspecialchars(t('bank.col_account_name', 'ຊື່ບັນຊີ')); ?></th>
+          <th class="py-3 text-center"><?php echo htmlspecialchars(t('bank.col_qr', 'QR')); ?></th>
+          <th class="py-3 text-right"><?php echo htmlspecialchars(t('bank.col_transfer_received', 'ຍອດຮັບເງິນໂອນ')); ?></th>
+          <th class="py-3 text-center"><?php echo htmlspecialchars(t('bank.col_bill_count', 'ຈຳນວນບິນ')); ?></th>
+          <th class="py-3 text-center"><?php echo htmlspecialchars(t('bank.col_status', 'ສະຖານະ')); ?></th>
+          <th class="py-3 text-center" style="width: 110px;"><?php echo htmlspecialchars(t('bank.col_manage', 'ຈັດການ')); ?></th>
         </tr>
       </thead>
       <tbody>
@@ -328,7 +328,7 @@ function getBankBrandStyle($bankCode) {
           <tr>
             <td colspan="9" class="text-center py-4 text-muted">
               <i class="fas fa-university fa-3x mb-2 text-secondary"></i>
-              <div>ຍັງບໍ່ທັນມີຂໍ້ມູນບັນຊີທະນາຄານ</div>
+              <div><?php echo htmlspecialchars(t('bank.empty_state', 'ຍັງບໍ່ທັນມີຂໍ້ມູນບັນຊີທະນາຄານ')); ?></div>
             </td>
           </tr>
         <?php else: ?>
@@ -365,31 +365,31 @@ function getBankBrandStyle($bankCode) {
                 <?php echo number_format($amt, 0); ?> ₭
               </td>
               <td class="py-3 text-center font-weight-bold text-primary">
-                <?php echo number_format($tx); ?> ບິນ
+                <?php echo number_format($tx); ?> <?php echo htmlspecialchars(t('bank.bill_suffix', 'ບິນ')); ?>
               </td>
               <td class="py-3 text-center">
                 <?php if ($bank['is_active']): ?>
-                  <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> ເປີດ</span>
+                  <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> <?php echo htmlspecialchars(t('bank.status_active', 'ເປີດ')); ?></span>
                 <?php else: ?>
-                  <span class="badge badge-secondary px-2 py-1"><i class="fas fa-minus-circle mr-1"></i> ປິດ</span>
+                  <span class="badge badge-secondary px-2 py-1"><i class="fas fa-minus-circle mr-1"></i> <?php echo htmlspecialchars(t('bank.status_inactive', 'ປິດ')); ?></span>
                 <?php endif; ?>
               </td>
               <td class="py-3 text-center">
                 <?php if (hasPermission('accounting', 'edit') || hasPermission('bank', 'edit') || hasPermission('accounting', 'del') || hasPermission('bank', 'del')): ?>
                   <div class="btn-group btn-group-sm">
                     <?php if (hasPermission('accounting', 'edit') || hasPermission('bank', 'edit')): ?>
-                      <button type="button" class="btn btn-sm btn-outline-primary" title="ແກ້ໄຂ" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
+                      <button type="button" class="btn btn-sm btn-outline-primary" title="<?php echo htmlspecialchars(t('bank.action_edit', 'ແກ້ໄຂ')); ?>" onclick="editBankAccount(<?php echo htmlspecialchars(json_encode($bank)); ?>)">
                         <i class="fas fa-edit"></i>
                       </button>
                     <?php endif; ?>
                     <?php if (hasPermission('accounting', 'del') || hasPermission('bank', 'del')): ?>
-                      <button type="button" class="btn btn-sm btn-outline-danger" title="ລົບ" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
+                      <button type="button" class="btn btn-sm btn-outline-danger" title="<?php echo htmlspecialchars(t('bank.action_delete', 'ລົບ')); ?>" onclick="deleteBankAccount(<?php echo $bId; ?>, '<?php echo htmlspecialchars(addslashes($bank['bank_name'])); ?>')">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
                   </div>
                 <?php else: ?>
-                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('bank.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                 <?php endif; ?>
               </td>
             </tr>
@@ -401,6 +401,20 @@ function getBankBrandStyle($bankCode) {
 </div>
 
 <script>
+var I18N_BANK = <?php echo tjson([
+    'bank.modal_title_edit' => 'ແກ້ໄຂຂໍ້ມູນບັນຊີທະນາຄານ',
+    'bank.modal_title_add' => 'ເພີ່ມບັນຊີທະນາຄານໃໝ່',
+    'bank.validate_title' => 'ກະລຸນາປ້ອນຂໍ້ມູນ',
+    'bank.validate_bank_name' => 'ກະລຸນາປ້ອນ ຊື່ທະນາຄານ!',
+    'bank.validate_account_number' => 'ກະລຸນາປ້ອນ ເລກບັນຊີທະນາຄານ!',
+    'bank.validate_account_name' => 'ກະລຸນາປ້ອນ ຊື່ເຈົ້າຂອງບັນຊີ!',
+    'bank.btn_ok' => 'ຕົກລົງ',
+    'bank.confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+    'bank.confirm_delete_text' => 'ທ່ານຕ້ອງການລົບບັນຊີ "%s" ແທ້ຫຼືບໍ່?',
+    'bank.confirm_delete_button' => 'ລົບເລີຍ',
+    'bank.cancel' => 'ຍົກເລີກ',
+]); ?>;
+
 function editBankAccount(bank) {
   $('#form_bank_action').val('edit_bank_account');
   $('#form_bank_id').val(bank.id);
@@ -408,8 +422,8 @@ function editBankAccount(bank) {
   $('#form_account_number').val(bank.account_number);
   $('#form_account_name').val(bank.account_name);
   $('#form_is_active').val(bank.is_active || 1);
-  
-  $('#bankModalTitle').html('<i class="fas fa-edit text-primary mr-1"></i> ແກ້ໄຂຂໍ້ມູນບັນຊີທະນາຄານ');
+
+  $('#bankModalTitle').html('<i class="fas fa-edit text-primary mr-1"></i> ' + I18N_BANK['bank.modal_title_edit']);
   $('#addBankAccountModal').modal('show');
 }
 
@@ -422,10 +436,10 @@ function validateBankForm(e) {
     if (e && e.preventDefault) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
-      text: 'ກະລຸນາປ້ອນ ຊື່ທະນາຄານ!',
+      title: I18N_BANK['bank.validate_title'],
+      text: I18N_BANK['bank.validate_bank_name'],
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_BANK['bank.btn_ok']
     }).then(function() {
       setTimeout(function() { $('#form_bank_name').focus(); }, 150);
     });
@@ -436,10 +450,10 @@ function validateBankForm(e) {
     if (e && e.preventDefault) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
-      text: 'ກະລຸນາປ້ອນ ເລກບັນຊີທະນາຄານ!',
+      title: I18N_BANK['bank.validate_title'],
+      text: I18N_BANK['bank.validate_account_number'],
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_BANK['bank.btn_ok']
     }).then(function() {
       setTimeout(function() { $('#form_account_number').focus(); }, 150);
     });
@@ -450,10 +464,10 @@ function validateBankForm(e) {
     if (e && e.preventDefault) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ກະລຸນາປ້ອນຂໍ້ມູນ',
-      text: 'ກະລຸນາປ້ອນ ຊື່ເຈົ້າຂອງບັນຊີ!',
+      title: I18N_BANK['bank.validate_title'],
+      text: I18N_BANK['bank.validate_account_name'],
       confirmButtonColor: '#3085d6',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_BANK['bank.btn_ok']
     }).then(function() {
       setTimeout(function() { $('#form_account_name').focus(); }, 150);
     });
@@ -470,19 +484,19 @@ function resetBankForm() {
   $('#form_account_number').val('');
   $('#form_account_name').val('');
   $('#form_is_active').val('1');
-  $('#bankModalTitle').html('<i class="fas fa-plus-circle text-primary mr-1"></i> ເພີ່ມບັນຊີທະນາຄານໃໝ່');
+  $('#bankModalTitle').html('<i class="fas fa-plus-circle text-primary mr-1"></i> ' + I18N_BANK['bank.modal_title_add']);
 }
 
 function deleteBankAccount(bankId, bankName) {
   Swal.fire({
-    title: 'ຢືນຢັນການລົບ?',
-    text: `ທ່ານຕ້ອງການລົບບັນຊີ "${bankName}" ແທ້ຫຼືບໍ່?`,
+    title: I18N_BANK['bank.confirm_delete_title'],
+    text: I18N_BANK['bank.confirm_delete_text'].replace('%s', bankName),
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
     cancelButtonColor: '#3085d6',
-    confirmButtonText: 'ລົບເລີຍ',
-    cancelButtonText: 'ຍົກເລີກ'
+    confirmButtonText: I18N_BANK['bank.confirm_delete_button'],
+    cancelButtonText: I18N_BANK['bank.cancel']
   }).then((result) => {
     if (result.isConfirmed) {
       var form = $('<form action="" method="POST"></form>');

@@ -1,7 +1,7 @@
 <!-- SECTION 6: ລາຍງານ (REPORTS) -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.95rem; letter-spacing: 0.5px;">
-    <i class="fas fa-file-invoice-dollar mr-1"></i> 6. ລາຍງານ
+    <i class="fas fa-file-invoice-dollar mr-1"></i> <?php echo htmlspecialchars(t('permissions.section_reports', '6. ລາຍງານ')); ?>
   </td>
 </tr>
 
@@ -11,8 +11,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-calendar-day text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານປະຈຳວັນ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງສະຫຼຸບຍອດຂາຍ ແລະ ປະຫວັດປະຈຳວັນ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_daily_report_title', 'ລາຍງານປະຈຳວັນ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_daily_report_desc', 'ເບິ່ງສະຫຼຸບຍອດຂາຍ ແລະ ປະຫວັດປະຈຳວັນ')); ?></div>
       </div>
     </div>
   </td>
@@ -28,9 +28,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.2 ລາຍງານການຂາຍທັງໝົດ -->
@@ -39,8 +39,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-file-invoice-dollar text-success mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານການຂາຍທັງໝົດ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງລາຍງານການຂາຍລວມທັງໝົດຕາມໄລຍະເວລາ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_all_sales_title', 'ລາຍງານການຂາຍທັງໝົດ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_all_sales_desc', 'ເບິ່ງລາຍງານການຂາຍລວມທັງໝົດຕາມໄລຍະເວລາ')); ?></div>
       </div>
     </div>
   </td>
@@ -56,9 +56,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.3 ລາຍງານສິນຄ້າຂາຍດີ -->
@@ -67,8 +67,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-fire text-danger mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານສິນຄ້າຂາຍດີ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງອັນດັບສິນຄ້າທີ່ຂາຍດີທີ່ສຸດ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_best_seller_title', 'ລາຍງານສິນຄ້າຂາຍດີ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_best_seller_desc', 'ເບິ່ງອັນດັບສິນຄ້າທີ່ຂາຍດີທີ່ສຸດ')); ?></div>
       </div>
     </div>
   </td>
@@ -84,9 +84,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.4 ລາຍງານກຳໄລ-ຕົ້ນທຶນ -->
@@ -95,8 +95,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-chart-line text-warning mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານກຳໄລ-ຕົ້ນທຶນ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ວິເຄາະຕົ້ນທຶນ, ລາຍຮັບ ແລະ ກຳໄລສຸດທິ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_profit_cost_title', 'ລາຍງານກຳໄລ-ຕົ້ນທຶນ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_profit_cost_desc', 'ວິເຄາະຕົ້ນທຶນ, ລາຍຮັບ ແລະ ກຳໄລສຸດທິ')); ?></div>
       </div>
     </div>
   </td>
@@ -112,9 +112,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.5 ລາຍງານການເງິນ -->
@@ -123,8 +123,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-wallet text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານການເງິນ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງສະຫຼຸບການຮັບເງິນສົດ/ໂອນ ຕາມຊ່ອງທາງ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_financial_title', 'ລາຍງານການເງິນ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_financial_desc', 'ເບິ່ງສະຫຼຸບການຮັບເງິນສົດ/ໂອນ ຕາມຊ່ອງທາງ')); ?></div>
       </div>
     </div>
   </td>
@@ -140,9 +140,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.6 ລາຍງານຕາມປະເພດສິນຄ້າ -->
@@ -151,8 +151,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-layer-group text-primary mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍງານຕາມປະເພດສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງສະຖິຕິຍອດຂາຍແຍກຕາມໝວດໝູ່/ປະເພດ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_category_sales_title', 'ລາຍງານຕາມປະເພດສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_category_sales_desc', 'ເບິ່ງສະຖິຕິຍອດຂາຍແຍກຕາມໝວດໝູ່/ປະເພດ')); ?></div>
       </div>
     </div>
   </td>
@@ -168,9 +168,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 6.7 ປະຫວັດການລົບບິນຂາຍ -->
@@ -179,7 +179,7 @@
     <div class="perm-module-info">
       <i class="fas fa-trash-alt text-danger mr-2"></i>
       <div>
-        <div class="perm-module-title" style="font-size: 0.92rem;">↳ ປະຫວັດການລົບບິນຂາຍ</div>
+        <div class="perm-module-title" style="font-size: 0.92rem;"><?php echo htmlspecialchars(t('permissions.module_delete_bills_title', '↳ ປະຫວັດການລົບບິນຂາຍ')); ?></div>
       </div>
     </div>
   </td>
@@ -195,7 +195,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>

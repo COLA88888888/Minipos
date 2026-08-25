@@ -19,18 +19,18 @@
     <div class="user-list-header">
       <div class="d-flex justify-content-between align-items-center">
         <h6 class="font-weight-bold mb-0 text-dark">
-          <i class="fas fa-users text-primary mr-1"></i> ລາຍຊື່ຜູ້ນຳໃຊ້
+          <i class="fas fa-users text-primary mr-1"></i> <?php echo htmlspecialchars(t('permissions.users_list_title', 'ລາຍຊື່ຜູ້ນຳໃຊ້')); ?>
         </h6>
         <!-- Badge ສະແດງຈຳນວນບັນຊີຜູ້ນຳໃຊ້ທັງໝົດ -->
         <span class="badge badge-primary px-2 py-1" style="border-radius: 8px;" id="totalUsersBadge">
-          <?php echo $totalUsers; ?> ບັນຊີ
+          <?php echo $totalUsers; ?> <?php echo htmlspecialchars(t('permissions.badge_account_suffix', 'ບັນຊີ')); ?>
         </span>
       </div>
 
       <!-- 2. Live Search Input (ຊ່ອງຄົ້ນຫາຊື່ຜູ້ໃຊ້ ຫຼື ບົດບາດ) -->
       <div class="user-search-box">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" id="userFilterInput" class="form-control" placeholder="ຄົ້ນຫາຊື່ຜູ້ໃຊ້ ຫຼື ບົດບາດ..." onkeyup="filterUserList()">
+        <input type="text" id="userFilterInput" class="form-control" placeholder="<?php echo htmlspecialchars(t('permissions.search_placeholder', 'ຄົ້ນຫາຊື່ຜູ້ໃຊ້ ຫຼື ບົດບາດ...')); ?>" onkeyup="filterUserList()">
       </div>
     </div>
 
@@ -39,7 +39,7 @@
       <?php if (empty($users)): ?>
         <div class="empty-users-state">
           <i class="fas fa-user-slash fa-3x mb-3 text-muted"></i>
-          <p class="mb-0">ບໍ່ພົບຂໍ້ມູນຜູ້ນຳໃຊ້ໃນລະບົບ</p>
+          <p class="mb-0"><?php echo htmlspecialchars(t('permissions.no_users_found', 'ບໍ່ພົບຂໍ້ມູນຜູ້ນຳໃຊ້ໃນລະບົບ')); ?></p>
         </div>
       <?php else: ?>
         <?php foreach ($users as $index => $u): ?>
@@ -83,11 +83,11 @@
                 </div>
                 <div class="d-flex align-items-center gap-1 mt-1">
                   <?php if ($u['Id'] == 1): ?>
-                    <span class="badge badge-danger" style="font-size: 0.7rem; border-radius: 4px;">Admin</span>
+                    <span class="badge badge-danger" style="font-size: 0.7rem; border-radius: 4px;"><?php echo htmlspecialchars(t('permissions.badge_super_admin', 'Admin')); ?></span>
                   <?php elseif ($isAdmin): ?>
-                    <span class="badge badge-primary" style="font-size: 0.7rem; border-radius: 4px;">ຜູ້ບໍລິຫານ</span>
+                    <span class="badge badge-primary" style="font-size: 0.7rem; border-radius: 4px;"><?php echo htmlspecialchars(t('permissions.role_admin_badge', 'ຜູ້ບໍລິຫານ')); ?></span>
                   <?php else: ?>
-                    <span class="badge badge-secondary" style="font-size: 0.7rem; border-radius: 4px;"><?php echo htmlspecialchars($uStatus ?: 'ພະນັກງານ'); ?></span>
+                    <span class="badge badge-secondary" style="font-size: 0.7rem; border-radius: 4px;"><?php echo htmlspecialchars($uStatus ?: t('permissions.role_employee_default', 'ພະນັກງານ')); ?></span>
                   <?php endif; ?>
                   <!-- <span class="text-muted ml-1" style="font-size: 0.75rem;">ID: #<?php echo $u['Id']; ?></span> -->
                 </div>

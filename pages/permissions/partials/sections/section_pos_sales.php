@@ -1,7 +1,7 @@
 <!-- SECTION 2: ຂາຍສິນຄ້າ POS -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-cash-register mr-1"></i> 2. ຂາຍສິນຄ້າ POS
+    <i class="fas fa-cash-register mr-1"></i> <?php echo htmlspecialchars(t('permissions.section_pos_sales', '2. ຂາຍສິນຄ້າ POS')); ?>
   </td>
 </tr>
 
@@ -11,8 +11,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-shopping-cart text-warning mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ຂາຍສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເຂົ້າເຖິງໜ້າຄິດເງິນ ແລະ ຂາຍສິນຄ້າ POS</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_sale_title', 'ຂາຍສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_sale_desc', 'ເຂົ້າເຖິງໜ້າຄິດເງິນ ແລະ ຂາຍສິນຄ້າ POS')); ?></div>
       </div>
     </div>
   </td>
@@ -72,8 +72,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-list-alt text-purple mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">↳ ລາຍການຂາຍສິນຄ້າ (Sales List)</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງລາຍການບິນຂາຍ ແລະ ປະຫວັດການຂາຍ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_item_sales_title', '↳ ລາຍການຂາຍສິນຄ້າ (Sales List)')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_item_sales_desc', 'ເບິ່ງລາຍການບິນຂາຍ ແລະ ປະຫວັດການຂາຍ')); ?></div>
       </div>
     </div>
   </td>
@@ -89,7 +89,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 

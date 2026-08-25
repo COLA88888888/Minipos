@@ -33,12 +33,12 @@
           <!-- Stock Status Badge Top Left -->
           <span class="stock-status-badge stock-status-badge-<?php echo $p['product_id']; ?> <?php echo $stock <= 0 ? 'out-of-stock' : ($stock <= 10 ? 'low-stock' : ''); ?>" 
                 style="display: <?php echo $stock <= 10 ? 'inline-block' : 'none'; ?>; position: absolute; top: 4px; left: 4px; z-index: 10;">
-            <?php echo $stock <= 0 ? 'ໝົດແລ້ວ' : 'ໃກ້ໝົດ'; ?>
+            <?php echo $stock <= 0 ? htmlspecialchars(t('pos.stock_out', 'ໝົດແລ້ວ')) : htmlspecialchars(t('pos.stock_low', 'ໃກ້ໝົດ')); ?>
           </span>
 
           <!-- Remaining Stock Badge Top Right -->
           <div class="stock-info-wrap stock-info-wrap-<?php echo $p['product_id']; ?> <?php echo $stock <= 0 ? 'out-of-stock' : ($stock <= 10 ? 'low-stock' : 'in-stock'); ?>" style="position: absolute; top: 4px; right: 4px; z-index: 10;">
-            <span>ເຫຼືອ: <span class="font-weight-bold product-stock-val product-stock-val-<?php echo $p['product_id']; ?>" data-initial-stock="<?php echo $p['qty']; ?>" data-cut-qty="<?php echo intval($p['cut_qty'] ?? 1); ?>"><?php echo number_format($p['qty']); ?></span></span>
+            <span><?php echo htmlspecialchars(t('pos.stock_remaining', 'ເຫຼືອ')); ?>: <span class="font-weight-bold product-stock-val product-stock-val-<?php echo $p['product_id']; ?>" data-initial-stock="<?php echo $p['qty']; ?>" data-cut-qty="<?php echo intval($p['cut_qty'] ?? 1); ?>"><?php echo number_format($p['qty']); ?></span></span>
           </div>
 
           <!-- Cart Quantity Badge (quantity currently in cart) Top Left, opposite side from remaining stock -->

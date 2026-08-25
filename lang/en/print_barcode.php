@@ -25,4 +25,5 @@ return [
     'print_barcode.no_selection_title' => 'No Items Selected',
     'print_barcode.no_selection_text' => 'Please select at least one product and set at least 1 sticker to print!',
     'print_barcode.ok_button' => 'OK',
+    'print_barcode.qty_label' => 'Copies:',
 ];

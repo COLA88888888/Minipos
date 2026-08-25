@@ -2,6 +2,13 @@
      exchange_rate_js.php - JavaScript ຄິດໄລ່ ແລະ ຈັດການ Event ໜ້າອັດຕາແລກປ່ຽນ
      ============================================================ -->
 <script>
+var I18N_EXCHANGE_RATE = <?php echo tjson([
+    'exchange_rate.confirm_delete_title' => 'ຢືນຢັນການລຶບ?',
+    'exchange_rate.confirm_delete_text' => 'ທ່ານຕ້ອງການລຶບປະຫວັດອັດຕາແລກປ່ຽນນີ້ແທ້ຫຼືບໍ່?',
+    'exchange_rate.btn_delete_confirm' => 'ລຶບເລີຍ',
+    'exchange_rate.btn_cancel' => 'ຍົກເລີກ',
+]); ?>;
+
 // ຟັງຊັ້ນຈັດຮູບແບບຕົວເລກຈຳນວນເງິນໃຫ້ມີ ຈຸດ (Comma) ເວລາພິມ
 function formatPriceInput(input) {
   var val = input.value.replace(/\D/g, '');
@@ -22,14 +29,14 @@ function editRate(id, thb, usd, cny) {
 // ຟັງຊັ້ນ SweetAlert ຢືນຢັນການລຶບອັດຕາແລກປ່ຽນ
 function deleteRate(id) {
   Swal.fire({
-    title: 'ຢືນຢັນການລຶບ?',
-    text: 'ທ່ານຕ້ອງການລຶບປະຫວັດອັດຕາແລກປ່ຽນນີ້ແທ້ຫຼືບໍ່?',
+    title: I18N_EXCHANGE_RATE['exchange_rate.confirm_delete_title'],
+    text: I18N_EXCHANGE_RATE['exchange_rate.confirm_delete_text'],
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#64748b',
-    confirmButtonText: 'ລຶບເລີຍ',
-    cancelButtonText: 'ຍົກເລີກ'
+    confirmButtonText: I18N_EXCHANGE_RATE['exchange_rate.btn_delete_confirm'],
+    cancelButtonText: I18N_EXCHANGE_RATE['exchange_rate.btn_cancel']
   }).then((result) => {
     if (result.isConfirmed) {
       document.getElementById('delete_rate_id').value = id;

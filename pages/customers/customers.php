@@ -23,7 +23,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <?php if ($message_type === 'success'): ?>
         Swal.fire({
           icon: 'success',
-          title: 'ສຳເລັດ',
+          title: '<?php echo htmlspecialchars(t('customers.msg_success_title', 'ສຳເລັດ'), ENT_QUOTES); ?>',
           text: '<?php echo $message; ?>',
           showConfirmButton: false,
           timer: 1500
@@ -31,10 +31,10 @@ require_once __DIR__ . '/../../layouts/header.php';
         <?php else: ?>
         Swal.fire({
           icon: 'error',
-          title: 'ແຈ້ງເຕືອນ',
+          title: '<?php echo htmlspecialchars(t('customers.msg_error_title', 'ແຈ້ງເຕືອນ'), ENT_QUOTES); ?>',
           text: '<?php echo $message; ?>',
           confirmButtonColor: '#2563eb',
-          confirmButtonText: 'ຕົກລົງ'
+          confirmButtonText: '<?php echo htmlspecialchars(t('customers.ok_button', 'ຕົກລົງ'), ENT_QUOTES); ?>'
         });
         <?php endif; ?>
       });

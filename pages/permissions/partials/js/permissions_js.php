@@ -14,6 +14,19 @@
 
 <!-- JavaScript Logic ສຳລັບ Master-Detail & AJAX Interactions -->
 <script>
+var I18N_PERMISSIONS = <?php echo tjson([
+    'permissions.badge_account_suffix' => 'ບັນຊີ',
+    'permissions.js_alert_title' => 'ແຈ້ງເຕືອນ',
+    'permissions.js_error_title' => 'ຜິດພາດ',
+    'permissions.js_update_perm_fail' => 'ບໍ່ສາມາດອັບເດດສິດໄດ້!',
+    'permissions.js_connection_error' => 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບເຊີເວີ!',
+    'permissions.js_confirm_preset_title' => 'ຢືນຢັນການກຳນົດສິດດ່ວນ?',
+    'permissions.js_confirm_preset_text' => 'ລະບົບຈະອັບເດດສິດທຸກໂມດູນຂອງຜູ້ນຳໃຊ້ນີ້ຕາມຮູບແບບທີ່ເລືອກ!',
+    'permissions.js_confirm_apply' => 'ຢືນຢັນນຳໃຊ້',
+    'permissions.js_cancel' => 'ຍົກເລີກ',
+    'permissions.js_preset_fail' => 'ບໍ່ສາມາດກຳນົດສິດດ່ວນໄດ້!',
+]); ?>;
+
 /**
  * 1. ຟັງຊັນເລືອກຜູ້ນຳໃຊ້ (Master-Detail Selection)
  * ເມື່ອຜູ້ໃຊ້ຄລິກເລືອກບັນຊີຜູ້ໃຊ້ຢູ່ທາງຊ້າຍ:
@@ -68,7 +81,7 @@ function filterUserList() {
   // ອັບເດດ Badge ຈຳນວນບັນຊີທີ່ພົບ
   var badge = document.getElementById('totalUsersBadge');
   if (badge) {
-    badge.innerText = visibleCount + ' ບັນຊີ';
+    badge.innerText = visibleCount + ' ' + I18N_PERMISSIONS['permissions.badge_account_suffix'];
   }
 }
 
@@ -138,8 +151,8 @@ function toggleUserPerm(userId, perm, checkbox) {
         if (typeof Swal !== 'undefined') {
           Swal.fire({
             icon: 'error',
-            title: 'ແຈ້ງເຕືອນ',
-            text: res.message || 'ບໍ່ສາມາດອັບເດດສິດໄດ້!'
+            title: I18N_PERMISSIONS['permissions.js_alert_title'],
+            text: res.message || I18N_PERMISSIONS['permissions.js_update_perm_fail']
           });
         }
       }
@@ -149,8 +162,8 @@ function toggleUserPerm(userId, perm, checkbox) {
       if (typeof Swal !== 'undefined') {
         Swal.fire({
           icon: 'error',
-          title: 'ຜິດພາດ',
-          text: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບເຊີເວີ!'
+          title: I18N_PERMISSIONS['permissions.js_error_title'],
+          text: I18N_PERMISSIONS['permissions.js_connection_error']
         });
       }
     }
@@ -185,21 +198,21 @@ $(function() {
 function applyRolePreset(userId, presetKey) {
   if (typeof Swal !== 'undefined') {
     Swal.fire({
-      title: 'ຢືນຢັນການກຳນົດສິດດ່ວນ?',
-      text: "ລະບົບຈະອັບເດດສິດທຸກໂມດູນຂອງຜູ້ນຳໃຊ້ນີ້ຕາມຮູບແບບທີ່ເລືອກ!",
+      title: I18N_PERMISSIONS['permissions.js_confirm_preset_title'],
+      text: I18N_PERMISSIONS['permissions.js_confirm_preset_text'],
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'ຢືນຢັນນຳໃຊ້',
-      cancelButtonText: 'ຍົກເລີກ'
+      confirmButtonText: I18N_PERMISSIONS['permissions.js_confirm_apply'],
+      cancelButtonText: I18N_PERMISSIONS['permissions.js_cancel']
     }).then((result) => {
       if (result.isConfirmed) {
         executePreset(userId, presetKey);
       }
     });
   } else {
-    if (confirm("ຢືນຢັນການກຳນົດສິດດ່ວນ?")) {
+    if (confirm(I18N_PERMISSIONS['permissions.js_confirm_preset_title'])) {
       executePreset(userId, presetKey);
     }
   }
@@ -246,8 +259,8 @@ function executePreset(userId, presetKey) {
         if (typeof Swal !== 'undefined') {
           Swal.fire({
             icon: 'error',
-            title: 'ແຈ້ງເຕືອນ',
-            text: res.message || 'ບໍ່ສາມາດກຳນົດສິດດ່ວນໄດ້!'
+            title: I18N_PERMISSIONS['permissions.js_alert_title'],
+            text: res.message || I18N_PERMISSIONS['permissions.js_preset_fail']
           });
         }
       }
@@ -256,8 +269,8 @@ function executePreset(userId, presetKey) {
       if (typeof Swal !== 'undefined') {
         Swal.fire({
           icon: 'error',
-          title: 'ຜິດພາດ',
-          text: 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ກັບເຊີເວີ!'
+          title: I18N_PERMISSIONS['permissions.js_error_title'],
+          text: I18N_PERMISSIONS['permissions.js_connection_error']
         });
       }
     }

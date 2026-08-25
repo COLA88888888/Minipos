@@ -25,4 +25,5 @@ return [
     'print_barcode.no_selection_title' => 'ບໍ່ມີລາຍການຖືກເລືອກ',
     'print_barcode.no_selection_text' => 'ກະລຸນາເລືອກລາຍການສິນຄ້າ ແລະ ກຳນົດຈຳນວນດວງທີ່ຈະພິມຢ່າງນ້ອຍ 1 ດວງ!',
     'print_barcode.ok_button' => 'ຕົກລົງ',
+    'print_barcode.qty_label' => 'ຈຳນວນດວງ:',
 ];

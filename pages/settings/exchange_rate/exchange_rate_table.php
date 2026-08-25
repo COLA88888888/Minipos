@@ -8,10 +8,10 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
   <!-- ຫົວຂໍ້ຕາຕະລາງ ແລະ ຈຳນວນລາຍການລວມ -->
   <div class="card-header bg-white py-3 px-4 border-bottom d-flex align-items-center justify-content-between">
     <h6 class="m-0 font-weight-bold text-dark" style="font-size: 0.95rem;">
-      <i class="fas fa-history mr-2 text-primary"></i> ຕາຕະລາງອັດຕາແລກປ່ຽນເງິນ
+      <i class="fas fa-history mr-2 text-primary"></i> <?php echo htmlspecialchars(t('exchange_rate.table_title', 'ຕາຕະລາງອັດຕາແລກປ່ຽນເງິນ')); ?>
     </h6>
     <span class="badge badge-light font-weight-bold text-muted border px-2.5 py-1">
-      ລວມທັງໝົດ: <?php echo number_format(count($historyRates)); ?> ລາຍການ
+      <?php echo htmlspecialchars(sprintf(t('exchange_rate.total_records', 'ລວມທັງໝົດ: %s ລາຍການ'), number_format(count($historyRates)))); ?>
     </span>
   </div>
 
@@ -20,31 +20,31 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
     <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
       <thead style="background: #f8fafc; color: #475569; font-size: 0.82rem;" class="font-weight-bold">
         <tr>
-          <th class="text-center" style="width: 70px;">ລຳດັບ</th>
-          <th class="text-center" style="width: 120px;">ວັນທີ</th>
-          <th class="text-center" style="width: 110px;">ເວລາ</th>
+          <th class="text-center" style="width: 70px;"><?php echo htmlspecialchars(t('exchange_rate.col_no', 'ລຳດັບ')); ?></th>
+          <th class="text-center" style="width: 120px;"><?php echo htmlspecialchars(t('exchange_rate.col_date', 'ວັນທີ')); ?></th>
+          <th class="text-center" style="width: 110px;"><?php echo htmlspecialchars(t('exchange_rate.col_time', 'ເວລາ')); ?></th>
           <th class="text-right" style="width: 150px;">
             <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Laos.webp" alt="LAK" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
             <span class="flag-icon flag-icon-la mr-1" style="display:none;"></span>
-            ກີບ (LAK)
+            <?php echo htmlspecialchars(t('exchange_rate.col_kip', 'ກີບ')); ?> (LAK)
           </th>
           <th class="text-right" style="width: 170px;">
             <img src="<?php echo $bp; ?>assets/img/flag_img/Flag_of_Thailand.webp" alt="THB" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
             <span class="flag-icon flag-icon-th mr-1" style="display:none;"></span>
-            ບາດ (THB)
+            <?php echo htmlspecialchars(t('exchange_rate.col_thb', 'ບາດ')); ?> (THB)
           </th>
           <th class="text-right" style="width: 170px;">
             <img src="<?php echo $bp; ?>assets/img/flag_img/flag-Stars.webp" alt="USD" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
             <span class="flag-icon flag-icon-us mr-1" style="display:none;"></span>
-            ໂດລາ (USD)
+            <?php echo htmlspecialchars(t('exchange_rate.col_usd', 'ໂດລາ')); ?> (USD)
           </th>
           <th class="text-right" style="width: 170px;">
             <img src="<?php echo $bp; ?>assets/img/flag_img/Flag-chaina.webp" alt="CNY" style="width: 24px; height: 16px; margin-right: 6px; vertical-align: -2px; border-radius: 3px; object-fit: cover; box-shadow: 0 1px 2px rgba(0,0,0,0.18);" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
             <span class="flag-icon flag-icon-cn mr-1" style="display:none;"></span>
-            ຢວນ (CNY)
+            <?php echo htmlspecialchars(t('exchange_rate.col_cny', 'ຢວນ')); ?> (CNY)
           </th>
-          <th class="text-center" style="width: 150px;">ຜູ້ບັນທຶກ</th>
-          <th class="text-center" style="width: 130px;">ຈັດການ</th>
+          <th class="text-center" style="width: 150px;"><?php echo htmlspecialchars(t('exchange_rate.col_user', 'ຜູ້ບັນທຶກ')); ?></th>
+          <th class="text-center" style="width: 130px;"><?php echo htmlspecialchars(t('exchange_rate.col_action', 'ຈັດການ')); ?></th>
         </tr>
       </thead>
       <tbody>
@@ -52,7 +52,7 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
           <tr>
             <td colspan="9" class="text-center py-5 text-muted">
               <i class="fas fa-exchange-alt fa-2x mb-2 d-block text-muted opacity-50"></i>
-              ບໍ່ມີຂໍ້ມູນອັດຕາແລກປ່ຽນເງິນ
+              <?php echo htmlspecialchars(t('exchange_rate.empty_state', 'ບໍ່ມີຂໍ້ມູນອັດຕາແລກປ່ຽນເງິນ')); ?>
             </td>
           </tr>
         <?php else: ?>
@@ -104,20 +104,20 @@ $bp = isset($base_path) ? rtrim($base_path, '/') . '/' : '../../../';
                 <?php if (hasPermission('exchange_rate', 'edit') || hasPermission('exchange_rate', 'del')): ?>
                   <div class="btn-group btn-group-sm" role="group">
                     <?php if (hasPermission('exchange_rate', 'edit')): ?>
-                      <button type="button" class="btn btn-outline-primary btn-sm px-2" title="ແກ້ໄຂ" 
+                      <button type="button" class="btn btn-outline-primary btn-sm px-2" title="<?php echo htmlspecialchars(t('exchange_rate.title_edit', 'ແກ້ໄຂ')); ?>"
                               onclick="editRate(<?php echo $r['Id']; ?>, '<?php echo number_format($thbVal, 0); ?>', '<?php echo number_format($usdVal, 0); ?>', '<?php echo number_format($cnyVal, 0); ?>')">
                         <i class="fas fa-edit"></i>
                       </button>
                     <?php endif; ?>
                     <?php if (hasPermission('exchange_rate', 'del')): ?>
-                      <button type="button" class="btn btn-outline-danger btn-sm px-2" title="ລຶບ" 
+                      <button type="button" class="btn btn-outline-danger btn-sm px-2" title="<?php echo htmlspecialchars(t('exchange_rate.title_delete', 'ລຶບ')); ?>"
                               onclick="deleteRate(<?php echo $r['Id']; ?>)">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
                   </div>
                 <?php else: ?>
-                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                  <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('exchange_rate.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                 <?php endif; ?>
               </td>
             </tr>

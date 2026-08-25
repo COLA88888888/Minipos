@@ -24,11 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO tbl_printer (name, ip_address, type, status, branch_id) VALUES (?, ?, ?, 1, 1)");
                 $stmt->execute([$name, $ip_address, $type]);
-                $message = 'ເພີ່ມເຄື່ອງພິມໃໝ່ສຳເລັດ!';
+                $message = t('printers.msg_add_success', 'ເພີ່ມເຄື່ອງພິມໃໝ່ສຳເລັດ!');
                 $message_type = 'success';
                 logActivity($pdo, "ເພີ່ມເຄື່ອງພິມ", "$name ($type)");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = sprintf(t('printers.msg_error', 'ຜິດພາດ: %s'), $e->getMessage());
                 $message_type = 'danger';
             }
         }
@@ -42,11 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("UPDATE tbl_printer SET name = ?, ip_address = ?, type = ? WHERE id = ?");
                 $stmt->execute([$name, $ip_address, $type, $id]);
-                $message = 'ອັບເດດຂໍ້ມູນເຄື່ອງພິມສຳເລັດແລ້ວ!';
+                $message = t('printers.msg_edit_success', 'ອັບເດດຂໍ້ມູນເຄື່ອງພິມສຳເລັດແລ້ວ!');
                 $message_type = 'success';
                 logActivity($pdo, "ແກ້ໄຂເຄື່ອງພິມ", "$name (ID: $id)");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = sprintf(t('printers.msg_error', 'ຜິດພາດ: %s'), $e->getMessage());
                 $message_type = 'danger';
             }
         }
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($id > 0) {
             $stmt = $pdo->prepare("UPDATE tbl_printer SET status = ? WHERE id = ?");
             $stmt->execute([$status, $id]);
-            $message = 'ອັບເດດສະຖານະເຄື່ອງພິມສຳເລັດ!';
+            $message = t('printers.msg_toggle_success', 'ອັບເດດສະຖານະເຄື່ອງພິມສຳເລັດ!');
             $message_type = 'success';
         }
     } elseif ($action === 'delete_printer') {
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($id > 0) {
             $stmt = $pdo->prepare("DELETE FROM tbl_printer WHERE id = ?");
             $stmt->execute([$id]);
-            $message = 'ລົບເຄື່ອງພິມສຳເລັດ!';
+            $message = t('printers.msg_delete_success', 'ລົບເຄື່ອງພິມສຳເລັດ!');
             $message_type = 'success';
         }
     }
@@ -79,13 +79,13 @@ require_once __DIR__ . '/../../../layouts/header.php';
   <div class="row mb-3 align-items-center">
     <div class="col-sm-6">
       <h5 class="m-0 font-weight-bold" style="color: #1e293b; font-size: 1.15rem;">
-        <i class="fas fa-print text-primary mr-2"></i> ຕັ້ງຄ່າເຄື່ອງພິມ
+        <i class="fas fa-print text-primary mr-2"></i> <?php echo htmlspecialchars(t('printers.page_title', 'ຕັ້ງຄ່າເຄື່ອງພິມ')); ?>
       </h5>
     </div>
     <div class="col-sm-6 text-right">
       <?php if (hasPermission('printers', 'add')): ?>
         <button type="button" class="btn btn-primary px-3.5 font-weight-bold text-white shadow-sm" data-toggle="modal" data-target="#addPrinterModal" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-          <i class="fas fa-plus-circle mr-1.5"></i> ເພີ່ມເຄື່ອງພິມໃໝ່
+          <i class="fas fa-plus-circle mr-1.5"></i> <?php echo htmlspecialchars(t('printers.add_new', 'ເພີ່ມເຄື່ອງພິມໃໝ່')); ?>
         </button>
       <?php endif; ?>
     </div>
@@ -109,24 +109,24 @@ require_once __DIR__ . '/../../../layouts/header.php';
 
   <div class="card border-0 shadow-sm" style="border-radius: 12px; border: 1.5px solid #e2e8f0; background: #ffffff;">
     <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
-      <h6 class="m-0 font-weight-bold text-dark"><i class="fas fa-list mr-2 text-primary"></i> ລາຍການເຄື່ອງພິມໃນລະບົບ</h6>
-      <span class="badge badge-light border font-weight-bold text-muted px-2.5 py-1"><?php echo count($printers); ?> ເຄື່ອງ</span>
+      <h6 class="m-0 font-weight-bold text-dark"><i class="fas fa-list mr-2 text-primary"></i> <?php echo htmlspecialchars(t('printers.list_title', 'ລາຍການເຄື່ອງພິມໃນລະບົບ')); ?></h6>
+      <span class="badge badge-light border font-weight-bold text-muted px-2.5 py-1"><?php echo count($printers); ?> <?php echo htmlspecialchars(t('printers.count_suffix', 'ເຄື່ອງ')); ?></span>
     </div>
     <div class="table-responsive">
       <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
         <thead style="background: #f8fafc; color: #475569; font-size: 0.82rem;" class="font-weight-bold">
           <tr style="white-space: nowrap;">
-            <th class="text-center" style="width: 70px; white-space: nowrap;">ລ/ດ</th>
-            <th style="white-space: nowrap;">ຊື່ເຄື່ອງພິມ</th>
-            <th style="white-space: nowrap;">ປະເພດການເຊື່ອມຕໍ່</th>
-            <th style="white-space: nowrap;">IP Address</th>
-            <th class="text-center" style="white-space: nowrap;">ສະຖານະ</th>
-            <th class="text-center" style="width: 140px; white-space: nowrap;">ຈັດການ</th>
+            <th class="text-center" style="width: 70px; white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_no', 'ລ/ດ')); ?></th>
+            <th style="white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_name', 'ຊື່ເຄື່ອງພິມ')); ?></th>
+            <th style="white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_type', 'ປະເພດການເຊື່ອມຕໍ່')); ?></th>
+            <th style="white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_ip', 'IP Address')); ?></th>
+            <th class="text-center" style="white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_status', 'ສະຖານະ')); ?></th>
+            <th class="text-center" style="width: 140px; white-space: nowrap;"><?php echo htmlspecialchars(t('printers.col_actions', 'ຈັດການ')); ?></th>
           </tr>
         </thead>
         <tbody>
           <?php if (empty($printers)): ?>
-            <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-print fa-2x mb-2 d-block text-secondary opacity-50"></i>ບໍ່ມີລາຍການເຄື່ອງພິມ</td></tr>
+            <tr><td colspan="6" class="text-center py-5 text-muted"><i class="fas fa-print fa-2x mb-2 d-block text-secondary opacity-50"></i><?php echo htmlspecialchars(t('printers.empty_list', 'ບໍ່ມີລາຍການເຄື່ອງພິມ')); ?></td></tr>
           <?php else: ?>
             <?php $i = 1; foreach ($printers as $pr): ?>
               <tr style="white-space: nowrap;">

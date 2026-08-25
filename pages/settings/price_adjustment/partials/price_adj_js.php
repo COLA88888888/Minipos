@@ -1,9 +1,23 @@
 <script>
+var I18N_PRICE_ADJUSTMENT = <?php echo tjson([
+    'price_adjustment.select2_placeholder' => '-- ເລືອກ ຫຼື ພິມຄົ້ນຫາໝວດໝູ່ --',
+    'price_adjustment.scan_wait_placeholder' => '-- ລໍຖ້າສະແກນບາໂຄ້ດ/ພິມລະຫັດ --',
+    'price_adjustment.not_found_placeholder' => '❌ ບໍ່ພົບສິນຄ້ານີ້ໃນລະບົບ',
+    'price_adjustment.confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+    'price_adjustment.confirm_delete_text' => 'ຕ້ອງການລົບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?',
+    'price_adjustment.btn_delete_confirm' => 'ລົບເລີຍ',
+    'price_adjustment.btn_cancel' => 'ຍົກເລີກ',
+    'price_adjustment.msg_delete_success' => 'ລຶບປະຫວັດສຳເລັດ!',
+    'price_adjustment.msg_error_title' => 'ຜິດພາດ',
+    'price_adjustment.msg_error_generic' => 'ຜິດພາດ!',
+    'price_adjustment.msg_action_success' => 'ດຳເນີນການສຳເລັດ!',
+]); ?>;
+
 $(document).ready(function() {
   if ($.fn.select2) {
     $('#category_id').select2({
       theme: 'bootstrap4',
-      placeholder: '-- ເລືອກ ຫຼື ພິມຄົ້ນຫາໝວດໝູ່ --',
+      placeholder: I18N_PRICE_ADJUSTMENT['price_adjustment.select2_placeholder'],
       allowClear: true,
       dropdownParent: $('#priceAdjModal')
     });
@@ -19,7 +33,7 @@ function quickFindProduct(val) {
   val = $.trim(val).toLowerCase();
   if (!val) {
     $('#product_id_hidden').val('');
-    $('#product_name_display').val('-- ລໍຖ້າສະແກນບາໂຄ້ດ/ພິມລະຫັດ --');
+    $('#product_name_display').val(I18N_PRICE_ADJUSTMENT['price_adjustment.scan_wait_placeholder']);
     $('#cur_bprice').val('');
     $('#cur_price').val('');
     return;
@@ -49,7 +63,7 @@ function quickFindProduct(val) {
     $('#cur_price').val(Number(price).toLocaleString() + ' ₭');
   } else {
     $('#product_id_hidden').val('');
-    $('#product_name_display').val('❌ ບໍ່ພົບສິນຄ້ານີ້ໃນລະບົບ');
+    $('#product_name_display').val(I18N_PRICE_ADJUSTMENT['price_adjustment.not_found_placeholder']);
     $('#cur_bprice').val('');
     $('#cur_price').val('');
   }
@@ -89,14 +103,14 @@ function formatNumberInput(input) {
 
 function deletePriceAdjLog(id, btn) {
   Swal.fire({
-    title: 'ຢືນຢັນການລົບ?',
-    text: 'ຕ້ອງການລົບປະຫວັດການປັບລາຄານີ້ແທ້ຫຼືບໍ່?',
+    title: I18N_PRICE_ADJUSTMENT['price_adjustment.confirm_delete_title'],
+    text: I18N_PRICE_ADJUSTMENT['price_adjustment.confirm_delete_text'],
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#64748b',
-    confirmButtonText: 'ລົບເລີຍ',
-    cancelButtonText: 'ຍົກເລີກ'
+    confirmButtonText: I18N_PRICE_ADJUSTMENT['price_adjustment.btn_delete_confirm'],
+    cancelButtonText: I18N_PRICE_ADJUSTMENT['price_adjustment.btn_cancel']
   }).then(function(r) {
     if (r.isConfirmed) {
       $.post('price_adjustment.php', { action: 'delete_log', adjust_id: id, is_ajax: 1 }, function(res) {
@@ -106,12 +120,12 @@ function deletePriceAdjLog(id, btn) {
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: 'ລຶບປະຫວັດສຳເລັດ!',
+            title: I18N_PRICE_ADJUSTMENT['price_adjustment.msg_delete_success'],
             showConfirmButton: false,
             timer: 1500
           });
         } else {
-          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+          Swal.fire({ icon: 'error', title: I18N_PRICE_ADJUSTMENT['price_adjustment.msg_error_title'], text: res.message || I18N_PRICE_ADJUSTMENT['price_adjustment.msg_error_generic'] });
         }
       }, 'json');
     }
@@ -146,12 +160,12 @@ $(document).ready(function() {
           toast: true,
           position: 'top-end',
           icon: 'success',
-          title: res.message || 'ດຳເນີນການສຳເລັດ!',
+          title: res.message || I18N_PRICE_ADJUSTMENT['price_adjustment.msg_action_success'],
           showConfirmButton: false,
           timer: 1500
         });
       } else {
-        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+        Swal.fire({ icon: 'error', title: I18N_PRICE_ADJUSTMENT['price_adjustment.msg_error_title'], text: res.message || I18N_PRICE_ADJUSTMENT['price_adjustment.msg_error_generic'] });
       }
     }, 'json');
   });

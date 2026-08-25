@@ -25,4 +25,5 @@ return [
     'print_barcode.no_selection_title' => 'ไม่มีรายการที่เลือก',
     'print_barcode.no_selection_text' => 'กรุณาเลือกรายการสินค้า และกำหนดจำนวนที่จะพิมพ์อย่างน้อย 1 ดวง!',
     'print_barcode.ok_button' => 'ตกลง',
+    'print_barcode.qty_label' => 'จำนวนดวง:',
 ];

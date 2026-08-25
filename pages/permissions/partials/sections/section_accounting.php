@@ -1,7 +1,7 @@
 <!-- SECTION 5: ຈັດການທະນາຄານ / ບັນຊີ -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-university mr-1"></i> 5. ຈັດການທະນາຄານ & ບັນຊີ
+    <i class="fas fa-university mr-1"></i> <?php echo htmlspecialchars(t('permissions.section_accounting', '5. ຈັດການທະນາຄານ & ບັນຊີ')); ?>
   </td>
 </tr>
 
@@ -11,8 +11,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-university text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ຈັດການທະນາຄານ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ຕັ້ງຄ່າບັນຊີທະນາຄານ, ບັນຊີໂອນ ແລະ QR Code</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_accounting_title', 'ຈັດການທະນາຄານ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_accounting_desc', 'ຕັ້ງຄ່າບັນຊີທະນາຄານ, ບັນຊີໂອນ ແລະ QR Code')); ?></div>
       </div>
     </div>
   </td>

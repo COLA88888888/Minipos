@@ -25,4 +25,5 @@ return [
     'print_barcode.no_selection_title' => '未选择任何项目',
     'print_barcode.no_selection_text' => '请选择商品并设置至少 1 张要打印的标签！',
     'print_barcode.ok_button' => '确定',
+    'print_barcode.qty_label' => '数量:',
 ];

@@ -18,7 +18,7 @@
     <?php if (empty($users)): ?>
       <div class="p-5 text-center text-muted">
         <i class="fas fa-info-circle fa-2x mb-2"></i>
-        <p>ກະລຸນາເລືອກຜູ້ນຳໃຊ້ຈາກລາຍຊື່ທາງຊ້າຍເພື່ອຕັ້ງຄ່າສິດ</p>
+        <p><?php echo htmlspecialchars(t('permissions.select_user_prompt', 'ກະລຸນາເລືອກຜູ້ນຳໃຊ້ຈາກລາຍຊື່ທາງຊ້າຍເພື່ອຕັ້ງຄ່າສິດ')); ?></p>
       </div>
     <?php else: ?>
       <?php foreach ($users as $index => $u): ?>
@@ -42,11 +42,11 @@
               <table class="table table-hover align-middle mb-0 perm-matrix-table" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
                 <thead class="bg-light">
                   <tr>
-                    <th style="min-width: 240px;">ເມນູລະບົບ (Sidebar Menu)</th>
-                    <th class="text-center" style="width: 90px;">ເບິ່ງ</th>
-                    <th class="text-center" style="width: 90px;">ເພີ່ມ</th>
-                    <th class="text-center" style="width: 90px;">ແກ້ໄຂ</th>
-                    <th class="text-center" style="width: 90px;">ລົບ</th>
+                    <th style="min-width: 240px;"><?php echo htmlspecialchars(t('permissions.col_menu', 'ເມນູລະບົບ (Sidebar Menu)')); ?></th>
+                    <th class="text-center" style="width: 90px;"><?php echo htmlspecialchars(t('permissions.action_view', 'ເບິ່ງ')); ?></th>
+                    <th class="text-center" style="width: 90px;"><?php echo htmlspecialchars(t('permissions.action_add', 'ເພີ່ມ')); ?></th>
+                    <th class="text-center" style="width: 90px;"><?php echo htmlspecialchars(t('permissions.action_edit', 'ແກ້ໄຂ')); ?></th>
+                    <th class="text-center" style="width: 90px;"><?php echo htmlspecialchars(t('permissions.action_delete', 'ລົບ')); ?></th>
                   </tr>
                 </thead>
                 <tbody>

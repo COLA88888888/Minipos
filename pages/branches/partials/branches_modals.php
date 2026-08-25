@@ -11,38 +11,38 @@ if (!defined('MINIPOS_APP')) {
       <form method="POST">
         <input type="hidden" name="action" value="add_branch">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title font-weight-bold"><i class="fas fa-plus-circle mr-2"></i> ເພີ່ມສາຂາໃໝ່</h5>
+          <h5 class="modal-title font-weight-bold"><i class="fas fa-plus-circle mr-2"></i> <?php echo htmlspecialchars(t('branches.modal_add_title', 'ເພີ່ມສາຂາໃໝ່')); ?></h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body p-4">
           <div class="form-group">
-            <label class="font-weight-bold">ລະຫັດສາຂາ:<span class="text-danger">*</span></label>
-            <input type="text" name="store_code" class="form-control font-weight-bold text-primary" 
-                   value="<?php echo htmlspecialchars($next_store_code ?? '1'); ?>" readonly 
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_store_code', 'ລະຫັດສາຂາ:')); ?><span class="text-danger">*</span></label>
+            <input type="text" name="store_code" class="form-control font-weight-bold text-primary"
+                   value="<?php echo htmlspecialchars($next_store_code ?? '1'); ?>" readonly
                    style="background-color: #f1f5f9; cursor: not-allowed;">
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ຊື່ສາຂາ:<span class="text-danger">*</span></label>
-            <input type="text" name="store_name" class="form-control" placeholder="ເຊັ່ນ: ສາຂາ ດົງໂດກ, ສາຂາ ຫຼວງພະບາງ" required>
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_store_name', 'ຊື່ສາຂາ:')); ?><span class="text-danger">*</span></label>
+            <input type="text" name="store_name" class="form-control" placeholder="<?php echo htmlspecialchars(t('branches.placeholder_store_name', 'ເຊັ່ນ: ສາຂາ ດົງໂດກ, ສາຂາ ຫຼວງພະບາງ')); ?>" required>
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ເບີໂທຕິດຕໍ່ສາຂາ:</label>
-            <input type="text" name="tel" class="form-control" placeholder="020 xxxxxxxx">
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_tel', 'ເບີໂທຕິດຕໍ່ສາຂາ:')); ?></label>
+            <input type="text" name="tel" class="form-control" placeholder="<?php echo htmlspecialchars(t('branches.placeholder_tel', '020 xxxxxxxx')); ?>">
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ທີ່ຢູ່ສາຂາ:</label>
-            <textarea name="address" class="form-control" rows="2" placeholder="ບ້ານ, ເມືອງ, ແຂວງ..."></textarea>
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_address', 'ທີ່ຢູ່ສາຂາ:')); ?></label>
+            <textarea name="address" class="form-control" rows="2" placeholder="<?php echo htmlspecialchars(t('branches.placeholder_address', 'ບ້ານ, ເມືອງ, ແຂວງ...')); ?>"></textarea>
           </div>
           <div class="form-group form-check">
             <input type="checkbox" name="is_main" value="1" class="form-check-input" id="add_is_main">
-            <label class="form-check-input-label font-weight-bold text-dark" for="add_is_main">ຕັ້ງເປັນສາຂາໃຫຍ່</label>
+            <label class="form-check-input-label font-weight-bold text-dark" for="add_is_main"><?php echo htmlspecialchars(t('branches.label_is_main', 'ຕັ້ງເປັນສາຂາໃຫຍ່')); ?></label>
           </div>
         </div>
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-primary font-weight-bold" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;"><i class="fas fa-save mr-1"></i> ບັນທຶກ</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><?php echo htmlspecialchars(t('branches.btn_cancel', 'ຍົກເລີກ')); ?></button>
+          <button type="submit" class="btn btn-primary font-weight-bold" style="background: linear-gradient(135deg, #2c5aa0, #244886); border: none;"><i class="fas fa-save mr-1"></i> <?php echo htmlspecialchars(t('branches.btn_save', 'ບັນທຶກ')); ?></button>
         </div>
       </form>
     </div>
@@ -57,37 +57,37 @@ if (!defined('MINIPOS_APP')) {
         <input type="hidden" name="action" value="edit_branch">
         <input type="hidden" name="store_id" id="edit_store_id">
         <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title font-weight-bold"><i class="fas fa-edit mr-2"></i> ແກ້ໄຂຂໍ້ມູນສາຂາ</h5>
+          <h5 class="modal-title font-weight-bold"><i class="fas fa-edit mr-2"></i> <?php echo htmlspecialchars(t('branches.modal_edit_title', 'ແກ້ໄຂຂໍ້ມູນສາຂາ')); ?></h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body p-4">
           <div class="form-group">
-            <label class="font-weight-bold">ລະຫັດສາຂາ:<span class="text-danger">*</span></label>
-            <input type="text" name="store_code" id="edit_store_code" class="form-control font-weight-bold text-secondary" 
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_store_code', 'ລະຫັດສາຂາ:')); ?><span class="text-danger">*</span></label>
+            <input type="text" name="store_code" id="edit_store_code" class="form-control font-weight-bold text-secondary"
                    readonly style="background-color: #f1f5f9; cursor: not-allowed;">
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ຊື່ສາຂາ:<span class="text-danger">*</span></label>
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_store_name', 'ຊື່ສາຂາ:')); ?><span class="text-danger">*</span></label>
             <input type="text" name="store_name" id="edit_store_name" class="form-control" required>
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ເບີໂທຕິດຕໍ່ສາຂາ:</label>
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_tel', 'ເບີໂທຕິດຕໍ່ສາຂາ:')); ?></label>
             <input type="text" name="tel" id="edit_store_tel" class="form-control">
           </div>
           <div class="form-group">
-            <label class="font-weight-bold">ທີ່ຢູ່ສາຂາ:</label>
+            <label class="font-weight-bold"><?php echo htmlspecialchars(t('branches.label_address', 'ທີ່ຢູ່ສາຂາ:')); ?></label>
             <textarea name="address" id="edit_store_address" class="form-control" rows="2"></textarea>
           </div>
           <div class="form-group form-check">
             <input type="checkbox" name="is_main" value="1" class="form-check-input" id="edit_is_main">
-            <label class="form-check-input-label font-weight-bold text-dark" for="edit_is_main">ຕັ້ງເປັນສາຂາໃຫຍ່</label>
+            <label class="form-check-input-label font-weight-bold text-dark" for="edit_is_main"><?php echo htmlspecialchars(t('branches.label_is_main', 'ຕັ້ງເປັນສາຂາໃຫຍ່')); ?></label>
           </div>
         </div>
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">ຍົກເລີກ</button>
-          <button type="submit" class="btn btn-warning font-weight-bold"><i class="fas fa-save mr-1"></i> ອັບເດດ</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal"><?php echo htmlspecialchars(t('branches.btn_cancel', 'ຍົກເລີກ')); ?></button>
+          <button type="submit" class="btn btn-warning font-weight-bold"><i class="fas fa-save mr-1"></i> <?php echo htmlspecialchars(t('branches.btn_update', 'ອັບເດດ')); ?></button>
         </div>
       </form>
     </div>

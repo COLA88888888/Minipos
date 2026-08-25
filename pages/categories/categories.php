@@ -20,13 +20,13 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="row align-items-center">
         <div class="col-sm-6">
           <h5 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; font-size: 18px;">
-            <i class="fas fa-th-list text-primary mr-2"></i> ຈັດການປະເພດສິນຄ້າ
+            <i class="fas fa-th-list text-primary mr-2"></i> <?php echo htmlspecialchars(t('categories.page_title', 'ຈັດການປະເພດສິນຄ້າ')); ?>
           </h5>
         </div>
         <div class="col-sm-6 text-right">
           <?php if (hasPermission('categories', 'add')): ?>
           <button type="button" class="btn btn-primary px-3 py-1 font-weight-bold shadow-sm" data-toggle="modal" data-target="#addCategoryModal" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-            <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມປະເພດສິນຄ້າ
+            <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('categories.btn_add', 'ເພີ່ມປະເພດສິນຄ້າ')); ?>
           </button>
           <?php endif; ?>
         </div>
@@ -41,7 +41,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <?php if ($message_type === 'success'): ?>
         Swal.fire({
           icon: 'success',
-          title: 'ສຳເລັດ',
+          title: '<?php echo htmlspecialchars(t('categories.msg_success_title', 'ສຳເລັດ'), ENT_QUOTES); ?>',
           text: '<?php echo $message; ?>',
           showConfirmButton: false,
           timer: 1500
@@ -49,10 +49,10 @@ require_once __DIR__ . '/../../layouts/header.php';
         <?php else: ?>
         Swal.fire({
           icon: 'error',
-          title: 'ແຈ້ງເຕືອນ',
+          title: '<?php echo htmlspecialchars(t('categories.msg_error_title', 'ແຈ້ງເຕືອນ'), ENT_QUOTES); ?>',
           text: '<?php echo $message; ?>',
           confirmButtonColor: '#2563eb',
-          confirmButtonText: 'ຕົກລົງ'
+          confirmButtonText: '<?php echo htmlspecialchars(t('categories.btn_ok', 'ຕົກລົງ'), ENT_QUOTES); ?>'
         });
         <?php endif; ?>
       });
@@ -68,7 +68,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         
         <div class="card-header bg-white py-3 border-0">
           <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; color: #0f172a; font-size: 1rem;">
-            ລາຍງານປະເພດສິນຄ້າທັງໝົດ
+            <?php echo htmlspecialchars(t('categories.table_card_title', 'ລາຍງານປະເພດສິນຄ້າທັງໝົດ')); ?>
           </h6>
         </div>
 
@@ -77,12 +77,12 @@ require_once __DIR__ . '/../../layouts/header.php';
             <table class="table table-hover align-middle mb-0 text-nowrap" id="catTable">
               <thead class="bg-light text-secondary" style="font-size: 0.88rem; text-transform: uppercase;">
                 <tr>
-                  <th class="py-3 text-center" style="width: 60px;">ລຳດັບ</th>
-                  <th class="py-3 text-center" style="width: 100px;">ລະຫັດ</th>
-                  <th class="py-3">ຊື່ປະເພດສິນຄ້າ</th>
-                  <th class="py-3">ລາຍລະອຽດ</th>
-                  <th class="py-3" style="width: 180px;">ວັນທີບັນທຶກ</th>
-                  <th class="text-center py-3" style="width: 140px;">ຈັດການ</th>
+                  <th class="py-3 text-center" style="width: 60px;"><?php echo htmlspecialchars(t('categories.col_no', 'ລຳດັບ')); ?></th>
+                  <th class="py-3 text-center" style="width: 100px;"><?php echo htmlspecialchars(t('categories.col_code', 'ລະຫັດ')); ?></th>
+                  <th class="py-3"><?php echo htmlspecialchars(t('categories.col_name', 'ຊື່ປະເພດສິນຄ້າ')); ?></th>
+                  <th class="py-3"><?php echo htmlspecialchars(t('categories.col_desc', 'ລາຍລະອຽດ')); ?></th>
+                  <th class="py-3" style="width: 180px;"><?php echo htmlspecialchars(t('categories.col_created_at', 'ວັນທີບັນທຶກ')); ?></th>
+                  <th class="text-center py-3" style="width: 140px;"><?php echo htmlspecialchars(t('categories.col_action', 'ຈັດການ')); ?></th>
                 </tr>
               </thead>
               <tbody style="font-size: 0.95rem;">
@@ -120,19 +120,19 @@ require_once __DIR__ . '/../../layouts/header.php';
                           <div class="btn-group btn-group-sm">
                             <?php if ($canEditCat): ?>
                             <!-- Edit Button -->
-                            <button type="button" class="btn btn-outline-warning" title="ແກ້ໄຂ" onclick='openEditModal(<?php echo $catJson; ?>)'>
+                            <button type="button" class="btn btn-outline-warning" title="<?php echo htmlspecialchars(t('categories.title_edit', 'ແກ້ໄຂ')); ?>" onclick='openEditModal(<?php echo $catJson; ?>)'>
                               <i class="fas fa-edit"></i>
                             </button>
                             <?php endif; ?>
                             <?php if ($canDeleteCat): ?>
                             <!-- Delete Button -->
-                            <button type="button" class="btn btn-outline-danger" title="ລົບ" onclick="confirmDeleteCat(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['category_name'])); ?>', <?php echo $productCount; ?>)">
+                            <button type="button" class="btn btn-outline-danger" title="<?php echo htmlspecialchars(t('categories.title_delete', 'ລົບ')); ?>" onclick="confirmDeleteCat(<?php echo $cat['category_id']; ?>, '<?php echo htmlspecialchars(addslashes($cat['category_name'])); ?>', <?php echo $productCount; ?>)">
                               <i class="fas fa-trash-alt"></i>
                             </button>
                             <?php endif; ?>
                           </div>
                         <?php else: ?>
-                          <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                          <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('categories.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                         <?php endif; ?>
                       </td>
 
@@ -142,7 +142,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <tr>
                     <td colspan="7" class="text-center py-5 text-muted">
                       <i class="fas fa-folder-open fa-3x mb-3 text-secondary d-block"></i>
-                      ບໍ່ພົບຂໍ້ມູນປະເພດສິນຄ້າໃນລະບົບ
+                      <?php echo htmlspecialchars(t('categories.empty_state', 'ບໍ່ພົບຂໍ້ມູນປະເພດສິນຄ້າໃນລະບົບ')); ?>
                     </td>
                   </tr>
                 <?php endif; ?>
@@ -154,7 +154,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <!-- FOOTER INFO -->
         <!-- <div class="card-footer bg-white py-3 px-4 border-top">
           <small class="text-muted font-weight-bold" style="font-size: 0.85rem;">
-            <i class="fas fa-file-alt text-primary mr-1"></i> ຂໍ້ມູນປະເພດສິນຄ້າທັງໝົດ <?php echo $total_records; ?> ໝວດໝູ່
+            <i class="fas fa-file-alt text-primary mr-1"></i> <?php echo htmlspecialchars(sprintf(t('categories.footer_total', 'ຂໍ້ມູນປະເພດສິນຄ້າທັງໝົດ %d ໝວດໝູ່'), $total_records)); ?>
           </small>
         </div> -->
 
@@ -172,6 +172,17 @@ require_once __DIR__ . '/components/form_edit_category.php';
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
 
 <script>
+  var I18N_CATEGORIES = <?php echo tjson([
+      'categories.cannot_delete_title' => 'ບໍ່ສາມາດລົບໄດ້!',
+      'categories.cannot_delete_msg' => 'ໝວດໝູ່ "{name}" ມີລາຍການສິນຄ້າຢູ່ {count} ລາຍການ.',
+      'categories.cannot_delete_hint' => 'ກະລຸນາຍ້າຍ ຫຼື ລົບລາຍການສິນຄ້າໃນໝວດໝູ່ນີ້ອອກກ່ອນ ຈຶ່ງຈະສາມາດລົບໄດ້!',
+      'categories.btn_ok' => 'ຕົກລົງ',
+      'categories.confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+      'categories.confirm_delete_text' => 'ທ່ານຕ້ອງການລົບປະເພດສິນຄ້າ "{name}" ແທ້ຫຼືບໍ່?',
+      'categories.btn_delete_confirm' => '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
+      'categories.btn_cancel' => 'ຍົກເລີກ',
+  ]); ?>;
+
   var NEXT_CAT_ID = <?php echo $next_cat_id; ?>;
 
   // Auto-fill next ID when add modal opens
@@ -190,24 +201,24 @@ require_once __DIR__ . '/components/form_edit_category.php';
     if (productCount && productCount > 0) {
       Swal.fire({
         icon: 'warning',
-        title: 'ບໍ່ສາມາດລົບໄດ້!',
-        html: '<div style="font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', sans-serif;">ໝວດໝູ່ <b>"' + catName + '"</b> ມີລາຍການສິນຄ້າຢູ່ <b>' + productCount + '</b> ລາຍການ.<br><span style="font-size: 0.9rem; color: #64748b; display: inline-block; margin-top: 8px;">ກະລຸນາຍ້າຍ ຫຼື ລົບລາຍການສິນຄ້າໃນໝວດໝູ່ນີ້ອອກກ່ອນ ຈຶ່ງຈະສາມາດລົບໄດ້!</span></div>',
+        title: I18N_CATEGORIES['categories.cannot_delete_title'],
+        html: '<div style="font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', sans-serif;">' + I18N_CATEGORIES['categories.cannot_delete_msg'].replace('{name}', '<b>"' + catName + '"</b>').replace('{count}', '<b>' + productCount + '</b>') + '<br><span style="font-size: 0.9rem; color: #64748b; display: inline-block; margin-top: 8px;">' + I18N_CATEGORIES['categories.cannot_delete_hint'] + '</span></div>',
         confirmButtonColor: '#2563eb',
-        confirmButtonText: 'ຕົກລົງ',
+        confirmButtonText: I18N_CATEGORIES['categories.btn_ok'],
         heightAuto: false
       });
       return;
     }
 
     Swal.fire({
-      title: 'ຢືນຢັນການລົບ?',
-      text: 'ທ່ານຕ້ອງການລົບປະເພດສິນຄ້າ "' + catName + '" ແທ້ຫຼືບໍ່?',
+      title: I18N_CATEGORIES['categories.confirm_delete_title'],
+      text: I18N_CATEGORIES['categories.confirm_delete_text'].replace('{name}', catName),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
-      cancelButtonText: 'ຍົກເລີກ',
+      confirmButtonText: I18N_CATEGORIES['categories.btn_delete_confirm'],
+      cancelButtonText: I18N_CATEGORIES['categories.btn_cancel'],
       heightAuto: false
     }).then(function(result) {
       if (result.isConfirmed) {

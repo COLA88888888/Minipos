@@ -1,7 +1,7 @@
 <!-- SECTION 4: ຂໍ້ມູນສິນຄ້າ (PRODUCT & INVENTORY) -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-boxes mr-1"></i> 4. ຂໍ້ມູນສິນຄ້າ & ຄັງສິນຄ້າ
+    <i class="fas fa-boxes mr-1"></i> <?php echo htmlspecialchars(t('permissions.section_inventory', '4. ຂໍ້ມູນສິນຄ້າ & ຄັງສິນຄ້າ')); ?>
   </td>
 </tr>
 
@@ -11,8 +11,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-th-list text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ໝວດໝູ່ສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ຈັດການໝວດໝູ່ ແລະ ປະເພດສິນຄ້າ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_categories_title', 'ໝວດໝູ່ສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_categories_desc', 'ຈັດການໝວດໝູ່ ແລະ ປະເພດສິນຄ້າ')); ?></div>
       </div>
     </div>
   </td>
@@ -72,8 +72,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-box text-primary mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍການສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເພີ່ມ, ແກ້ໄຂ, ປັບສະຕັອກ ແລະ ຈັດການສິນຄ້າ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_products_title', 'ລາຍການສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_products_desc', 'ເພີ່ມ, ແກ້ໄຂ, ປັບສະຕັອກ ແລະ ຈັດການສິນຄ້າ')); ?></div>
       </div>
     </div>
   </td>
@@ -133,8 +133,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-truck-loading text-warning mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ນຳເຂົ້າສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ບັນທຶກການຮັບ ແລະ ນຳເຂົ້າສິນຄ້າໃໝ່</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_import_stock_title', 'ນຳເຂົ້າສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_import_stock_desc', 'ບັນທຶກການຮັບ ແລະ ນຳເຂົ້າສິນຄ້າໃໝ່')); ?></div>
       </div>
     </div>
   </td>
@@ -162,8 +162,8 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 4.4 ລາຍການສິນຄ້າຮັບເຂົ້າ -->
@@ -172,8 +172,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-list-alt text-success mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ລາຍການສິນຄ້າຮັບເຂົ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ເບິ່ງປະຫວັດໃບບິນຮັບສິນຄ້າເຂົ້າ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_import_list_title', 'ລາຍການສິນຄ້າຮັບເຂົ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_import_list_desc', 'ເບິ່ງປະຫວັດໃບບິນຮັບສິນຄ້າເຂົ້າ')); ?></div>
       </div>
     </div>
   </td>
@@ -189,7 +189,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
@@ -222,8 +222,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-exchange-alt text-primary mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ໂອນສິນຄ້າລະຫວ່າງສາຂາ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ໂອນສິນຄ້າໄປສາຂາອື່ນ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_stock_transfer_title', 'ໂອນສິນຄ້າລະຫວ່າງສາຂາ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_stock_transfer_desc', 'ໂອນສິນຄ້າໄປສາຂາອື່ນ')); ?></div>
       </div>
     </div>
   </td>
@@ -251,8 +251,8 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 4.6 ປະຫວັດການໂອນສິນຄ້າ -->
@@ -261,8 +261,8 @@
     <div class="d-flex align-items-center">
       <i class="fas fa-history text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
       <div>
-        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;">ປະຫວັດການໂອນສິນຄ້າ</div>
-        <div class="text-muted" style="font-size: 0.8rem;">ຕິດຕາມ ແລະ ຍົກເລີກໃບໂອນສິນຄ້າ</div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_transfer_history_title', 'ປະຫວັດການໂອນສິນຄ້າ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_transfer_history_desc', 'ຕິດຕາມ ແລະ ຍົກເລີກໃບໂອນສິນຄ້າ')); ?></div>
       </div>
     </div>
   </td>
@@ -278,7 +278,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="badge badge-light text-muted">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="badge badge-light text-muted"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>

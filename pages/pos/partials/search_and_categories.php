@@ -10,10 +10,10 @@
         </div>
         <!-- Input -->
         <input type="text" id="barcodeInput" class="pos-search-input"
-               placeholder="ສະແກນບາໂຄ້ດ ຫຼື ພິມຊື່ສິນຄ້າ..."
+               placeholder="<?php echo htmlspecialchars(t('pos.search_placeholder', 'ສະແກນບາໂຄ້ດ ຫຼື ພິມຊື່ສິນຄ້າ...')); ?>"
                autocomplete="off" autofocus oninput="filterGrid()">
         <!-- Clear Button Right -->
-        <button type="button" class="pos-search-clear" onclick="document.getElementById('barcodeInput').value=''; filterGrid(); document.getElementById('barcodeInput').focus();" title="ລ້າງ">
+        <button type="button" class="pos-search-clear" onclick="document.getElementById('barcodeInput').value=''; filterGrid(); document.getElementById('barcodeInput').focus();" title="<?php echo htmlspecialchars(t('pos.clear', 'ລ້າງ')); ?>">
           <i class="fas fa-times"></i>
         </button>
         <!-- Scan indicator label -->
@@ -27,7 +27,7 @@
   <!-- Category Pill Buttons Bar -->
   <div class="category-pills-bar" style="display:flex !important; flex-wrap:nowrap !important; overflow-x:auto !important; overflow-y:hidden !important; gap:10px !important; padding-bottom:8px; margin-bottom:0; width:100%;">
     <button type="button" class="btn btn-outline-primary category-pill-btn active" data-id="" onclick="selectCategoryPill(this, '')" style="flex-shrink:0 !important; white-space:nowrap !important; border-radius:10px !important;">
-      ທັງໝົດ
+      <?php echo htmlspecialchars(t('pos.category_all', 'ທັງໝົດ')); ?>
     </button>
     <?php foreach ($categories as $cat): ?>
       <button type="button" class="btn btn-outline-primary category-pill-btn" data-id="<?php echo $cat['category_id']; ?>" onclick="selectCategoryPill(this, '<?php echo $cat['category_id']; ?>')" style="flex-shrink:0 !important; white-space:nowrap !important; border-radius:10px !important;">

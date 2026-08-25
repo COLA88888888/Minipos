@@ -36,13 +36,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $full_transfer_date = $transfer_date . ' ' . date('H:i:s');
 
     if ($from_store_id <= 0 || $to_store_id <= 0) {
-        $message = 'ກະລຸນາເລືອກສາຂາຕົ້ນທາງ ແລະ ສາຂາປາຍທາງ!';
+        $message = t('stock_transfer.err_select_stores', 'ກະລຸນາເລືອກສາຂາຕົ້ນທາງ ແລະ ສາຂາປາຍທາງ!');
         $message_type = 'danger';
     } elseif ($from_store_id === $to_store_id) {
-        $message = 'ສາຂາຕົ້ນທາງ ແລະ ປາຍທາງ ຕ້ອງບໍ່ແມ່ນສາຂາດຽວກັນ!';
+        $message = t('stock_transfer.err_same_store', 'ສາຂາຕົ້ນທາງ ແລະ ປາຍທາງ ຕ້ອງບໍ່ແມ່ນສາຂາດຽວກັນ!');
         $message_type = 'danger';
     } elseif (empty($items) || !is_array($items)) {
-        $message = 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການໂອນຢ່າງນ້ອຍ 1 ລາຍການ!';
+        $message = t('stock_transfer.err_no_items', 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການໂອນຢ່າງນ້ອຍ 1 ລາຍການ!');
         $message_type = 'danger';
     } else {
         try {
@@ -89,11 +89,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $srcProd = $stmtSrc->fetch();
 
                 if (!$srcProd) {
-                    throw new Exception("ບໍ່ພົບສິນຄ້າ ID {$product_id} ໃນສາຂາຕົ້ນທາງ!");
+                    throw new Exception(sprintf(t('stock_transfer.err_product_not_found', 'ບໍ່ພົບສິນຄ້າ ID %s ໃນສາຂາຕົ້ນທາງ!'), $product_id));
                 }
 
                 if ($srcProd['qty'] < $qty) {
-                    throw new Exception("ສິນຄ້າ \"{$srcProd['product_name']}\" ໃນສາຂາຕົ້ນທາງ ມີພຽງ {$srcProd['qty']} (ບໍ່ພໍໂອນ {$qty})!");
+                    throw new Exception(sprintf(t('stock_transfer.err_insufficient_stock', 'ສິນຄ້າ "%s" ໃນສາຂາຕົ້ນທາງ ມີພຽງ %s (ບໍ່ພໍໂອນ %s)!'), $srcProd['product_name'], $srcProd['qty'], $qty));
                 }
 
                 // Deduct from source branch
@@ -210,14 +210,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
 
             $pdo->commit();
-            $message = "ບັນທຶກການໂອນສິນຄ້າເລກທີ $transfer_code ສຳເລັດ (ລວມ $transferredCount ລາຍການ)!";
+            $message = sprintf(t('stock_transfer.success_message', 'ບັນທຶກການໂອນສິນຄ້າເລກທີ %s ສຳເລັດ (ລວມ %s ລາຍການ)!'), $transfer_code, $transferredCount);
             $message_type = 'success';
             logActivity($pdo, "ໂອນສິນຄ້າລະຫວ່າງສາຂາ", "Code: {$transfer_code}, From: Store #{$from_store_id} -> To: Store #{$to_store_id}");
         } catch (Exception $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            $message = 'ຜິດພາດ: ' . $e->getMessage();
+            $message = t('stock_transfer.error_prefix', 'ຜິດພາດ: ') . $e->getMessage();
             $message_type = 'danger';
         }
     }
@@ -282,7 +282,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="row align-items-center">
         <div class="col-sm-6">
           <h4 class="m-0 font-weight-bold text-dark">
-            <i class="fas fa-exchange-alt text-primary mr-2"></i> ໂອນສິນຄ້າລະຫວ່າງສາຂາ
+            <i class="fas fa-exchange-alt text-primary mr-2"></i> <?php echo htmlspecialchars(t('stock_transfer.page_title', 'ໂອນສິນຄ້າລະຫວ່າງສາຂາ')); ?>
           </h4>
         </div>
       </div>
@@ -312,11 +312,11 @@ require_once __DIR__ . '/../../layouts/header.php';
                 }
               } catch(e) {}
               Swal.fire({
-                title: 'ບັນທຶກສຳເລັດ!',
+                title: '<?php echo addslashes(t('stock_transfer.swal_saved_title', 'ບັນທຶກສຳເລັດ!')); ?>',
                 text: '<?php echo addslashes($message); ?>',
                 icon: 'success',
                 confirmButtonColor: '#10b981',
-                confirmButtonText: 'ຕົກລົງ',
+                confirmButtonText: '<?php echo addslashes(t('stock_transfer.ok_button', 'ຕົກລົງ')); ?>',
                 timer: 3500,
                 timerProgressBar: true
               });

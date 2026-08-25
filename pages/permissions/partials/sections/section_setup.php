@@ -1,7 +1,7 @@
 <!-- SECTION 7: ຕັ້ງຄ່າລະບົບ (SYSTEM SETTINGS) -->
 <tr class="table-primary">
   <td colspan="5" class="font-weight-bold text-uppercase py-2" style="font-size: 0.82rem; letter-spacing: 0.5px;">
-    <i class="fas fa-cogs mr-1"></i> 7. ຕັ້ງຄ່າລະບົບ & ຈັດການຜູ້ນຳໃຊ້
+    <i class="fas fa-cogs mr-1"></i> <?php echo htmlspecialchars(t('permissions.section_setup', '7. ຕັ້ງຄ່າລະບົບ & ຈັດການຜູ້ນຳໃຊ້')); ?>
   </td>
 </tr>
 
@@ -13,7 +13,7 @@
         <i class="fas fa-users-cog"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຈັດການຜູ້ນຳໃຊ້</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_users_title', 'ຈັດການຜູ້ນຳໃຊ້')); ?></div>
       </div>
     </div>
   </td>
@@ -75,7 +75,7 @@
         <i class="fas fa-user-shield"></i>
       </div>
       <div>
-        <div class="perm-module-title">ກຳນົດສິດ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_permissions_title', 'ກຳນົດສິດ')); ?></div>
       </div>
     </div>
   </td>
@@ -91,7 +91,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
@@ -104,7 +104,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 7.3 ຈັດການສາຂາ (Multi-Branch Management) -->
@@ -115,8 +115,8 @@
         <i class="fas fa-network-wired"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຈັດການສາຂາ</div>
-        <div class="perm-module-desc">ເພີ່ມ, ແກ້ໄຂ ແລະ ຈັດການສາຂາທັງໝົດ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_branches_title', 'ຈັດການສາຂາ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_branches_desc', 'ເພີ່ມ, ແກ້ໄຂ ແລະ ຈັດການສາຂາທັງໝົດ')); ?></div>
       </div>
     </div>
   </td>
@@ -178,8 +178,8 @@
         <i class="fas fa-store"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຂໍ້ມູນຮ້ານ</div>
-        <div class="perm-module-desc">ຈັດການຂໍ້ມູນຮ້ານ, ເລກຜູ້ເສຍອາກອນ, ໂລໂກ້ ແລະ ທີ່ຢູ່</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_stores_title', 'ຂໍ້ມູນຮ້ານ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_stores_desc', 'ຈັດການຂໍ້ມູນຮ້ານ, ເລກຜູ້ເສຍອາກອນ, ໂລໂກ້ ແລະ ທີ່ຢູ່')); ?></div>
       </div>
     </div>
   </td>
@@ -195,7 +195,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
   <td class="text-center">
     <label class="matrix-switch">
       <input type="checkbox" 
@@ -208,7 +208,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 7.5 ພິມບາໂຄ້ດ (Print Barcode) -->
@@ -219,8 +219,8 @@
         <i class="fas fa-barcode"></i>
       </div>
       <div>
-        <div class="perm-module-title">ພິມບາໂຄ້ດ</div>
-        <div class="perm-module-desc">ພິມບາໂຄ້ດ ແລະ ລາຄາສິນຄ້າອອກເຈ້ຍ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_print_barcode_title', 'ພິມບາໂຄ້ດ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_print_barcode_desc', 'ພິມບາໂຄ້ດ ແລະ ລາຄາສິນຄ້າອອກເຈ້ຍ')); ?></div>
       </div>
     </div>
   </td>
@@ -236,9 +236,9 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>
 
 <!-- 7.6 ອັດຕາແລກປ່ຽນເງິນ (Exchange Rate) -->
@@ -250,8 +250,8 @@
         <i class="fas fa-exchange-alt"></i>
       </div>
       <div>
-        <div class="perm-module-title">ອັດຕາແລກປ່ຽນເງິນ</div>
-        <div class="perm-module-desc">ຕັ້ງຄ່າ ແລະ ປັບອັດຕາແລກປ່ຽນເງິນຕ່າງປະເທດ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_exchange_rate_title', 'ອັດຕາແລກປ່ຽນເງິນ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_exchange_rate_desc', 'ຕັ້ງຄ່າ ແລະ ປັບອັດຕາແລກປ່ຽນເງິນຕ່າງປະເທດ')); ?></div>
       </div>
     </div>
   </td>
@@ -313,8 +313,8 @@
         <i class="fas fa-percent"></i>
       </div>
       <div>
-        <div class="perm-module-title">ໂປຣໂມຊັ່ນ</div>
-        <div class="perm-module-desc">ສ້າງ, ແກ້ໄຂ ແລະ ຈັດການໂປຣໂມຊັ່ນສ່ວນຫຼຸດສິນຄ້າ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_promotions_title', 'ໂປຣໂມຊັ່ນ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_promotions_desc', 'ສ້າງ, ແກ້ໄຂ ແລະ ຈັດການໂປຣໂມຊັ່ນສ່ວນຫຼຸດສິນຄ້າ')); ?></div>
       </div>
     </div>
   </td>
@@ -376,8 +376,8 @@
         <i class="fas fa-tags"></i>
       </div>
       <div>
-        <div class="perm-module-title">ປັບລາຄາສິນຄ້າ</div>
-        <div class="perm-module-desc">ປັບລາຄາຂາຍ ແລະ ລາຄາຊື້ສິນຄ້າເປັນຊຸດ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_price_adjustment_title', 'ປັບລາຄາສິນຄ້າ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_price_adjustment_desc', 'ປັບລາຄາຂາຍ ແລະ ລາຄາຊື້ສິນຄ້າເປັນຊຸດ')); ?></div>
       </div>
     </div>
   </td>
@@ -439,8 +439,8 @@
         <i class="fas fa-print"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຕັ້ງຄ່າປິ່ນເຕີ</div>
-        <div class="perm-module-desc">ຕັ້ງຄ່າເຄື່ອງພິມ ໃບບິນ ແລະ ບາໂຄ້ດ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_printers_title', 'ຕັ້ງຄ່າປິ່ນເຕີ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_printers_desc', 'ຕັ້ງຄ່າເຄື່ອງພິມ ໃບບິນ ແລະ ບາໂຄ້ດ')); ?></div>
       </div>
     </div>
   </td>
@@ -502,8 +502,8 @@
         <i class="fas fa-database"></i>
       </div>
       <div>
-        <div class="perm-module-title">ຈັດການຖານຂໍ້ມູນ</div>
-        <div class="perm-module-desc">ເຂົ້າເຖິງ ແລະ ເບິ່ງສະຖິຕິ/ຈັດການຖານຂໍ້ມູນລະບົບ</div>
+        <div class="perm-module-title"><?php echo htmlspecialchars(t('permissions.module_database_title', 'ຈັດການຖານຂໍ້ມູນ')); ?></div>
+        <div class="perm-module-desc"><?php echo htmlspecialchars(t('permissions.module_database_desc', 'ເຂົ້າເຖິງ ແລະ ເບິ່ງສະຖິຕິ/ຈັດການຖານຂໍ້ມູນລະບົບ')); ?></div>
       </div>
     </div>
   </td>
@@ -519,7 +519,7 @@
       <span class="matrix-slider"></span>
     </label>
   </td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
-  <td class="text-center"><span class="perm-na-badge">ບໍ່ມີ</span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
+  <td class="text-center"><span class="perm-na-badge"><?php echo htmlspecialchars(t('permissions.na', 'ບໍ່ມີ')); ?></span></td>
 </tr>

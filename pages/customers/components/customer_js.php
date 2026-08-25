@@ -1,5 +1,17 @@
 <!-- Component: Customer JavaScript Logic -->
 <script>
+  var I18N_CUSTOMERS = <?php echo tjson([
+      'customers.page_prev' => 'ໜ້າກ່ອນໜ້າ',
+      'customers.page_next' => 'ໜ້າຖັດໄປ',
+      'customers.confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+      'customers.confirm_delete_text' => 'ທ່ານຕ້ອງການລົບຂໍ້ມູນລູກຄ້າ "%s" ແທ້ຫຼືບໍ່?',
+      'customers.delete_confirm_btn' => '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
+      'customers.cancel' => 'ຍົກເລີກ',
+      'customers.delete_success' => 'ລົບຂໍ້ມູນລູກຄ້າສຳເລັດ!',
+      'customers.error_title' => 'ຜິດພາດ',
+      'customers.error_generic' => 'ຜິດພາດ!',
+  ]); ?>;
+
   var NEXT_CUST_CODE = '<?php echo $next_cust_code; ?>';
   var currentPage = 1;
   var pageSize = 10;
@@ -109,7 +121,7 @@
     // 1. Previous button
     var prevLi = document.createElement('li');
     prevLi.className = 'page-item ' + (currentPage <= 1 ? 'disabled' : '');
-    prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage > 1 ? 'onclick="goToPage(' + (currentPage - 1) + ')"' : '') + ' title="ໜ້າກ່ອນໜ້າ"><i class="fas fa-chevron-left"></i></a>';
+    prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage > 1 ? 'onclick="goToPage(' + (currentPage - 1) + ')"' : '') + ' title="' + I18N_CUSTOMERS['customers.page_prev'] + '"><i class="fas fa-chevron-left"></i></a>';
     paginationUl.appendChild(prevLi);
 
     // 2. Page numbers
@@ -158,7 +170,7 @@
     // 3. Next button
     var nextLi = document.createElement('li');
     nextLi.className = 'page-item ' + (currentPage >= totalPages ? 'disabled' : '');
-    nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage < totalPages ? 'onclick="goToPage(' + (currentPage + 1) + ')"' : '') + ' title="ໜ້າຖັດໄປ"><i class="fas fa-chevron-right"></i></a>';
+    nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage < totalPages ? 'onclick="goToPage(' + (currentPage + 1) + ')"' : '') + ' title="' + I18N_CUSTOMERS['customers.page_next'] + '"><i class="fas fa-chevron-right"></i></a>';
     paginationUl.appendChild(nextLi);
   }
 
@@ -203,14 +215,14 @@
 
   function confirmDeleteCustomer(id, name) {
     Swal.fire({
-      title: 'ຢືນຢັນການລົບ?',
-      text: 'ທ່ານຕ້ອງການລົບຂໍ້ມູນລູກຄ້າ "' + name + '" ແທ້ຫຼືບໍ່?',
+      title: I18N_CUSTOMERS['customers.confirm_delete_title'],
+      text: I18N_CUSTOMERS['customers.confirm_delete_text'].replace('%s', name),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
-      cancelButtonText: 'ຍົກເລີກ',
+      confirmButtonText: I18N_CUSTOMERS['customers.delete_confirm_btn'],
+      cancelButtonText: I18N_CUSTOMERS['customers.cancel'],
       heightAuto: false
     }).then(function(result) {
       if (result.isConfirmed) {
@@ -223,12 +235,12 @@
               toast: true,
               position: 'top-end',
               icon: 'success',
-              title: 'ລົບຂໍ້ມູນລູກຄ້າສຳເລັດ!',
+              title: I18N_CUSTOMERS['customers.delete_success'],
               showConfirmButton: false,
               timer: 1500
             });
           } else {
-            Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+            Swal.fire({ icon: 'error', title: I18N_CUSTOMERS['customers.error_title'], text: res.message || I18N_CUSTOMERS['customers.error_generic'] });
           }
         }, 'json');
       }

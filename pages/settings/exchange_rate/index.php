@@ -30,15 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO tbexchange (ex_date, ex_time, ex_kip_bath, ex_kip_us, ex_kip_cn, ex_status, ex_userlogin, branch_id) VALUES (CURDATE(), CURTIME(), ?, ?, ?, 'Active', ?, 1)");
                 $stmt->execute([$thb_rate, $usd_rate, $cny_rate, $username]);
-                $message = 'ອັບເດດອັດຕາແລກປ່ຽນເງິນສຳເລັດແລ້ວ!';
+                $message = t('exchange_rate.msg_save_success', 'ອັບເດດອັດຕາແລກປ່ຽນເງິນສຳເລັດແລ້ວ!');
                 $message_type = 'success';
                 logActivity($pdo, "ອັບເດດອັດຕາແລກປ່ຽນ", "THB: $thb_rate ₭, USD: $usd_rate ₭, CNY: $cny_rate ₭");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('exchange_rate.msg_error_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         } else {
-            $message = 'ກະລຸນາປ້ອນອັດຕາແລກປ່ຽນທີ່ຖືກຕ້ອງ!';
+            $message = t('exchange_rate.msg_invalid_rate', 'ກະລຸນາປ້ອນອັດຕາແລກປ່ຽນທີ່ຖືກຕ້ອງ!');
             $message_type = 'warning';
         }
     } elseif ($action === 'update_rate') {
@@ -51,11 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("UPDATE tbexchange SET ex_kip_bath = ?, ex_kip_us = ?, ex_kip_cn = ?, ex_userlogin = ? WHERE Id = ?");
                 $stmt->execute([$thb_rate, $usd_rate, $cny_rate, $username, $rate_id]);
-                $message = 'ດຳເນີນການອັບເດດອັດຕາແລກປ່ຽນສຳເລັດ!';
+                $message = t('exchange_rate.msg_update_success', 'ດຳເນີນການອັບເດດອັດຕາແລກປ່ຽນສຳເລັດ!');
                 $message_type = 'success';
                 logActivity($pdo, "ແກ້ໄຂອັດຕາແລກປ່ຽນ", "ID: $rate_id, THB: $thb_rate ₭, USD: $usd_rate ₭, CNY: $cny_rate ₭");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('exchange_rate.msg_error_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -65,11 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("DELETE FROM tbexchange WHERE Id = ?");
                 $stmt->execute([$rate_id]);
-                $message = 'ລຶບປະຫວັດອັດຕາແລກປ່ຽນສຳເລັດແລ້ວ!';
+                $message = t('exchange_rate.msg_delete_success', 'ລຶບປະຫວັດອັດຕາແລກປ່ຽນສຳເລັດແລ້ວ!');
                 $message_type = 'success';
                 logActivity($pdo, "ລຶບອັດຕາແລກປ່ຽນ", "ID: $rate_id");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('exchange_rate.msg_error_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         }
