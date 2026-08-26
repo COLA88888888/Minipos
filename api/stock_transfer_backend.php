@@ -47,7 +47,8 @@ if ($action === 'get_transfer_details') {
                 COALESCE(NULLIF(TRIM(d.product_name), ''), p.product_name, 'ສິນຄ້າ') as product_name,
                 COALESCE(NULLIF(TRIM(d.barcode), ''), p.barcode, '') as prod_barcode,
                 COALESCE(NULLIF(TRIM(d.unit), ''), p.unit, 'ອັນ') as unit,
-                d.qty
+                d.qty,
+                d.bprice
             FROM stock_transfer_details d
             LEFT JOIN products p ON d.product_id = p.product_id AND p.store_id = ?
             WHERE d.transfer_id = ?

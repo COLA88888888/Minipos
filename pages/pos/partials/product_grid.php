@@ -91,6 +91,11 @@
   <?php endforeach; ?>
 </div>
 
+<div id="productGridEmpty" class="text-center text-muted py-5" style="display:none; width:100%;">
+  <i class="fas fa-box-open" style="font-size:2.2rem; opacity:0.4;"></i>
+  <div class="mt-2" style="font-size:0.95rem; font-weight:600;"><?php echo htmlspecialchars(t('pos.no_products', 'ບໍ່ມີຂໍ້ມູນສິນຄ້າ')); ?></div>
+</div>
+
 <script>
 (function() {
   try {

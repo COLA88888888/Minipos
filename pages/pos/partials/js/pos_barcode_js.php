@@ -185,6 +185,7 @@ function selectCategoryPill(btn, catId) {
 function filterGrid() {
   var q = ($('#barcodeInput').val() || '').toLowerCase().trim();
   var catId = selectedCategoryPillId;
+  var visibleCount = 0;
 
   $('.product-item-card').each(function() {
     var name = $(this).attr('data-name') || '';
@@ -197,9 +198,12 @@ function filterGrid() {
 
     if (matchText && matchCat) {
       $(this).show();
+      visibleCount++;
     } else {
       $(this).hide();
     }
   });
+
+  $('#productGridEmpty').toggle(visibleCount === 0);
 }
 </script>

@@ -64,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
 
             // Revert stocks
+            $totalCost = 0;
             foreach ($details as $item) {
                 $product_id = $item['product_id'];
                 $qty        = $item['qty'];
@@ -75,6 +76,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 // Return to source store
                 $stmtReturnSrc = $pdo->prepare("UPDATE products SET qty = qty + ? WHERE product_id = ? AND store_id = ?");
                 $stmtReturnSrc->execute([$qty, $product_id, $from_store_id]);
+
+                $totalCost += $qty * (float)$item['bprice'];
+            }
+
+            // The original transfer recorded ຕົ້ນທຶນ (cost) moving with the goods: a positive
+            // "imports" ledger row at the destination branch and a matching negative row at the
+            // source branch. Cancelling must reverse both, or the cost stays booked at the
+            // destination (and missing at the source) even after the stock itself moved back.
+            if ($totalCost > 0) {
+                $fromStoreNameStmt = $pdo->prepare("SELECT store_name FROM tbstore WHERE store_id = ?");
+                $fromStoreNameStmt->execute([$from_store_id]);
+                $fromStoreNameVal = $fromStoreNameStmt->fetchColumn() ?: "ສາຂາ #{$from_store_id}";
+
+                $toStoreNameStmt = $pdo->prepare("SELECT store_name FROM tbstore WHERE store_id = ?");
+                $toStoreNameStmt->execute([$to_store_id]);
+                $toStoreNameVal = $toStoreNameStmt->fetchColumn() ?: "ສາຂາ #{$to_store_id}";
+
+                $insImpRevert = $pdo->prepare("INSERT INTO imports (invoice_number, supplier_name, import_date, total_cost, created_by, notes, store_id) VALUES (?, ?, NOW(), ?, ?, ?, ?)");
+
+                // Reverse the destination branch's cost-in
+                $insImpRevert->execute([
+                    $transfer['transfer_code'],
+                    'ຍົກເລີກໂອນຈາກສາຂາ ' . $fromStoreNameVal,
+                    -$totalCost,
+                    $_SESSION['user_id'],
+                    'ຍົກເລີກໃບໂອນເລກທີ ' . $transfer['transfer_code'],
+                    $to_store_id
+                ]);
+
+                // Restore the source branch's cost that was deducted out
+                $insImpRevert->execute([
+                    $transfer['transfer_code'],
+                    'ຍົກເລີກໂອນອອກໄປສາຂາ ' . $toStoreNameVal,
+                    $totalCost,
+                    $_SESSION['user_id'],
+                    'ຍົກເລີກໃບໂອນເລກທີ ' . $transfer['transfer_code'],
+                    $from_store_id
+                ]);
             }
 
             // Update status

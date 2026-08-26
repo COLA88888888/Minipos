@@ -74,10 +74,11 @@ if (!hasPermission('dashboard')) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo htmlspecialchars(getCurrentLang()); ?>">
+<html lang="<?php echo htmlspecialchars(getCurrentLang()); ?>" translate="no">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
   <title><?php echo htmlspecialchars($site_name); ?></title>
   <link rel="shortcut icon" href="<?php echo htmlspecialchars($site_logo); ?>" type="image/jpeg">
   <link rel="icon" href="<?php echo htmlspecialchars($site_logo); ?>" type="image/jpeg">
@@ -399,13 +400,18 @@ if (!hasPermission('dashboard')) {
                     $directionIcon = $isOutgoing ? 'fa-paper-plane text-success' : 'fa-truck-loading text-primary';
                     $directionPrefix = $isOutgoing ? t('layout.transfer_to', 'ໂອນໄປຫາ') . ' ' : t('layout.transfer_from', 'ໂອນມາຈາກ') . ' ';
                   ?>
-                  <div id="notif_item_trf_<?php echo $trf['transfer_id']; ?>" onclick="markItemAsRead('trf_<?php echo $trf['transfer_id']; ?>', 'subNotifBadge'); viewTransferDetailsModal(<?php echo intval($trf['transfer_id']); ?>)" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
-                    <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
-                      <i class="fas <?php echo $directionIcon; ?> mr-2" style="font-size: 0.82rem;"></i>
-                      <span class="text-dark font-weight-bold" style="font-size: 0.84rem;"><?php echo date('d/m/Y H:i', strtotime($trf['transfer_date'])); ?></span>
+                  <div id="notif_item_trf_<?php echo $trf['transfer_id']; ?>" onclick="markItemAsRead('trf_<?php echo $trf['transfer_id']; ?>', 'subNotifBadge'); viewTransferDetailsModal(<?php echo intval($trf['transfer_id']); ?>)" class="dropdown-item py-2 px-3 border-bottom d-flex flex-column" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; transition: background 0.15s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='#ffffff'">
+                    <div class="d-flex align-items-center justify-content-between flex-nowrap w-100">
+                      <div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">
+                        <i class="fas <?php echo $directionIcon; ?> mr-2" style="font-size: 0.82rem;"></i>
+                        <span class="text-dark font-weight-bold" style="font-size: 0.84rem;"><?php echo date('d/m/Y H:i', strtotime($trf['transfer_date'])); ?></span>
+                      </div>
+                      <div class="d-flex align-items-center text-nowrap flex-shrink-0">
+                        <span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;"><?php echo intval($trf['total_items'] ?? 1); ?> ລາຍການ</span>
+                      </div>
                     </div>
-                    <div class="d-flex align-items-center text-nowrap flex-shrink-0">
-                      <span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;"><?php echo intval($trf['total_items'] ?? 1); ?> ລາຍການ</span>
+                    <div class="text-success font-weight-bold mt-1" style="font-size: 0.78rem;">
+                      <i class="fas fa-coins mr-1"></i> <?php echo htmlspecialchars(formatCurrency($trf['total_value'] ?? 0)); ?>
                     </div>
                   </div>
                 <?php endforeach; ?>
@@ -606,20 +612,14 @@ if (!hasPermission('dashboard')) {
           // 1. Instant, client-side repaint of the persistent chrome — no waiting on the network.
           applyLangInstantly(lang);
 
-          // 2. Persist the choice server-side, then refresh just the iframe (not the whole shell)
-          //    so the current page's own PHP-rendered text switches language too.
+          // 2. Persist the choice server-side in the background — no reload. The current iframe
+          //    page's own PHP-rendered text keeps its language until the user next navigates,
+          //    at which point it's already rendered server-side in the new language.
           fetch('../lang/set_lang.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'lang=' + encodeURIComponent(lang)
-          }).catch(function() {}).then(function() {
-            var frameEl = window.top.document.querySelector('iframe[name="frame"]');
-            if (frameEl) {
-              frameEl.contentWindow.location.reload();
-            } else {
-              window.top.location.reload();
-            }
-          });
+          }).catch(function() {});
         });
       });
     });
@@ -835,7 +835,8 @@ if (!hasPermission('dashboard')) {
       $('#trf_modal_to').text('-');
       $('#trf_modal_creator').text('-');
       $('#trf_modal_item_count').text('0');
-      $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-primary font-weight-bold"><i class="fas fa-spinner fa-spin fa-2x mb-2 d-block"></i>ກຳລັງດຶງຂໍ້ມູນລາຍລະອຽດ...</td></tr>');
+      $('#trf_modal_total_value').text('0');
+      $('#trf_modal_table_body').html('<tr><td colspan="5" class="text-center py-4 text-primary font-weight-bold"><i class="fas fa-spinner fa-spin fa-2x mb-2 d-block"></i>ກຳລັງດຶງຂໍ້ມູນລາຍລະອຽດ...</td></tr>');
 
       // Move modal to body container to bypass any parent z-index / overflow restrictions
       var modalEl = $('#notifTransferDetailModal');
@@ -860,31 +861,36 @@ if (!hasPermission('dashboard')) {
             $('#trf_modal_item_count').text(details.length);
 
             var tbodyHtml = '';
+            var modalTotalValue = 0;
             if (details.length > 0) {
               details.forEach(function(item, idx) {
                 var pName = item.product_name || '-';
                 var barcode = item.prod_barcode || item.barcode || '-';
                 var qty = item.qty || 1;
                 var unit = item.unit || 'ອັນ';
+                var lineValue = parseFloat(qty) * parseFloat(item.bprice || 0);
+                modalTotalValue += lineValue;
 
                 tbodyHtml += '<tr style="white-space: nowrap;">';
                 tbodyHtml += '<td class="text-center align-middle font-weight-bold text-muted text-nowrap">' + (idx + 1) + '</td>';
                 tbodyHtml += '<td class="align-middle font-weight-bold text-dark text-nowrap" style="white-space: nowrap;">' + pName + '</td>';
                 tbodyHtml += '<td class="text-center align-middle text-muted text-nowrap" style="white-space: nowrap;">' + barcode + '</td>';
                 tbodyHtml += '<td class="text-center align-middle text-nowrap" style="white-space: nowrap;"><span class="badge badge-primary px-3 py-1.5 font-weight-bold" style="font-size:0.82rem; border-radius: 6px;">' + qty + ' ' + unit + '</span></td>';
+                tbodyHtml += '<td class="text-right align-middle font-weight-bold text-success text-nowrap" style="white-space: nowrap;">' + Math.round(lineValue).toLocaleString() + ' ₭</td>';
                 tbodyHtml += '</tr>';
               });
             } else {
-              tbodyHtml = '<tr><td colspan="4" class="text-center py-4 text-muted">ບໍ່ພົບລາຍການສິນຄ້າ</td></tr>';
+              tbodyHtml = '<tr><td colspan="5" class="text-center py-4 text-muted">ບໍ່ພົບລາຍການສິນຄ້າ</td></tr>';
             }
 
             $('#trf_modal_table_body').html(tbodyHtml);
+            $('#trf_modal_total_value').text(Math.round(modalTotalValue).toLocaleString());
           } else {
-            $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-circle fa-2x mb-2 d-block"></i>' + (res ? res.message : 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້') + '</td></tr>');
+            $('#trf_modal_table_body').html('<tr><td colspan="5" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-circle fa-2x mb-2 d-block"></i>' + (res ? res.message : 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້') + '</td></tr>');
           }
         },
         error: function() {
-          $('#trf_modal_table_body').html('<tr><td colspan="4" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ລະບົບ</td></tr>');
+          $('#trf_modal_table_body').html('<tr><td colspan="5" class="text-center py-4 text-danger font-weight-bold"><i class="fas fa-exclamation-triangle fa-2x mb-2 d-block"></i>ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່ລະບົບ</td></tr>');
         }
       });
     }
@@ -1113,7 +1119,10 @@ if (!hasPermission('dashboard')) {
                   var itemSummary = trf.item_summary || I18N_LAYOUT['layout.item_transferred'];
                   var isRead = readKeys.includes('trf_' + trf.transfer_id);
 
-                  html += '<div id="notif_item_trf_' + trf.transfer_id + '" onclick="markItemAsRead(\'trf_' + trf.transfer_id + '\', \'subNotifBadge\'); viewTransferDetailsModal(' + trf.transfer_id + ')" class="dropdown-item py-2 px-3 border-bottom d-flex align-items-center justify-content-between flex-nowrap" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  var trfValue = Math.round(parseFloat(trf.total_value || 0));
+
+                  html += '<div id="notif_item_trf_' + trf.transfer_id + '" onclick="markItemAsRead(\'trf_' + trf.transfer_id + '\', \'subNotifBadge\'); viewTransferDetailsModal(' + trf.transfer_id + ')" class="dropdown-item py-2 px-3 border-bottom d-flex flex-column" style="background-color: #ffffff; cursor: pointer; white-space: nowrap; overflow: hidden; opacity: ' + (isRead ? '0.55' : '1') + ';">';
+                  html += '<div class="d-flex align-items-center justify-content-between flex-nowrap w-100">';
                   html += '<div class="d-flex align-items-center text-nowrap mr-2" style="overflow: hidden; text-overflow: ellipsis; min-width: 0;">';
                   html += '<i class="fas ' + directionIcon + ' mr-2" style="font-size: 0.82rem;"></i>';
                   html += '<span class="text-dark font-weight-bold" style="font-size: 0.84rem;">' + (trf.formatted_date || '') + '</span>';
@@ -1121,6 +1130,8 @@ if (!hasPermission('dashboard')) {
                   html += '<div class="d-flex align-items-center text-nowrap flex-shrink-0">';
                   html += '<span class="badge badge-info font-weight-bold" style="font-size: 0.72rem;">' + (trf.total_items || 1) + ' ' + I18N_LAYOUT['layout.items_unit'] + '</span>';
                   html += '</div>';
+                  html += '</div>';
+                  html += '<div class="text-success font-weight-bold mt-1" style="font-size: 0.78rem;"><i class="fas fa-coins mr-1"></i> ' + trfValue.toLocaleString() + ' ₭</div>';
                   html += '</div>';
                 });
               }
@@ -1815,6 +1826,9 @@ if (!hasPermission('dashboard')) {
               <h6 class="m-0 font-weight-bold text-dark" style="font-size: 0.95rem;">
                 <i class="fas fa-boxes text-primary mr-1"></i> ລາຍການສິນຄ້າທີ່ໂອນມາ (<span id="trf_modal_item_count">0</span>)
               </h6>
+              <span class="text-success font-weight-bold" style="font-size: 0.92rem;">
+                <i class="fas fa-coins mr-1"></i> <span id="trf_modal_total_value">0</span> ₭
+              </span>
             </div>
             <div class="card-body p-0">
               <div class="table-responsive" style="max-height: 260px; overflow-y: auto; overflow-x: auto;">
@@ -1825,6 +1839,7 @@ if (!hasPermission('dashboard')) {
                       <th class="py-2.5 text-nowrap">ຊື່ສິນຄ້າ</th>
                       <th class="text-center py-2.5 text-nowrap">ບາໂຄດ</th>
                       <th class="text-center py-2.5 text-nowrap" style="width: 130px;">ຈຳນວນໂອນ</th>
+                      <th class="text-right py-2.5 text-nowrap" style="width: 130px;">ມູນຄ່າ</th>
                     </tr>
                   </thead>
                   <tbody id="trf_modal_table_body" style="font-size: 0.9rem;">

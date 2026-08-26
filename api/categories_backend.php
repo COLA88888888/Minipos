@@ -29,6 +29,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 try {
                     $stmt = $pdo->prepare("INSERT INTO categories (category_id, category_name, description, store_id) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$cat_id, $name, $desc, $catActiveStoreId]);
+
+                    // A category added from the main branch is also created in every sub-branch
+                    // (own auto-generated category_id per branch, since category_id is a single
+                    // shared PRIMARY KEY across the whole table, not composite with store_id),
+                    // so it's immediately available for products there without a manual re-add.
+                    if (isMainBranch($pdo, $catActiveStoreId)) {
+                        $subStoresStmt = $pdo->prepare("SELECT store_id FROM tbstore WHERE store_id != ?");
+                        $subStoresStmt->execute([$catActiveStoreId]);
+                        $subInsertStmt = $pdo->prepare("INSERT INTO categories (category_name, description, store_id) VALUES (?, ?, ?)");
+                        foreach ($subStoresStmt->fetchAll(PDO::FETCH_COLUMN) as $subStoreId) {
+                            $subInsertStmt->execute([$name, $desc, $subStoreId]);
+                        }
+                    }
+
                     $message = 'ເພີ່ມປະເພດສິນຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ເພີ່ມປະເພດສິນຄ້າ", "ຊື່: $name");
@@ -47,9 +61,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $desc = trim($_POST['description'] ?? '');
             if ($id > 0 && $name !== '') {
                 try {
+                    // Grab the pre-edit name so a main-branch edit can find the matching
+                    // rows in sub-branches (each branch holds its own category_id, so the
+                    // only thing linking "the same" category across branches is its name).
+                    $oldNameStmt = $pdo->prepare("SELECT category_name FROM categories WHERE category_id = ? AND store_id = ?");
+                    $oldNameStmt->execute([$id, $catActiveStoreId]);
+                    $oldName = $oldNameStmt->fetchColumn();
+
                     // Scoped to this branch's own category — a sub-branch user can't edit another branch's row
                     $stmt = $pdo->prepare("UPDATE categories SET category_name = ?, description = ? WHERE category_id = ? AND store_id = ?");
                     $stmt->execute([$name, $desc, $id, $catActiveStoreId]);
+
+                    // A category edited from the main branch also renames the matching
+                    // category in every sub-branch, so products there keep showing the
+                    // updated name/description without a manual re-edit in each branch.
+                    if ($oldName !== false && $oldName !== '' && isMainBranch($pdo, $catActiveStoreId)) {
+                        $subUpdateStmt = $pdo->prepare("UPDATE categories SET category_name = ?, description = ? WHERE category_name = ? AND store_id != ?");
+                        $subUpdateStmt->execute([$name, $desc, $oldName, $catActiveStoreId]);
+                    }
+
                     $message = 'ແກ້ໄຂປະເພດສິນຄ້າສຳເລັດ!';
                     $message_type = 'success';
                     logActivity($pdo, "ແກ້ໄຂປະເພດສິນຄ້າ", "ID: $id, ຊື່ໃໝ່: $name");

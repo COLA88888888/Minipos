@@ -348,6 +348,24 @@ try {
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     } catch (Throwable $ex) {}
 
+    // Backfill: every main-branch category must also exist in each sub-branch (its own
+    // row/category_id there, matched by name). Covers categories created before the
+    // add/edit propagation existed, or inserted directly in the DB. No-op once caught up.
+    try {
+        $pdo->exec("
+            INSERT INTO categories (category_name, description, store_id)
+            SELECT mc.category_name, mc.description, s.store_id
+            FROM categories mc
+            CROSS JOIN tbstore s
+            WHERE mc.store_id = (SELECT store_id FROM tbstore WHERE is_main = 1 LIMIT 1)
+              AND s.store_id != mc.store_id
+              AND NOT EXISTS (
+                  SELECT 1 FROM categories sc
+                  WHERE sc.store_id = s.store_id AND sc.category_name = mc.category_name
+              )
+        ");
+    } catch (Throwable $ex) {}
+
     // Ensure tbcompanyinfo exists and has DB record
     try {
         $pdo->exec("CREATE TABLE IF NOT EXISTS `tbcompanyinfo` (
@@ -1010,7 +1028,8 @@ if (!function_exists('getIncomingTransfersForStore')) {
                 $trfId = intval($t['transfer_id']);
                 $stmtDet = $pdo->prepare("
                     SELECT COALESCE(NULLIF(TRIM(d.product_name), ''), p.product_name, 'ສິນຄ້າ') as prod_name,
-                           SUM(d.qty) as total_qty
+                           SUM(d.qty) as total_qty,
+                           SUM(d.qty * d.bprice) as line_value
                     FROM stock_transfer_details d
                     LEFT JOIN products p ON d.product_id = p.product_id
                     WHERE d.transfer_id = ?
@@ -1020,12 +1039,15 @@ if (!function_exists('getIncomingTransfersForStore')) {
                 $details = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
 
                 $summaryParts = [];
+                $totalValue = 0;
                 foreach ($details as $d) {
                     $summaryParts[] = $d['prod_name'] . ' x' . $d['total_qty'];
+                    $totalValue += floatval($d['line_value']);
                 }
 
                 $t['total_items'] = count($details);
                 $t['item_summary'] = implode(', ', $summaryParts);
+                $t['total_value'] = $totalValue;
             }
             unset($t);
 

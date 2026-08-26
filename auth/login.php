@@ -16,10 +16,11 @@ require_once __DIR__ . '/../lang/translator.php';
 $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo htmlspecialchars(getCurrentLang()); ?>">
+<html lang="<?php echo htmlspecialchars(getCurrentLang()); ?>" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
     <title>Wlaodev POS</title>
     <link rel="shortcut icon" href="<?php echo $site_logo; ?>" type="image/x-icon">
 
@@ -183,7 +184,8 @@ $site_logo = '../assets/img/logosystem/Wlaodev.jpg';
                 title: I18N_LOGIN['login.token_expired_title'],
                 text: I18N_LOGIN['login.token_expired_text'],
                 confirmButtonColor: '#007bff',
-                confirmButtonText: I18N_LOGIN['login.ok']
+                confirmButtonText: I18N_LOGIN['login.ok'],
+                heightAuto: false
             }).then(function() {
                 window.history.replaceState({}, document.title, window.location.pathname);
             });

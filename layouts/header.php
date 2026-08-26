@@ -10,10 +10,11 @@ $header_site_name = 'Wlaodev POS';
 $header_site_logo = $base_path . 'assets/img/logosystem/Wlaodev.jpg';
 ?>
 <!DOCTYPE html>
-<html lang="lo">
+<html lang="lo" translate="no">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google" content="notranslate">
     <title><?php echo htmlspecialchars($header_site_name); ?></title>
     <link rel="shortcut icon" href="<?php echo htmlspecialchars($header_site_logo); ?>" type="image/jpeg">
     <link rel="icon" href="<?php echo htmlspecialchars($header_site_logo); ?>" type="image/jpeg">
@@ -49,13 +50,9 @@ $header_site_logo = $base_path . 'assets/img/logosystem/Wlaodev.jpg';
     <script src="<?php echo $base_path; ?>plugins/sweetalert2/sweetalert2.all.min.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('<?php echo $base_path; ?>sw.js').then(function(reg) {
-            console.log('MiniPos ServiceWorker registered:', reg.scope);
-          }).catch(function(err) {
-            console.warn('MiniPos ServiceWorker registration failed:', err);
-          });
-        });
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          regs.forEach(function(reg) { reg.unregister(); });
+        }).catch(function() {});
       }
     </script>
     <style>
