@@ -10,6 +10,7 @@ return [
     'layout.customers' => '客户管理',
     'layout.products_group' => '商品信息',
     'layout.categories' => '商品分类',
+    'layout.units' => '单位管理',
     'layout.products' => '商品列表',
     'layout.import_stock' => '进货',
     'layout.import_list' => '进货记录',

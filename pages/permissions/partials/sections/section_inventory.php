@@ -66,6 +66,67 @@
   </td>
 </tr>
 
+<!-- 4.1b ຫົວໜ່ວຍ -->
+<tr>
+  <td class="pl-4">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-ruler-combined text-info mr-3" style="font-size: 1.2rem; width: 24px;"></i>
+      <div>
+        <div class="font-weight-bold text-dark" style="font-size: 0.95rem;"><?php echo htmlspecialchars(t('permissions.module_units_title', 'ຈັດການຫົວໜ່ວຍ')); ?></div>
+        <div class="text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('permissions.module_units_desc', 'ຈັດການຫົວໜ່ວຍສິນຄ້າ')); ?></div>
+      </div>
+    </div>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox"
+             id="perm_units_view_<?php echo $u['Id']; ?>"
+             data-perm="units"
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['units']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'units', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox"
+             id="perm_units_add_<?php echo $u['Id']; ?>"
+             data-perm="units"
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['units']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'units', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox"
+             id="perm_units_edit_<?php echo $u['Id']; ?>"
+             data-perm="units"
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['units']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'units', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+  <td class="text-center">
+    <label class="matrix-switch">
+      <input type="checkbox"
+             id="perm_units_del_<?php echo $u['Id']; ?>"
+             data-perm="units"
+             data-user-id="<?php echo $u['Id']; ?>"
+             <?php echo (!empty($u['units']) || $isAdmin) ? 'checked' : ''; ?>
+             <?php echo ($isAdmin) ? 'disabled' : ''; ?>
+             onchange="toggleUserPerm(<?php echo $u['Id']; ?>, 'units', this)">
+      <span class="matrix-slider"></span>
+    </label>
+  </td>
+</tr>
+
 <!-- 4.2 ລາຍການສິນຄ້າ -->
 <tr>
   <td class="pl-4">

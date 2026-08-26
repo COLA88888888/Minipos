@@ -135,6 +135,17 @@
                   <p data-i18n="layout.categories"><?php echo htmlspecialchars(t('layout.categories', 'ໝວດໝູ່ສິນຄ້າ')); ?></p>
                 </a>
               </li>
+
+              <?php endif; ?>
+
+              <?php if (hasPermission('units')): ?>
+              <!-- Sub-menu: ຈັດການຫົວໜ່ວຍ -->
+              <li class="nav-item">
+                <a href="<?php echo $bp; ?>pages/units/units.php" target="frame" class="nav-link">
+                  <i class="nav-icon fas fa-ruler-combined text-info"></i>
+                  <p data-i18n="layout.units"><?php echo htmlspecialchars(t('layout.units', 'ຈັດການຫົວໜ່ວຍ')); ?></p>
+                </a>
+              </li>
               <?php endif; ?>
 
               <?php if (hasPermission('products')): ?>

@@ -59,6 +59,8 @@ return [
     'permissions.section_inventory' => '4. 商品与库存',
     'permissions.module_categories_title' => '商品分类',
     'permissions.module_categories_desc' => '管理商品分类与种类',
+    'permissions.module_units_title' => '单位管理',
+    'permissions.module_units_desc' => '管理商品单位',
     'permissions.module_products_title' => '商品列表',
     'permissions.module_products_desc' => '添加、编辑、调整库存并管理商品',
     'permissions.module_import_stock_title' => '进货',

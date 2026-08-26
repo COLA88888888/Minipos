@@ -10,6 +10,7 @@ return [
     'layout.customers' => 'Customer Management',
     'layout.products_group' => 'Product Information',
     'layout.categories' => 'Categories',
+    'layout.units' => 'Units Management',
     'layout.products' => 'Product List',
     'layout.import_stock' => 'Import Stock',
     'layout.import_list' => 'Import History',

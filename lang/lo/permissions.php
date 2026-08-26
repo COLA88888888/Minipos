@@ -59,6 +59,8 @@ return [
     'permissions.section_inventory' => '4. ຂໍ້ມູນສິນຄ້າ & ຄັງສິນຄ້າ',
     'permissions.module_categories_title' => 'ໝວດໝູ່ສິນຄ້າ',
     'permissions.module_categories_desc' => 'ຈັດການໝວດໝູ່ ແລະ ປະເພດສິນຄ້າ',
+    'permissions.module_units_title' => 'ຈັດການຫົວໜ່ວຍ',
+    'permissions.module_units_desc' => 'ຈັດການຫົວໜ່ວຍສິນຄ້າ',
     'permissions.module_products_title' => 'ລາຍການສິນຄ້າ',
     'permissions.module_products_desc' => 'ເພີ່ມ, ແກ້ໄຂ, ປັບສະຕັອກ ແລະ ຈັດການສິນຄ້າ',
     'permissions.module_import_stock_title' => 'ນຳເຂົ້າສິນຄ້າ',

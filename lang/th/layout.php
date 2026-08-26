@@ -10,6 +10,7 @@ return [
     'layout.customers' => 'จัดการลูกค้า',
     'layout.products_group' => 'ข้อมูลสินค้า',
     'layout.categories' => 'หมวดหมู่สินค้า',
+    'layout.units' => 'จัดการหน่วยนับ',
     'layout.products' => 'รายการสินค้า',
     'layout.import_stock' => 'นำเข้าสินค้า',
     'layout.import_list' => 'รายการสินค้ารับเข้า',

@@ -59,6 +59,8 @@ return [
     'permissions.section_inventory' => '4. Products & Inventory',
     'permissions.module_categories_title' => 'Product Categories',
     'permissions.module_categories_desc' => 'Manage product categories and types',
+    'permissions.module_units_title' => 'Units Management',
+    'permissions.module_units_desc' => 'Manage product units',
     'permissions.module_products_title' => 'Products',
     'permissions.module_products_desc' => 'Add, edit, adjust stock, and manage products',
     'permissions.module_import_stock_title' => 'Import Stock',

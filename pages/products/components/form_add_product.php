@@ -97,7 +97,12 @@
               <div class="row">
                 <div class="<?php echo $isAdmin ? 'col-md-7' : 'col-md-12'; ?> mb-3">
                   <label class="font-weight-bold text-dark mb-1">ຫົວໜ່ວຍ: <span class="text-danger">*</span></label>
-                  <input type="text" name="unit" id="add_unit" class="form-control" placeholder="ເຊັ່ນ: ປ໋ອງ, ອັນ, ຕຸກ, ແກ້ວ, ຖົງ..." style="border-radius: 6px; height: 40px;" required>
+                  <select name="unit" id="add_unit" class="form-control" style="border-radius: 6px; height: 40px;" required>
+                    <option value="">-- ເລືອກຫົວໜ່ວຍ --</option>
+                    <?php foreach ($units as $u): ?>
+                      <option value="<?php echo htmlspecialchars($u['unit_name']); ?>"><?php echo htmlspecialchars($u['unit_name']); ?></option>
+                    <?php endforeach; ?>
+                  </select>
                 </div>
                 <?php if ($isAdmin): ?>
                   <div class="col-md-5 mb-3">

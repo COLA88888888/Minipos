@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_action'])) {
 
         // ລາຍຊື່ຄໍລຳສິດທີ່ອະນຸຍາດໃຫ້ປັບປ່ຽນ (ລວມທັງເມນູຍ່ອຍລາຍງານ)
         $allowed_perms = [
-            'dashboard', 'sale', 'item_sales', 'stock', 'categories', 'products', 'import_stock', 'import_list',
+            'dashboard', 'sale', 'item_sales', 'stock', 'categories', 'units', 'products', 'import_stock', 'import_list',
             'stock_transfer', 'transfer_history',
             'report', 'daily_report', 'all_sales', 'best_seller', 'profit_cost', 'financial', 'category_sales', 'delete_bills',
             'accounting', 'setup', 'stores', 'print_barcode', 'exchange_rate', 'promotions', 'price_adjustment', 'printers',

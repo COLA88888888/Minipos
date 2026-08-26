@@ -77,6 +77,7 @@ if ($conn && !empty($_SESSION['user_id'])) {
             'item_sales' => $isAdmin ? 1 : (int)($refresh_row['item_sales'] ?? $refresh_row['sale'] ?? 0),
             'stock' => $isAdmin ? 1 : (int)($refresh_row['stock'] ?? 0),
             'categories' => $isAdmin ? 1 : (int)($refresh_row['categories'] ?? 0),
+            'units' => $isAdmin ? 1 : (int)($refresh_row['units'] ?? 0),
             'products' => $isAdmin ? 1 : (int)($refresh_row['products'] ?? 0),
             'import_stock' => $isAdmin ? 1 : (int)($refresh_row['import_stock'] ?? 0),
             'import_list' => $isAdmin ? 1 : (int)($refresh_row['import_list'] ?? 0),
@@ -186,7 +187,7 @@ try {
     } catch (Throwable $ex) {}
 
     // Ensure store_id column exists in all core data tables for multi-branch isolation
-    $coreTablesForStore = ['sales', 'tbsale_save', 'products', 'accounting_records', 'imports', 'customers', 'tbuser', 'categories'];
+    $coreTablesForStore = ['sales', 'tbsale_save', 'products', 'accounting_records', 'imports', 'customers', 'tbuser', 'categories', 'units'];
     foreach ($coreTablesForStore as $tblName) {
         try {
             $hasCol = $pdo->query("SHOW COLUMNS FROM `{$tblName}` LIKE 'store_id'")->fetch();
@@ -362,6 +363,32 @@ try {
               AND NOT EXISTS (
                   SELECT 1 FROM categories sc
                   WHERE sc.store_id = s.store_id AND sc.category_name = mc.category_name
+              )
+        ");
+    } catch (Throwable $ex) {}
+
+    try {
+        $pdo->exec("CREATE TABLE IF NOT EXISTS `units` (
+            `unit_id` INT AUTO_INCREMENT PRIMARY KEY,
+            `unit_name` VARCHAR(100) NOT NULL,
+            `description` TEXT NULL,
+            `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    } catch (Throwable $ex) {}
+
+    // Backfill: every main-branch unit must also exist in each sub-branch (its own
+    // row/unit_id there, matched by name) — same sync rule as categories above.
+    try {
+        $pdo->exec("
+            INSERT INTO units (unit_name, description, store_id)
+            SELECT mu.unit_name, mu.description, s.store_id
+            FROM units mu
+            CROSS JOIN tbstore s
+            WHERE mu.store_id = (SELECT store_id FROM tbstore WHERE is_main = 1 LIMIT 1)
+              AND s.store_id != mu.store_id
+              AND NOT EXISTS (
+                  SELECT 1 FROM units su
+                  WHERE su.store_id = s.store_id AND su.unit_name = mu.unit_name
               )
         ");
     } catch (Throwable $ex) {}
@@ -793,6 +820,7 @@ if (!function_exists('hasPermission')) {
             'dashboard'        => 'dashboard',
             'pos'              => 'sale',
             'categories'       => 'categories',
+            'units'            => 'units',
             'products'         => 'products',
             'import'           => 'import',
             'import_stock'     => 'import_stock',

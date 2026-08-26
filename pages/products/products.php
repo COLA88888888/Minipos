@@ -375,6 +375,9 @@ $currentStoreId = getActiveStoreId($pdo);
 $catStmt = $pdo->prepare("SELECT * FROM categories WHERE store_id = ? ORDER BY category_name ASC");
 $catStmt->execute([$currentStoreId]);
 $categories = $catStmt->fetchAll();
+$unitStmt = $pdo->prepare("SELECT * FROM units WHERE store_id = ? ORDER BY unit_name ASC");
+$unitStmt->execute([$currentStoreId]);
+$units = $unitStmt->fetchAll();
 $stores = $pdo->query("SELECT * FROM tbstore WHERE status = 'active' ORDER BY is_main DESC, store_id ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $userStoreId = intval($_SESSION['store_id'] ?? 1);
@@ -793,7 +796,15 @@ require_once __DIR__ . '/../../layouts/header.php';
     $('#edit_product_name').val(p.product_name);
     $('#edit_barcode').val(p.barcode || '');
     $('#edit_category_id').val(p.category_id);
-    $('#edit_unit').val(p.unit || '');
+
+    // If this product's existing unit isn't in the current branch's units list
+    // (legacy free-text value, or added before ຈັດການຫົວໜ່ວຍ existed), keep it
+    // selectable anyway instead of silently blanking the dropdown.
+    var editUnitSelect = $('#edit_unit');
+    if (p.unit && editUnitSelect.find('option[value="' + p.unit.replace(/"/g, '\\"') + '"]').length === 0) {
+      editUnitSelect.append($('<option></option>').attr('value', p.unit).text(p.unit));
+    }
+    editUnitSelect.val(p.unit || '');
     $('#edit_qty').val(p.qty !== undefined && p.qty !== null ? p.qty : 0);
 
     // Format ລາຄາມີຈຸດ

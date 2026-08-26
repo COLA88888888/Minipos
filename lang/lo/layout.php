@@ -10,6 +10,7 @@ return [
     'layout.customers' => 'ຈັດການລູກຄ້າ',
     'layout.products_group' => 'ຂໍ້ມູນສິນຄ້າ',
     'layout.categories' => 'ໝວດໝູ່ສິນຄ້າ',
+    'layout.units' => 'ຈັດການຫົວໜ່ວຍ',
     'layout.products' => 'ລາຍການສິນຄ້າ',
     'layout.import_stock' => 'ນຳເຂົ້າສິນຄ້າ',
     'layout.import_list' => 'ລາຍການສິນຄ້າຮັບເຂົ້າ',

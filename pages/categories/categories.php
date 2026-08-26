@@ -13,7 +13,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 <link rel="stylesheet" href="../../themes/users.css?v=<?php echo filemtime(__DIR__ . '/../../themes/users.css'); ?>">
 
 <div class="content-wrapper bg-light">
-  
+
   <!-- Content Header -->
   <section class="content-header py-3">
     <div class="container-fluid">
@@ -62,10 +62,10 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Main content -->
   <section class="content pb-5">
     <div class="container-fluid">
-      
+
       <!-- MAIN CATEGORY TABLE CARD -->
       <div class="card shadow-sm border-0" style="border-radius: 12px; overflow: hidden; background: #ffffff;">
-        
+
         <div class="card-header bg-white py-3 border-0">
           <h6 class="card-title m-0 font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon'; color: #0f172a; font-size: 1rem;">
             <?php echo htmlspecialchars(t('categories.table_card_title', 'ລາຍງານປະເພດສິນຄ້າທັງໝົດ')); ?>
@@ -87,14 +87,14 @@ require_once __DIR__ . '/../../layouts/header.php';
               </thead>
               <tbody style="font-size: 0.95rem;">
                 <?php if (!empty($allCategories)): ?>
-                  <?php $idx = 1; foreach ($allCategories as $cat): 
+                  <?php $idx = 1; foreach ($allCategories as $cat):
                     $catJson = htmlspecialchars(json_encode($cat), ENT_QUOTES, 'UTF-8');
                     $createdAt = !empty($cat['created_at']) ? date('d/m/Y H:i', strtotime($cat['created_at'])) : '-';
                     $productCount = intval($cat['product_count'] ?? 0);
                   ?>
                     <tr class="cat-row">
                       <td class="align-middle text-center text-muted font-weight-bold"><?php echo $idx++; ?></td>
-                      
+
                       <td class="align-middle text-center font-weight-bold">
                         <span class="badge badge-light border px-2 py-1" style="font-size: 0.85rem; color: #2563eb; background-color: #eff6ff; border-color: #bfdbfe !important;"><?php echo $cat['category_id']; ?></span>
                       </td>
@@ -112,7 +112,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                       </td>
 
                       <td class="text-center align-middle">
-                        <?php 
+                        <?php
                           $canEditCat = hasPermission('categories', 'edit');
                           $canDeleteCat = hasPermission('categories', 'del');
                         ?>
@@ -159,6 +159,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         </div> -->
 
       </div>
+
     </div>
   </section>
 </div>
@@ -225,7 +226,7 @@ require_once __DIR__ . '/components/form_edit_category.php';
         var form = document.createElement('form');
         form.method = 'POST';
         form.action = '';
-        
+
         var actInput = document.createElement('input');
         actInput.type = 'hidden';
         actInput.name = 'action';

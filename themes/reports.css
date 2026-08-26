@@ -182,7 +182,14 @@
     font-size: 0.84rem !important;
 }
 
-/* Desktop PC Filter Box (Full width, single line row, no line breaks) */
+/* Filter box, >= 768px (tablets, touchscreen POS terminals, and real desktops
+   alike). Previously this forced flex-wrap: nowrap on a "should be wide enough"
+   assumption, which kept breaking on touchscreen displays whose actual viewport
+   width didn't match — the ສາຂາ (branch) dropdown, being near the end of ~8
+   flex fields, got pushed past the visible edge and became unreachable. Always
+   wrapping removes the guesswork: every field is guaranteed visible no matter
+   the screen's actual width, at the cost of the filter box sometimes taking two
+   rows on a wide monitor instead of a single line. */
 @media (min-width: 768px) {
     .report-filter-box {
         display: block !important;
@@ -193,15 +200,14 @@
     .report-filter-box form {
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: wrap !important;
         align-items: flex-end !important;
         gap: 8px !important;
         width: 100% !important;
     }
     .report-filter-date-col {
-        flex: 1 1 0 !important;
-        min-width: 120px !important;
-        width: auto !important;
+        flex: 1 1 160px !important;
+        min-width: 140px !important;
     }
 }
 

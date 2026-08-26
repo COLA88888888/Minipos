@@ -59,6 +59,8 @@ return [
     'permissions.section_inventory' => '4. ข้อมูลสินค้า & คลังสินค้า',
     'permissions.module_categories_title' => 'หมวดหมู่สินค้า',
     'permissions.module_categories_desc' => 'จัดการหมวดหมู่และประเภทสินค้า',
+    'permissions.module_units_title' => 'จัดการหน่วยนับ',
+    'permissions.module_units_desc' => 'จัดการหน่วยนับสินค้า',
     'permissions.module_products_title' => 'รายการสินค้า',
     'permissions.module_products_desc' => 'เพิ่ม แก้ไข ปรับสต๊อก และจัดการสินค้า',
     'permissions.module_import_stock_title' => 'นำเข้าสินค้า',
