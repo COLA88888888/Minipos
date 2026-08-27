@@ -68,15 +68,19 @@ if (!empty($search)) {
 
 $whereClause = implode(" AND ", $where);
 
-// Count Total Deleted Bills
+// Count Total Deleted Bills + sum of their net amounts (whole filtered set, not just this page)
 $stmtCount = $pdo->prepare("
-    SELECT COUNT(*) 
+    SELECT
+        COUNT(*) AS cnt,
+        COALESCE(SUM(IFNULL(NULLIF(s.sale_barlance, 0), GREATEST(0, s.sale_amount - s.sale_discount_bill))), 0) AS net_sum
     FROM tbsale_save s
     LEFT JOIN tbuser u ON (s.user_receive = u.Id OR s.user_receive = u.username)
     WHERE {$whereClause}
 ");
 $stmtCount->execute($params);
-$total_records = (int)$stmtCount->fetchColumn();
+$countRow = $stmtCount->fetch(PDO::FETCH_ASSOC) ?: ['cnt' => 0, 'net_sum' => 0];
+$total_records      = (int)($countRow['cnt'] ?? 0);
+$deleted_total_net  = (float)($countRow['net_sum'] ?? 0);
 
 $total_pages = max(1, ceil($total_records / $per_page));
 if ($page > $total_pages) $page = $total_pages;
@@ -108,7 +112,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
   <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
       <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-history text-danger mr-2"></i> ປະຫວັດການລົບບິນຂາຍ
+        <i class="fas fa-history text-danger mr-2"></i> <?php echo htmlspecialchars(t('reports.title_delete_bills', 'ປະຫວັດການລົບບິນຂາຍ')); ?>
       </h5>
     </div>
   </div>
@@ -119,7 +123,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
       <!-- Per Page Dropdown -->
       <div style="flex: 1 1 110px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-layer-group text-primary mr-1"></i> ໂຊລາຍການ:
+          <i class="fas fa-layer-group text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.per_page_label', 'ໂຊລາຍການ:')); ?>
         </label>
         <select name="per_page" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="border-radius: 8px; height: 38px; font-size: 0.85rem; background: #ffffff; border: 1.5px solid #cbd5e1; width: 100%;">
           <option value="5" <?php echo $per_page_raw === '5' ? 'selected' : ''; ?>>5</option>
@@ -127,14 +131,14 @@ require_once __DIR__ . '/partials/reports_modal.php';
           <option value="25" <?php echo $per_page_raw === '25' ? 'selected' : ''; ?>>25</option>
           <option value="50" <?php echo $per_page_raw === '50' ? 'selected' : ''; ?>>50</option>
           <option value="100" <?php echo $per_page_raw === '100' ? 'selected' : ''; ?>>100</option>
-          <option value="all" <?php echo $per_page_raw === 'all' ? 'selected' : ''; ?>>ທັງໝົດ</option>
+          <option value="all" <?php echo $per_page_raw === 'all' ? 'selected' : ''; ?>><?php echo htmlspecialchars(t('reports.all_opt', 'ທັງໝົດ')); ?></option>
         </select>
       </div>
 
       <!-- From Date (ຕັ້ງແຕ່ວັນທີ) -->
       <div style="flex: 1 1 130px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-alt text-primary mr-1"></i> ຕັ້ງແຕ່ວັນທີ:
+          <i class="fas fa-calendar-alt text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.from_date', 'ຕັ້ງແຕ່ວັນທີ:')); ?>
         </label>
         <input type="date" name="from_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($from_date); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
       </div>
@@ -142,7 +146,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
       <!-- To Date (ຫາວັນທີ) -->
       <div style="flex: 1 1 130px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-check text-primary mr-1"></i> ຫາວັນທີ:
+          <i class="fas fa-calendar-check text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.to_date', 'ຫາວັນທີ:')); ?>
         </label>
         <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
       </div>
@@ -150,14 +154,14 @@ require_once __DIR__ . '/partials/reports_modal.php';
       <!-- Branch Filter Dropdown (ເລືອກສາຂາ) -->
       <div style="flex: 1 1 140px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+          <i class="fas fa-store text-info mr-1"></i> <?php echo htmlspecialchars(t('reports.branch_label', 'ສາຂາ:')); ?>
         </label>
         <select name="store_id" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1; width: 100%;" onchange="this.form.submit()">
-          <option value="0">-- ທຸກສາຂາ --</option>
+          <option value="0"><?php echo htmlspecialchars(t('reports.all_branches_opt', '-- ທຸກສາຂາ --')); ?></option>
           <?php if (!empty($branchesList)): ?>
             <?php foreach ($branchesList as $b): ?>
               <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? htmlspecialchars(t('reports.main_branch_suffix', '(ສາຂາໃຫຍ່)')) : ''; ?>
               </option>
             <?php endforeach; ?>
           <?php endif; ?>
@@ -167,18 +171,18 @@ require_once __DIR__ . '/partials/reports_modal.php';
       <!-- Combined Search Box (ຄົ້ນຫາ ເລກບິນ ຫຼື ພະນັກງານ) -->
       <div style="flex: 1 1 250px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-search text-primary mr-1"></i> ຄົ້ນຫາ:
+          <i class="fas fa-search text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.search_label', 'ຄົ້ນຫາ:')); ?>
         </label>
-        <input type="text" name="search" id="deleteBillSearchInput" class="form-control form-control-sm" placeholder="ປ້ອນເລກບິນ ຫຼື ຊື່ພະນັກງານ..." value="<?php echo htmlspecialchars($search); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
+        <input type="text" name="search" id="deleteBillSearchInput" class="form-control form-control-sm" placeholder="<?php echo htmlspecialchars(t('reports.search_placeholder_bill_emp', 'ປ້ອນເລກບິນ ຫຼື ຊື່ພະນັກງານ...')); ?>" value="<?php echo htmlspecialchars($search); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
       </div>
 
       <!-- Buttons -->
       <div style="flex: 1 1 130px; width: 100%;">
         <div class="d-flex align-items-center" style="gap: 8px; width: 100%;">
           <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); flex: 1;">
-            <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
+            <i class="fas fa-search mr-1.5"></i> <?php echo htmlspecialchars(t('reports.search_btn', 'ຄົ້ນຫາ')); ?>
           </button>
-          <a href="delete_bills.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="ລ້າງຄ່າ">
+          <a href="delete_bills.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="<?php echo htmlspecialchars(t('reports.clear', 'ລ້າງຄ່າ')); ?>">
             <i class="fas fa-redo"></i>
           </a>
         </div>
@@ -193,14 +197,14 @@ require_once __DIR__ . '/partials/reports_modal.php';
         <table class="table table-hover align-middle mb-0 text-nowrap" style="font-size: 0.88rem;">
           <thead style="background-color: #ffffff; color: #1e293b; border-bottom: 2px solid #cbd5e1;">
             <tr style="background: #ffffff; color: #1e293b;">
-              <th class="text-center py-3" style="width: 60px;">ລຳດັບ</th>
-              <th class="py-3">ເລກບິນ</th>
-              <th class="py-3">ຜູ້ລົບບິນ</th>
-              <th class="text-center py-3">ວັນທີ</th>
-              <th class="text-center py-3">ເວລາ</th>
-              <th class="text-right py-3">ເງິນລວມ</th>
+              <th class="text-center py-3" style="width: 60px;"><?php echo htmlspecialchars(t('reports.col_no', 'ລຳດັບ')); ?></th>
+              <th class="py-3"><?php echo htmlspecialchars(t('reports.col_bill_no', 'ເລກບິນ')); ?></th>
+              <th class="py-3"><?php echo htmlspecialchars(t('reports.col_deleted_by', 'ຜູ້ລົບບິນ')); ?></th>
+              <th class="text-center py-3"><?php echo htmlspecialchars(t('reports.col_date', 'ວັນທີ')); ?></th>
+              <th class="text-center py-3"><?php echo htmlspecialchars(t('reports.col_time', 'ເວລາ')); ?></th>
+              <th class="text-right py-3"><?php echo htmlspecialchars(t('reports.col_amount_total', 'ເງິນລວມ')); ?></th>
               <th class="text-center py-3">IP</th>
-              <th class="text-center py-3" style="width: 80px;">ລາຍລະອຽດ</th>
+              <th class="text-center py-3" style="width: 80px;"><?php echo htmlspecialchars(t('reports.detail_opt', 'ລາຍລະອຽດ')); ?></th>
             </tr>
           </thead>
           <tbody>
@@ -208,7 +212,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
               <tr>
                 <td colspan="8" class="text-center py-5 text-muted font-weight-bold">
                   <i class="fas fa-trash-alt fa-3x mb-3 text-secondary opacity-50 d-block"></i>
-                  ບໍ່ພົບຂໍ້ມູນປະຫວັດບິນທີ່ຖືກລຶບ
+                  <?php echo htmlspecialchars(t('reports.no_deleted_bills_data', 'ບໍ່ພົບຂໍ້ມູນປະຫວັດບິນທີ່ຖືກລຶບ')); ?>
                 </td>
               </tr>
             <?php else: ?>
@@ -243,7 +247,7 @@ require_once __DIR__ . '/partials/reports_modal.php';
                     </span>
                   </td>
                   <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-info font-weight-bold px-2.5 py-1" onclick="viewBillDetails('<?php echo $bill_no; ?>')" title="ເບິ່ງລາຍການສິນຄ້າທີ່ຖືກລຶບ" style="border-radius: 6px; font-size: 0.82rem; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
+                    <button type="button" class="btn btn-sm btn-info font-weight-bold px-2.5 py-1" onclick="viewBillDetails('<?php echo $bill_no; ?>')" title="<?php echo htmlspecialchars(t('reports.view_deleted_items_title', 'ເບິ່ງລາຍການສິນຄ້າທີ່ຖືກລຶບ')); ?>" style="border-radius: 6px; font-size: 0.82rem; background: linear-gradient(135deg, #0284c7, #0369a1); border: none;">
                       <i class="fas fa-eye mr-1"></i>
                     </button>
                   </td>
@@ -251,6 +255,15 @@ require_once __DIR__ . '/partials/reports_modal.php';
               <?php endforeach; ?>
             <?php endif; ?>
           </tbody>
+          <?php if (!empty($deleted_bills)): ?>
+            <tfoot style="background: #f8fafc; font-weight: 800; border-top: 2px solid #cbd5e1;">
+              <tr style="font-size: 0.92rem; color: #0f172a;">
+                <td colspan="5" class="text-right text-dark py-3"><?php echo htmlspecialchars(t('reports.total_all_label', 'ລວມທັງໝົດ:')); ?></td>
+                <td class="text-right text-primary py-3" style="font-size: 0.98rem;"><?php echo number_format($deleted_total_net, 0); ?> ₭</td>
+                <td colspan="2"></td>
+              </tr>
+            </tfoot>
+          <?php endif; ?>
         </table>
       </div>
     </div>
@@ -336,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     noRow.id = 'noDeleteSearchResultRow';
                     noRow.innerHTML = `<td colspan="8" class="text-center py-5 text-muted font-weight-bold">
                         <i class="fas fa-exclamation-circle fa-2x mb-2 text-secondary opacity-50 d-block"></i>
-                        ບໍ່ພົບຂໍ້ມູນທີ່ຕົງກັບຄຳຄົ້ນຫາ "${this.value}"
+                        <?php echo htmlspecialchars(t('reports.no_search_match', 'ບໍ່ພົບຂໍ້ມູນທີ່ຕົງກັບຄຳຄົ້ນຫາ'), ENT_QUOTES); ?> "${this.value}"
                     </td>`;
                     table.querySelector('tbody').appendChild(noRow);
                 }

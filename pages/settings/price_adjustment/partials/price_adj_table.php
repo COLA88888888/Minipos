@@ -1,26 +1,26 @@
 <div class="card border-0 shadow-sm" style="border-radius: 14px; border: 1.5px solid #e2e8f0; background: #ffffff;">
   <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
     <h6 class="m-0 font-weight-bold text-dark">
-      <i class="fas fa-list-alt text-primary mr-2"></i> ລາຍງານການປັບລາຄາທັງໝົດ
+      <i class="fas fa-list-alt text-primary mr-2"></i> <?php echo htmlspecialchars(t('price_adjustment.table_title', 'ລາຍງານການປັບລາຄາທັງໝົດ')); ?>
     </h6>
-    <span class="badge badge-light border font-weight-bold text-muted px-2.5 py-1"><?php echo count($adjustments); ?> ລາຍການ</span>
+    <span class="badge badge-light border font-weight-bold text-muted px-2.5 py-1"><?php echo htmlspecialchars(sprintf(t('price_adjustment.total_records', '%d ລາຍການ'), count($adjustments))); ?></span>
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0" style="font-size: 0.86rem;">
       <thead style="background: #f8fafc; color: #475569; font-size: 0.80rem;" class="font-weight-bold">
         <tr style="white-space: nowrap;">
-          <th class="text-center" style="width: 50px; white-space: nowrap;">ລ/ດ</th>
-          <th class="text-center" style="white-space: nowrap;">ລະຫັດ</th>
-          <th style="white-space: nowrap;">ບາໂຄ້ດ</th>
-          <th>ຊື່ສິນຄ້າ</th>
-          <th>ສາຂາ</th>
-          <th class="text-right">ລາຄາເກົ່າ</th>
-          <th class="text-right">ລາຄາໃໝ່</th>
-          <th class="text-right">ຜົນຕ່າງ</th>
-          <th class="text-center">ວັນທີ & ເວລາ</th>
-          <th>ຜູ້ປັບ</th>
-          <th>ລາຍລະອຽດ</th>
-          <th class="text-center" style="width: 55px;">ຈັດການ</th>
+          <th class="text-center" style="width: 50px; white-space: nowrap;"><?php echo htmlspecialchars(t('price_adjustment.col_no', 'ລ/ດ')); ?></th>
+          <th class="text-center" style="white-space: nowrap;"><?php echo htmlspecialchars(t('price_adjustment.col_code', 'ລະຫັດ')); ?></th>
+          <th style="white-space: nowrap;"><?php echo htmlspecialchars(t('price_adjustment.col_barcode', 'ບາໂຄ້ດ')); ?></th>
+          <th><?php echo htmlspecialchars(t('price_adjustment.col_product_name', 'ຊື່ສິນຄ້າ')); ?></th>
+          <th><?php echo htmlspecialchars(t('price_adjustment.col_branch', 'ສາຂາ')); ?></th>
+          <th class="text-right"><?php echo htmlspecialchars(t('price_adjustment.col_old_price', 'ລາຄາເກົ່າ')); ?></th>
+          <th class="text-right"><?php echo htmlspecialchars(t('price_adjustment.col_new_price', 'ລາຄາໃໝ່')); ?></th>
+          <th class="text-right"><?php echo htmlspecialchars(t('price_adjustment.col_diff', 'ຜົນຕ່າງ')); ?></th>
+          <th class="text-center"><?php echo htmlspecialchars(t('price_adjustment.col_datetime', 'ວັນທີ & ເວລາ')); ?></th>
+          <th><?php echo htmlspecialchars(t('price_adjustment.col_adjuster', 'ຜູ້ປັບ')); ?></th>
+          <th><?php echo htmlspecialchars(t('price_adjustment.col_detail', 'ລາຍລະອຽດ')); ?></th>
+          <th class="text-center" style="width: 55px;"><?php echo htmlspecialchars(t('price_adjustment.col_action', 'ຈັດການ')); ?></th>
         </tr>
       </thead>
       <tbody>
@@ -28,12 +28,12 @@
           <tr>
             <td colspan="12" class="text-center py-5 text-muted">
               <i class="fas fa-tags fa-2x mb-2 d-block text-secondary opacity-50"></i>
-              ບໍ່ມີປະຫວັດການປັບລາຄາ
+              <?php echo htmlspecialchars(t('price_adjustment.empty_state', 'ບໍ່ມີປະຫວັດການປັບລາຄາ')); ?>
             </td>
           </tr>
         <?php else: ?>
           <?php $i = 1; foreach ($adjustments as $adj): ?>
-            <?php 
+            <?php
               $diff = floatval($adj['diff_amount'] ?? 0);
               $oldP = floatval($adj['old_price'] ?? 0);
               $newP = floatval($adj['new_price'] ?? 0);
@@ -51,7 +51,7 @@
               <!-- 2. ລະຫັດສິນຄ້າ -->
               <td class="text-center font-weight-bold text-dark" style="font-family: monospace;">
                 <?php if ($adj['target_mode'] === 'category'): ?>
-                  <span class="badge badge-light border text-muted">ໝວດໝູ່</span>
+                  <span class="badge badge-light border text-muted"><?php echo htmlspecialchars(t('price_adjustment.badge_category', 'ໝວດໝູ່')); ?></span>
                 <?php else: ?>
                   <span class="badge badge-secondary px-2 py-1"><?php echo htmlspecialchars($prodIdCode); ?></span>
                 <?php endif; ?>
@@ -69,16 +69,16 @@
               <!-- 4. ຊື່ສິນຄ້າ -->
               <td class="font-weight-bold text-dark">
                 <?php if ($adj['target_mode'] === 'category'): ?>
-                  <span class="badge badge-info font-weight-bold mr-1"><i class="fas fa-folder mr-1"></i> ໝວດໝູ່: <?php echo htmlspecialchars($adj['category_name'] ?? 'ທຸກສິນຄ້າ'); ?></span>
+                  <span class="badge badge-info font-weight-bold mr-1"><i class="fas fa-folder mr-1"></i> <?php echo htmlspecialchars(t('price_adjustment.badge_category', 'ໝວດໝູ່')); ?>: <?php echo htmlspecialchars($adj['category_name'] ?? t('price_adjustment.badge_category_all', 'ທຸກສິນຄ້າ')); ?></span>
                 <?php else: ?>
-                  <?php echo htmlspecialchars($adj['product_name'] ?? ('ສິນຄ້າ ID: ' . $adj['product_id'])); ?>
+                  <?php echo htmlspecialchars($adj['product_name'] ?? (t('price_adjustment.product_id_fallback', 'ສິນຄ້າ ID: ') . $adj['product_id'])); ?>
                 <?php endif; ?>
               </td>
 
               <!-- 5. ສາຂາ -->
               <td class="font-weight-bold">
                 <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.78rem;">
-                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($adj['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                  <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($adj['store_name'] ?: t('price_adjustment.badge_main_branch_fallback', 'ສາຂາຫຼັກ')); ?>
                 </span>
               </td>
 
@@ -117,15 +117,15 @@
               <td>
                 <small class="text-muted">
                   <?php
-                    $typeText = 'ລາຄາຂາຍ';
-                    if ($adj['target_price_type'] === 'bprice') $typeText = 'ລາຄາຊື້/ທຶນ';
-                    if ($adj['target_price_type'] === 'both') $typeText = 'ທັງຂາຍ&ຊື້';
+                    $typeText = t('price_adjustment.type_price', 'ລາຄາຂາຍ');
+                    if ($adj['target_price_type'] === 'bprice') $typeText = t('price_adjustment.type_bprice', 'ລາຄາຊື້/ທຶນ');
+                    if ($adj['target_price_type'] === 'both') $typeText = t('price_adjustment.type_both', 'ທັງຂາຍ&ຊື້');
 
-                    $calcText = 'ຕັ້ງໃໝ່';
-                    if ($adj['calc_type'] === 'increase') $calcText = 'ເພີ່ມ';
-                    if ($adj['calc_type'] === 'decrease') $calcText = 'ຫຼຸດ';
+                    $calcText = t('price_adjustment.calc_set', 'ຕັ້ງໃໝ່');
+                    if ($adj['calc_type'] === 'increase') $calcText = t('price_adjustment.calc_increase', 'ເພີ່ມ');
+                    if ($adj['calc_type'] === 'decrease') $calcText = t('price_adjustment.calc_decrease', 'ຫຼຸດ');
 
-                    echo '<strong>' . $typeText . ' (' . $calcText . ')</strong>';
+                    echo '<strong>' . htmlspecialchars($typeText) . ' (' . htmlspecialchars($calcText) . ')</strong>';
                     if (!empty($adj['remark'])) {
                         echo '<span class="d-block text-truncate" style="max-width: 140px;" title="' . htmlspecialchars($adj['remark']) . '">' . htmlspecialchars($adj['remark']) . '</span>';
                     }
@@ -136,7 +136,7 @@
               <!-- 11. ຈັດການ (ໄອຄອນລຶບ - Real-time AJAX) -->
               <td class="text-center">
                 <?php if (hasPermission('price_adjustment', 'del')): ?>
-                  <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" title="ລຶບປະຫວັດ" style="border-radius: 6px;" onclick="deletePriceAdjLog(<?php echo $adj['adjust_id']; ?>, this)">
+                  <button type="button" class="btn btn-outline-danger btn-sm px-2 py-1" title="<?php echo htmlspecialchars(t('price_adjustment.title_delete', 'ລຶບປະຫວັດ')); ?>" style="border-radius: 6px;" onclick="deletePriceAdjLog(<?php echo $adj['adjust_id']; ?>, this)">
                     <i class="fas fa-trash-alt" style="font-size: 0.84rem;"></i>
                   </button>
                 <?php else: ?>

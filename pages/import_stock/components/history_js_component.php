@@ -2,6 +2,22 @@
 // Component: Stock Transfer History JavaScript Logic
 ?>
 <script>
+var I18N_TRANSFER_HISTORY = <?php echo tjson([
+    'transfer_history.status_completed' => 'ສຳເລັດ',
+    'transfer_history.status_cancelled' => 'ຍົກເລີກ',
+    'transfer_history.default_unit' => 'ອັນ',
+    'transfer_history.js_error_title' => 'ຜິດພາດ',
+    'transfer_history.js_load_failed' => 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້',
+    'transfer_history.js_connection_error' => 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່',
+    'transfer_history.js_cancel_confirm_title' => 'ຢືນຢັນການຍົກເລີກໃບໂອນ?',
+    'transfer_history.js_transfer_code_label' => 'ເລກທີໃບໂອນ:',
+    'transfer_history.js_cancel_confirm_hint' => 'ລະບົບຈະຫັກສະຕັອກຄືນຈາກສາຂາປາຍທາງ ແລະ ເພີ່ມຄືນໃຫ້ສາຂາຕົ້ນທາງ.',
+    'transfer_history.js_confirm_cancel_btn' => 'ຢືນຢັນຍົກເລີກ',
+    'transfer_history.js_close_btn' => 'ປິດ',
+    'transfer_history.js_cancel_success' => 'ຍົກເລີກໃບໂອນສຳເລັດ!',
+    'transfer_history.js_generic_error' => 'ຜິດພາດ!',
+]); ?>;
+
 var currentPage = 1;
 var pageSize = 10;
 var filteredRows = [];
@@ -142,9 +158,9 @@ function viewTransferDetails(transferId) {
         
         var statusHtml = '';
         if (trf.status === 'completed') {
-          statusHtml = '<span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>ສຳເລັດ</span>';
+          statusHtml = '<span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>' + I18N_TRANSFER_HISTORY['transfer_history.status_completed'] + '</span>';
         } else {
-          statusHtml = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-times-circle mr-1"></i>ຍົກເລີກ</span>';
+          statusHtml = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-times-circle mr-1"></i>' + I18N_TRANSFER_HISTORY['transfer_history.status_cancelled'] + '</span>';
         }
         $('#modalStatus').html(statusHtml);
 
@@ -165,32 +181,32 @@ function viewTransferDetails(transferId) {
               '<td class="align-middle"><strong>' + escapeHtml(item.product_name) + '</strong></td>' +
               '<td class="text-center align-middle font-weight-bold text-secondary">' + escapeHtml(item.barcode || item.prod_barcode || '-') + '</td>' +
               '<td class="text-center align-middle font-weight-bold text-dark">' + item.qty + '</td>' +
-              '<td class="text-center align-middle">' + escapeHtml(item.unit || 'ອັນ') + '</td>' +
+              '<td class="text-center align-middle">' + escapeHtml(item.unit || I18N_TRANSFER_HISTORY['transfer_history.default_unit']) + '</td>' +
             '</tr>'
           );
         });
 
         $('#transferDetailsModal').modal('show');
       } else {
-        Swal.fire('ຜິດພາດ', res.message || 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນໄດ້', 'error');
+        Swal.fire(I18N_TRANSFER_HISTORY['transfer_history.js_error_title'], res.message || I18N_TRANSFER_HISTORY['transfer_history.js_load_failed'], 'error');
       }
     },
     error: function() {
-      Swal.fire('ຜິດພາດ', 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່', 'error');
+      Swal.fire(I18N_TRANSFER_HISTORY['transfer_history.js_error_title'], I18N_TRANSFER_HISTORY['transfer_history.js_connection_error'], 'error');
     }
   });
 }
 
 function confirmCancelTransfer(transferId, transferCode) {
   Swal.fire({
-    title: 'ຢືນຢັນການຍົກເລີກໃບໂອນ?',
-    html: '<div style="font-size:0.9rem; color:#ef4444; font-weight:bold;">ເລກທີໃບໂອນ: ' + transferCode + '</div><div style="font-size:0.85rem; color:#475569; margin-top:5px;">ລະບົບຈະຫັກສະຕັອກຄືນຈາກສາຂາປາຍທາງ ແລະ ເພີ່ມຄືນໃຫ້ສາຂາຕົ້ນທາງ.</div>',
+    title: I18N_TRANSFER_HISTORY['transfer_history.js_cancel_confirm_title'],
+    html: '<div style="font-size:0.9rem; color:#ef4444; font-weight:bold;">' + I18N_TRANSFER_HISTORY['transfer_history.js_transfer_code_label'] + ' ' + transferCode + '</div><div style="font-size:0.85rem; color:#475569; margin-top:5px;">' + I18N_TRANSFER_HISTORY['transfer_history.js_cancel_confirm_hint'] + '</div>',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#64748b',
-    confirmButtonText: 'ຢືນຢັນຍົກເລີກ',
-    cancelButtonText: 'ປິດ'
+    confirmButtonText: I18N_TRANSFER_HISTORY['transfer_history.js_confirm_cancel_btn'],
+    cancelButtonText: I18N_TRANSFER_HISTORY['transfer_history.js_close_btn']
   }).then(function(result) {
     if (result.isConfirmed) {
       $.post('transfer_history.php', { action: 'cancel_transfer', transfer_id: transferId, is_ajax: 1 }, function(res) {
@@ -199,7 +215,7 @@ function confirmCancelTransfer(transferId, transferCode) {
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: res.message || 'ຍົກເລີກໃບໂອນສຳເລັດ!',
+            title: res.message || I18N_TRANSFER_HISTORY['transfer_history.js_cancel_success'],
             showConfirmButton: false,
             timer: 1500
           });
@@ -211,7 +227,7 @@ function confirmCancelTransfer(transferId, transferCode) {
             }
           });
         } else {
-          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+          Swal.fire({ icon: 'error', title: I18N_TRANSFER_HISTORY['transfer_history.js_error_title'], text: res.message || I18N_TRANSFER_HISTORY['transfer_history.js_generic_error'] });
         }
       }, 'json');
     }

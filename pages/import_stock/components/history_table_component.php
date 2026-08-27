@@ -6,17 +6,17 @@
     <table class="table table-hover table-striped align-middle mb-0 text-nowrap" style="font-size: 0.85rem; min-width: 950px;">
       <thead class="bg-light text-dark font-weight-bold">
         <tr>
-          <th class="text-center" style="width: 45px;">ລຳດັບ</th>
-          <th style="width: 130px;">ລະຫັດໃບໂອນ</th>
-          <th style="width: 120px;">ວັນທີໂອນ</th>
-          <th style="width: 110px;">ຜູ້ໂອນ</th>
-          <th>ສາຂາຕົ້ນທາງ</th>
+          <th class="text-center" style="width: 45px;"><?php echo htmlspecialchars(t('transfer_history.col_no', 'ລຳດັບ')); ?></th>
+          <th style="width: 130px;"><?php echo htmlspecialchars(t('transfer_history.col_code', 'ລະຫັດໃບໂອນ')); ?></th>
+          <th style="width: 120px;"><?php echo htmlspecialchars(t('transfer_history.col_date', 'ວັນທີໂອນ')); ?></th>
+          <th style="width: 110px;"><?php echo htmlspecialchars(t('transfer_history.col_creator', 'ຜູ້ໂອນ')); ?></th>
+          <th><?php echo htmlspecialchars(t('transfer_history.col_from_store', 'ສາຂາຕົ້ນທາງ')); ?></th>
           <th style="width: 20px;" class="text-center"></th>
-          <th>ສາຂາປາຍທາງ</th>
-          <th style="min-width: 160px;">ລາຍການສິນຄ້າ</th>
-          <th class="text-center" style="width: 80px;">ຈຳນວນລວມ</th>
-          <th class="text-center" style="width: 90px;">ສະຖານະ</th>
-          <th style="width: 100px;" class="text-center no-print">ເບິ່ງ</th>
+          <th><?php echo htmlspecialchars(t('transfer_history.col_to_store', 'ສາຂາປາຍທາງ')); ?></th>
+          <th style="min-width: 160px;"><?php echo htmlspecialchars(t('transfer_history.col_items', 'ລາຍການສິນຄ້າ')); ?></th>
+          <th class="text-center" style="width: 80px;"><?php echo htmlspecialchars(t('transfer_history.col_total_qty', 'ຈຳນວນລວມ')); ?></th>
+          <th class="text-center" style="width: 90px;"><?php echo htmlspecialchars(t('transfer_history.col_status', 'ສະຖານະ')); ?></th>
+          <th style="width: 100px;" class="text-center no-print"><?php echo htmlspecialchars(t('transfer_history.col_view', 'ເບິ່ງ')); ?></th>
         </tr>
       </thead>
       <tbody id="historyTableBody">
@@ -24,7 +24,7 @@
           <tr class="empty-row">
             <td colspan="11" class="text-center py-5 text-muted">
               <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
-              <span class="font-weight-bold">ບໍ່ພົບປະຫວັດການໂອນສິນຄ້າ</span>
+              <span class="font-weight-bold"><?php echo htmlspecialchars(t('transfer_history.empty_state', 'ບໍ່ພົບປະຫວັດການໂອນສິນຄ້າ')); ?></span>
             </td>
           </tr>
         <?php else: ?>
@@ -32,7 +32,7 @@
             <tr class="transfer-row" data-search="<?php echo htmlspecialchars(strtolower($trf['transfer_code'] . ' ' . ($trf['creator_name'] ?: 'admin') . ' ' . $trf['from_store_name'] . ' ' . $trf['to_store_name'] . ' ' . ($trf['product_list'] ?: '') . ' ' . ($trf['notes'] ?: ''))); ?>">
               <td class="text-center font-weight-bold text-secondary row-index align-middle"><?php echo $i++; ?></td>
               <td class="align-middle">
-                <strong class="text-primary" style="cursor: pointer;" onclick="viewTransferDetails(<?php echo $trf['transfer_id']; ?>)" title="ກົດເພື່ອເບິ່ງລາຍລະອຽດ">
+                <strong class="text-primary" style="cursor: pointer;" onclick="viewTransferDetails(<?php echo $trf['transfer_id']; ?>)" title="<?php echo htmlspecialchars(t('transfer_history.view_detail_title', 'ກົດເພື່ອເບິ່ງລາຍລະອຽດ')); ?>">
                   <i class="fas fa-receipt mr-1"></i><?php echo htmlspecialchars($trf['transfer_code']); ?>
                 </strong>
               </td>
@@ -48,18 +48,18 @@
                 <span class="badge badge-success text-white px-2 py-1.5" style="background: #059669; border-radius: 6px;"><i class="fas fa-store mr-1"></i><?php echo htmlspecialchars($trf['to_store_name']); ?></span>
               </td>
               <td class="align-middle">
-                <strong class="text-dark"><?php echo $trf['total_items']; ?> ລາຍການ</strong>
+                <strong class="text-dark"><?php echo $trf['total_items']; ?> <?php echo htmlspecialchars(t('transfer_history.items_unit', 'ລາຍການ')); ?></strong>
               </td>
               <td class="text-center align-middle font-weight-bold text-dark"><?php echo number_format($trf['total_qty']); ?></td>
               <td class="text-center align-middle">
                 <?php if ($trf['status'] === 'completed'): ?>
-                  <span class="badge badge-success px-2 py-1.5 font-weight-bold" style="border-radius: 12px; font-size: 0.72rem;"><i class="fas fa-check-circle mr-1"></i>ສຳເລັດ</span>
+                  <span class="badge badge-success px-2 py-1.5 font-weight-bold" style="border-radius: 12px; font-size: 0.72rem;"><i class="fas fa-check-circle mr-1"></i><?php echo htmlspecialchars(t('transfer_history.status_completed', 'ສຳເລັດ')); ?></span>
                 <?php else: ?>
-                  <span class="badge badge-danger px-2 py-1.5 font-weight-bold" style="border-radius: 12px; font-size: 0.72rem;"><i class="fas fa-times-circle mr-1"></i>ຍົກເລີກ</span>
+                  <span class="badge badge-danger px-2 py-1.5 font-weight-bold" style="border-radius: 12px; font-size: 0.72rem;"><i class="fas fa-times-circle mr-1"></i><?php echo htmlspecialchars(t('transfer_history.status_cancelled', 'ຍົກເລີກ')); ?></span>
                 <?php endif; ?>
               </td>
               <td class="text-center align-middle no-print">
-                <button type="button" class="btn btn-outline-primary btn-sm px-2.5 py-1" onclick="viewTransferDetails(<?php echo $trf['transfer_id']; ?>)" title="ເບິ່ງລາຍລະອຽດ" style="border-radius: 6px;">
+                <button type="button" class="btn btn-outline-primary btn-sm px-2.5 py-1" onclick="viewTransferDetails(<?php echo $trf['transfer_id']; ?>)" title="<?php echo htmlspecialchars(t('transfer_history.view_detail_btn_title', 'ເບິ່ງລາຍລະອຽດ')); ?>" style="border-radius: 6px;">
                   <i class="fas fa-eye fa-lg"></i>
                 </button>
               </td>

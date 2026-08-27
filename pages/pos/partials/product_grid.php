@@ -12,7 +12,6 @@
       $stock = floatval($p['qty'] ?? 0);
       $hasPromo = !empty($p['has_promo']);
       $isGiftPromo = ($p['promo_type'] ?? '') === 'buy_x_get_y' || !empty($p['gift_product_name']);
-      $borderColor = $hasPromo ? ($isGiftPromo ? '#10b981' : '#ef4444') : ($stock <= 0 ? '#ef4444' : ($stock <= 10 ? '#f59e0b' : '#244886'));
     ?>
     <div class="col-6 col-sm-4 col-md-3 col-lg-2 pos-product-col product-item-card px-1 mb-2" 
          data-name="<?php echo htmlspecialchars(strtolower($p['product_name'])); ?>"
@@ -22,7 +21,7 @@
          
       <div class="card product-card product-card-<?php echo $p['product_id']; ?> h-100 shadow-sm" 
            data-id="<?php echo $p['product_id']; ?>"
-           style="border-radius: 12px !important; border: 2px solid <?php echo $borderColor; ?> !important; background: <?php echo $stock <= 0 ? '#fff5f5' : '#ffffff'; ?>; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; <?php echo $stock <= 0 ? 'opacity: 0.82;' : ''; ?>;">
+           style="border-radius: 12px !important; border: none !important; background: <?php echo $stock <= 0 ? '#fff5f5' : '#ffffff'; ?>; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; <?php echo $stock <= 0 ? 'opacity: 0.82;' : ''; ?>;">
         
         <div class="product-img-wrap" style="position: relative; width: 100%; height: 115px; overflow: hidden; background: #ffffff; padding: 0 !important; display: block; border-radius: 9px 9px 0 0; border-bottom: 1px solid #e2e8f0;">
           <img src="<?php echo htmlspecialchars($imgPath); ?>" 

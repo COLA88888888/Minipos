@@ -20,7 +20,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap" style="row-gap: 10px;">
     <div>
       <h5 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-file-invoice-dollar text-success mr-2"></i> ລາຍງານການຂາຍທັງໝົດ
+        <i class="fas fa-file-invoice-dollar text-success mr-2"></i> <?php echo htmlspecialchars(t('reports.title_all_sales', 'ລາຍງານການຂາຍທັງໝົດ')); ?>
       </h5>
     </div>
 
@@ -33,7 +33,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <i class="fas fa-file-pdf mr-1" style="font-size: 0.8rem;"></i> PDF
       </button>
       <button type="button" onclick="printReportTable('all')" class="btn btn-xs btn-primary font-weight-bold px-2 d-inline-flex align-items-center shadow-sm" style="border-radius: 6px; height: 30px; font-size: 0.78rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none;">
-        <i class="fas fa-print mr-1" style="font-size: 0.8rem;"></i> ພິມ
+        <i class="fas fa-print mr-1" style="font-size: 0.8rem;"></i> <?php echo htmlspecialchars(t('reports.print_btn', 'ພິມ')); ?>
       </button>
     </div>
   </div>

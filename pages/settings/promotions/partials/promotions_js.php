@@ -1,4 +1,22 @@
 <script>
+// Localized strings for the promotions client-side script. Keyed by the full "promotions.*"
+// translation keys so the dashboard's flag switcher can re-point this dict live (no reload).
+var PROMO_I18N = <?php echo tjson([
+    'promotions.opt_target_all'        => 'ທຸກສິນຄ້າ',
+    'promotions.js_warn_title'         => 'ແຈ້ງເຕືອນ',
+    'promotions.js_error_title'        => 'ຜິດພາດ',
+    'promotions.js_status_updated'     => 'ອັບເດດສະຖານະສຳເລັດ!',
+    'promotions.js_generic_error'      => 'ຜິດພາດ!',
+    'promotions.toggle_disable'        => 'ປິດໃຊ້ງານ',
+    'promotions.toggle_enable'         => 'ເປີດໃຊ້ງານ',
+    'promotions.js_confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+    'promotions.js_confirm_delete_text'  => 'ຕ້ອງການລົບໂປຣໂມຊັ່ນນີ້ແທ້ຫຼືບໍ່?',
+    'promotions.js_confirm_delete_yes'   => 'ລົບເລີຍ',
+    'promotions.btn_cancel'            => 'ຍົກເລີກ',
+    'promotions.js_deleted_success'    => 'ລົບໂປຣໂມຊັ່ນສຳເລັດ!',
+    'promotions.js_done'               => 'ດຳເນີນການສຳເລັດ!',
+]); ?>;
+
 function formatNumberInput(input) {
   let val = input.value.replace(/[^0-9.]/g, '');
   if (val === '') {
@@ -30,13 +48,13 @@ function togglePromoType(val, mode) {
 function toggleTargetInput(val, mode) {
   var inputEl = document.getElementById(mode + '_target_name');
   if (val === 'all') {
-    inputEl.value = 'ທຸກສິນຄ້າ';
+    inputEl.value = PROMO_I18N['promotions.opt_target_all'];
     inputEl.removeAttribute('list');
   } else if (val === 'category') {
-    if (inputEl.value === 'ທຸກສິນຄ້າ') inputEl.value = '';
+    if (inputEl.value === PROMO_I18N['promotions.opt_target_all']) inputEl.value = '';
     inputEl.setAttribute('list', 'category_datalist');
   } else if (val === 'product') {
-    if (inputEl.value === 'ທຸກສິນຄ້າ') inputEl.value = '';
+    if (inputEl.value === PROMO_I18N['promotions.opt_target_all']) inputEl.value = '';
     inputEl.setAttribute('list', 'product_datalist');
   }
 }
@@ -58,7 +76,7 @@ function editPromo(p) {
   document.getElementById('edit_min_qty').value = formatNumVal(p.min_qty);
   document.getElementById('edit_min_amount').value = formatNumVal(p.min_amount);
   document.getElementById('edit_target_type').value = p.target_type || 'all';
-  document.getElementById('edit_target_name').value = p.target_name || 'ທຸກສິນຄ້າ';
+  document.getElementById('edit_target_name').value = p.target_name || PROMO_I18N['promotions.opt_target_all'];
   if (document.getElementById('edit_target_unit_name')) {
     document.getElementById('edit_target_unit_name').value = p.target_unit_name || 'all';
   }
@@ -74,7 +92,7 @@ function refreshPromotionsTable() {
   var url = 'index.php?fetch_table=1';
   var storeVal = $('select[name="branch_id"]').val();
   if (storeVal) url += '&branch_id=' + storeVal;
-  
+
   $.get(url, function(html) {
     var $newContent = $(html);
     var $tableCard = $('.card.border-0.shadow-sm');
@@ -97,39 +115,39 @@ function togglePromoStatus(id, newStatus, btn) {
           dot.style.right = '3px';
           dot.style.left = 'auto';
           btn.setAttribute('onclick', 'togglePromoStatus(' + id + ', 0, this)');
-          btn.setAttribute('title', 'ປິດໃຊ້ງານ');
+          btn.setAttribute('title', PROMO_I18N['promotions.toggle_disable']);
         } else {
           track.style.background = '#cbd5e1';
           dot.style.left = '3px';
           dot.style.right = 'auto';
           btn.setAttribute('onclick', 'togglePromoStatus(' + id + ', 1, this)');
-          btn.setAttribute('title', 'ເປີດໃຊ້ງານ');
+          btn.setAttribute('title', PROMO_I18N['promotions.toggle_enable']);
         }
       }
       Swal.fire({
         toast: true,
         position: 'top-end',
         icon: 'success',
-        title: res.message || 'ອັບເດດສະຖານະສຳເລັດ!',
+        title: res.message || PROMO_I18N['promotions.js_status_updated'],
         showConfirmButton: false,
         timer: 1500
       });
     } else {
-      Swal.fire({ icon: 'warning', title: 'ແຈ້ງເຕືອນ', text: res.message || 'ຜິດພາດ!' });
+      Swal.fire({ icon: 'warning', title: PROMO_I18N['promotions.js_warn_title'], text: res.message || PROMO_I18N['promotions.js_generic_error'] });
     }
   }, 'json');
 }
 
 function deletePromo(id, btn) {
   Swal.fire({
-    title: 'ຢືນຢັນການລົບ?',
-    text: 'ຕ້ອງການລົບໂປຣໂມຊັ່ນນີ້ແທ້ຫຼືບໍ່?',
+    title: PROMO_I18N['promotions.js_confirm_delete_title'],
+    text: PROMO_I18N['promotions.js_confirm_delete_text'],
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
     cancelButtonColor: '#64748b',
-    confirmButtonText: 'ລົບເລີຍ',
-    cancelButtonText: 'ຍົກເລີກ'
+    confirmButtonText: PROMO_I18N['promotions.js_confirm_delete_yes'],
+    cancelButtonText: PROMO_I18N['promotions.btn_cancel']
   }).then(function(r) {
     if (r.isConfirmed) {
       $.post('index.php', { action: 'delete_promo', id: id, is_ajax: 1 }, function(res) {
@@ -139,12 +157,12 @@ function deletePromo(id, btn) {
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: 'ລົບໂປຣໂມຊັ່ນສຳເລັດ!',
+            title: PROMO_I18N['promotions.js_deleted_success'],
             showConfirmButton: false,
             timer: 1500
           });
         } else {
-          Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+          Swal.fire({ icon: 'error', title: PROMO_I18N['promotions.js_error_title'], text: res.message || PROMO_I18N['promotions.js_generic_error'] });
         }
       }, 'json');
     }
@@ -164,12 +182,12 @@ $(document).ready(function() {
           toast: true,
           position: 'top-end',
           icon: 'success',
-          title: res.message || 'ດຳເນີນການສຳເລັດ!',
+          title: res.message || PROMO_I18N['promotions.js_done'],
           showConfirmButton: false,
           timer: 1500
         });
       } else {
-        Swal.fire({ icon: 'error', title: 'ຜິດພາດ', text: res.message || 'ຜິດພາດ!' });
+        Swal.fire({ icon: 'error', title: PROMO_I18N['promotions.js_error_title'], text: res.message || PROMO_I18N['promotions.js_generic_error'] });
       }
     }, 'json');
   });

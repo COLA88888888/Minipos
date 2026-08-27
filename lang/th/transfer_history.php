@@ -1,0 +1,72 @@
+<?php
+// pages/import_stock/transfer_history.php + components/history_*.php
+// strings - Thai
+return [
+    'transfer_history.page_title' => 'ประวัติการโอนสินค้า',
+    'transfer_history.page_subtitle' => 'ติดตามและตรวจสอบรายการโอนสินค้าระหว่างสาขา',
+    'transfer_history.new_transfer_btn' => 'โอนสินค้าใหม่',
+    'transfer_history.msg_success_title' => 'สำเร็จ',
+    'transfer_history.msg_error_title' => 'แจ้งเตือน',
+
+    'transfer_history.from_date' => 'ตั้งแต่วันที่:',
+    'transfer_history.to_date' => 'ถึงวันที่:',
+    'transfer_history.from_store' => 'สาขาต้นทาง:',
+    'transfer_history.to_store' => 'สาขาปลายทาง:',
+    'transfer_history.all_opt' => '-- ทั้งหมด --',
+    'transfer_history.search_label' => 'ค้นหารหัส/หมายเหตุ:',
+    'transfer_history.search_placeholder' => 'รหัสโอน, หมายเหตุ...',
+    'transfer_history.search_btn' => 'ค้นหา',
+    'transfer_history.clear_btn' => 'ล้างค่า',
+
+    'transfer_history.col_no' => 'ลำดับ',
+    'transfer_history.col_code' => 'รหัสใบโอน',
+    'transfer_history.col_date' => 'วันที่โอน',
+    'transfer_history.col_creator' => 'ผู้โอน',
+    'transfer_history.col_from_store' => 'สาขาต้นทาง',
+    'transfer_history.col_to_store' => 'สาขาปลายทาง',
+    'transfer_history.col_items' => 'รายการสินค้า',
+    'transfer_history.col_total_qty' => 'จำนวนรวม',
+    'transfer_history.col_status' => 'สถานะ',
+    'transfer_history.col_view' => 'ดู',
+    'transfer_history.empty_state' => 'ไม่พบประวัติการโอนสินค้า',
+    'transfer_history.view_detail_title' => 'คลิกเพื่อดูรายละเอียด',
+    'transfer_history.items_unit' => 'รายการ',
+    'transfer_history.status_completed' => 'สำเร็จ',
+    'transfer_history.status_cancelled' => 'ยกเลิก',
+    'transfer_history.view_detail_btn_title' => 'ดูรายละเอียด',
+
+    // Detail modal
+    'transfer_history.modal_title' => 'รายละเอียดใบโอนสินค้า',
+    'transfer_history.modal_from_store' => 'สาขาต้นทาง:',
+    'transfer_history.modal_to_store' => 'สาขาปลายทาง:',
+    'transfer_history.modal_date' => 'วันที่โอน:',
+    'transfer_history.modal_creator' => 'ผู้ดำเนินการ:',
+    'transfer_history.modal_status' => 'สถานะ:',
+    'transfer_history.modal_items_heading' => 'รายการสินค้าที่โอน:',
+    'transfer_history.modal_col_product' => 'ชื่อสินค้า',
+    'transfer_history.modal_col_barcode' => 'บาร์โค้ด',
+    'transfer_history.modal_col_qty' => 'จำนวนโอน',
+    'transfer_history.modal_col_unit' => 'หน่วย',
+    'transfer_history.modal_notes_label' => 'หมายเหตุ (Notes):',
+    'transfer_history.modal_close_btn' => 'ปิด',
+    'transfer_history.default_unit' => 'ชิ้น',
+
+    // JS
+    'transfer_history.js_error_title' => 'ผิดพลาด',
+    'transfer_history.js_load_failed' => 'ไม่สามารถโหลดข้อมูลได้',
+    'transfer_history.js_connection_error' => 'เกิดข้อผิดพลาดในการเชื่อมต่อ',
+    'transfer_history.js_cancel_confirm_title' => 'ยืนยันการยกเลิกใบโอน?',
+    'transfer_history.js_transfer_code_label' => 'เลขที่ใบโอน:',
+    'transfer_history.js_cancel_confirm_hint' => 'ระบบจะหักสต็อกคืนจากสาขาปลายทาง และเพิ่มคืนให้สาขาต้นทาง',
+    'transfer_history.js_confirm_cancel_btn' => 'ยืนยันยกเลิก',
+    'transfer_history.js_close_btn' => 'ปิด',
+    'transfer_history.js_cancel_success' => 'ยกเลิกใบโอนสำเร็จ!',
+    'transfer_history.js_generic_error' => 'ผิดพลาด!',
+
+    // Backend $message (transfer_history.php)
+    'transfer_history.err_not_found' => 'ไม่พบข้อมูลใบโอนนี้ในระบบ!',
+    'transfer_history.err_already_cancelled' => 'ใบโอนนี้ถูกยกเลิกไปแล้ว!',
+    'transfer_history.err_stock_used' => 'ไม่สามารถยกเลิกใบโอนได้ เนื่องจากสินค้า "%s" ในสาขาปลายทางถูกใช้หรือขายไปแล้ว (สต็อกปัจจุบันมี: %s, ต้องการหักคืน: %s)!',
+    'transfer_history.msg_cancel_success' => 'ยกเลิกใบโอนเลขที่ %s และคืนสต็อกเข้าต้นทางสำเร็จ!',
+    'transfer_history.err_prefix' => 'ผิดพลาด:',
+];

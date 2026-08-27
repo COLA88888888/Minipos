@@ -301,7 +301,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="row-gap: 10px;">
     <div>
       <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-layer-group text-primary mr-2"></i> ລາຍງານຕາມປະເພດສິນຄ້າ ແລະ ລາຍການສິນຄ້າທີ່ຂາຍ
+        <i class="fas fa-layer-group text-primary mr-2"></i> <?php echo htmlspecialchars(t('reports.title_category_full', 'ລາຍງານຕາມປະເພດສິນຄ້າ ແລະ ລາຍການສິນຄ້າທີ່ຂາຍ')); ?>
       </h5>
     </div>
 
@@ -314,7 +314,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <i class="fas fa-file-pdf mr-1" style="font-size: 0.8rem;"></i> PDF
       </button>
       <button type="button" onclick="printReportTable('all')" class="btn btn-xs btn-primary font-weight-bold px-2 d-inline-flex align-items-center shadow-sm" style="border-radius: 6px; height: 30px; font-size: 0.78rem; background: linear-gradient(135deg, #2563eb, #1d4ed8); border: none;">
-        <i class="fas fa-print mr-1" style="font-size: 0.8rem;"></i> ພິມ
+        <i class="fas fa-print mr-1" style="font-size: 0.8rem;"></i> <?php echo htmlspecialchars(t('reports.print_btn', 'ພິມ')); ?>
       </button>
     </div>
   </div>
@@ -325,7 +325,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Per Page Dropdown (ໂຊລາຍການ - ໜ້າສຸດ) -->
       <div style="flex: 1 1 120px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-layer-group text-primary mr-1"></i> ໂຊລາຍການ:
+          <i class="fas fa-layer-group text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.per_page_label', 'ໂຊລາຍການ:')); ?>
         </label>
         <select name="per_page" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="border-radius: 8px; height: 38px; font-size: 0.85rem; background: #ffffff; border: 1.5px solid #cbd5e1; width: 100%;">
           <option value="5" <?php echo $per_page_raw === '5' ? 'selected' : ''; ?>>5</option>
@@ -333,14 +333,14 @@ require_once __DIR__ . '/../../layouts/header.php';
           <option value="25" <?php echo $per_page_raw === '25' ? 'selected' : ''; ?>>25</option>
           <option value="50" <?php echo $per_page_raw === '50' ? 'selected' : ''; ?>>50</option>
           <option value="100" <?php echo $per_page_raw === '100' ? 'selected' : ''; ?>>100</option>
-          <option value="all" <?php echo $per_page_raw === 'all' ? 'selected' : ''; ?>>ທັງໝົດ</option>
+          <option value="all" <?php echo $per_page_raw === 'all' ? 'selected' : ''; ?>><?php echo htmlspecialchars(t('reports.all_opt', 'ທັງໝົດ')); ?></option>
         </select>
       </div>
 
       <!-- From Date (ຕັ້ງແຕ່ວັນທີ) -->
       <div style="flex: 1 1 130px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-alt text-primary mr-1"></i> ຕັ້ງແຕ່ວັນທີ:
+          <i class="fas fa-calendar-alt text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.from_date', 'ຕັ້ງແຕ່ວັນທີ:')); ?>
         </label>
         <input type="date" name="from_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($from_date); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
       </div>
@@ -348,7 +348,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- To Date (ຫາວັນທີ) -->
       <div style="flex: 1 1 130px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-check text-primary mr-1"></i> ຫາວັນທີ:
+          <i class="fas fa-calendar-check text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.to_date', 'ຫາວັນທີ:')); ?>
         </label>
         <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; width: 100%;">
       </div>
@@ -356,10 +356,10 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Category Filter Dropdown (ເລືອກປະເພດສິນຄ້າ) -->
       <div style="flex: 1 1 150px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-tags text-primary mr-1"></i> ປະເພດສິນຄ້າ:
+          <i class="fas fa-tags text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.category_label', 'ປະເພດສິນຄ້າ:')); ?>
         </label>
         <select name="category_id" class="form-control form-control-sm font-weight-bold" onchange="this.form.submit()" style="border-radius: 8px; height: 38px; font-size: 0.85rem; background: #ffffff; border: 1.5px solid #cbd5e1; width: 100%;">
-          <option value="">-- ເລືອກປະເພດສິນຄ້າ --</option>
+          <option value=""><?php echo htmlspecialchars(t('reports.select_category_opt', '-- ເລືອກປະເພດສິນຄ້າ --')); ?></option>
           <?php foreach ($all_categories as $c): ?>
             <option value="<?php echo $c['category_id']; ?>" <?php echo $category_id == $c['category_id'] ? 'selected' : ''; ?>>
               <?php echo htmlspecialchars($c['category_name']); ?>
@@ -371,14 +371,14 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Branch Filter Dropdown (ເລືອກສາຂາ) -->
       <div style="flex: 1 1 140px; width: 100%;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+          <i class="fas fa-store text-info mr-1"></i> <?php echo htmlspecialchars(t('reports.branch_label', 'ສາຂາ:')); ?>
         </label>
         <select name="store_id" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1; width: 100%;" onchange="this.form.submit()">
-          <option value="0">-- ທຸກສາຂາ --</option>
+          <option value="0"><?php echo htmlspecialchars(t('reports.all_branches_opt', '-- ທຸກສາຂາ --')); ?></option>
           <?php if (!empty($branchesList)): ?>
             <?php foreach ($branchesList as $b): ?>
               <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? htmlspecialchars(t('reports.main_branch_suffix', '(ສາຂາໃຫຍ່)')) : ''; ?>
               </option>
             <?php endforeach; ?>
           <?php endif; ?>
@@ -390,9 +390,9 @@ require_once __DIR__ . '/../../layouts/header.php';
         <label class="font-weight-bold text-dark mb-1 d-block d-md-none" style="font-size: 0.82rem; visibility: hidden;">&nbsp;</label>
         <div class="d-flex align-items-center" style="gap: 8px; width: 100%;">
           <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); flex: 1;">
-            <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
+            <i class="fas fa-search mr-1.5"></i> <?php echo htmlspecialchars(t('reports.search_btn', 'ຄົ້ນຫາ')); ?>
           </button>
-          <a href="category_sales.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="ລ້າງຄ່າ">
+          <a href="category_sales.php" class="btn btn-light btn-sm border font-weight-bold px-3 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px;" title="<?php echo htmlspecialchars(t('reports.clear', 'ລ້າງຄ່າ')); ?>">
             <i class="fas fa-redo"></i>
           </a>
         </div>
@@ -407,12 +407,12 @@ require_once __DIR__ . '/../../layouts/header.php';
         <table class="table table-hover align-middle mb-0 text-nowrap report-table" style="font-size: 0.88rem;">
           <thead style="background-color: #ffffff; color: #1e293b; border-bottom: 2px solid #e2e8f0;">
             <tr style="background: #ffffff; color: #1e293b;">
-              <th class="text-center py-3" style="width: 60px; border-bottom: 2px solid #cbd5e1;">ລຳດັບ</th>
-              <th class="py-3" style="border-bottom: 2px solid #cbd5e1;">ປະເພດສິນຄ້າ / ລາຍການສິນຄ້າ</th>
-              <th class="text-center py-3" style="width: 120px; border-bottom: 2px solid #cbd5e1;">ຈຳນວນ</th>
-              <th class="text-center py-3" style="width: 130px; border-bottom: 2px solid #cbd5e1;">ສ່ວນຫຼຸດ</th>
-              <th class="text-center py-3" style="width: 150px; border-bottom: 2px solid #cbd5e1;">ຕັດສະຕັອກຕົວຈິງ</th>
-              <th class="text-right py-3" style="width: 160px; border-bottom: 2px solid #cbd5e1;">ລວມເງິນ</th>
+              <th class="text-center py-3" style="width: 60px; border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.col_no', 'ລຳດັບ')); ?></th>
+              <th class="py-3" style="border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.col_category_product', 'ປະເພດສິນຄ້າ / ລາຍການສິນຄ້າ')); ?></th>
+              <th class="text-center py-3" style="width: 120px; border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.col_qty', 'ຈຳນວນ')); ?></th>
+              <th class="text-center py-3" style="width: 130px; border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.discount_label', 'ສ່ວນຫຼຸດ')); ?></th>
+              <th class="text-center py-3" style="width: 150px; border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.col_stock_cut_actual', 'ຕັດສະຕັອກຕົວຈິງ')); ?></th>
+              <th class="text-right py-3" style="width: 160px; border-bottom: 2px solid #cbd5e1;"><?php echo htmlspecialchars(t('reports.col_total_money', 'ລວມເງິນ')); ?></th>
             </tr>
           </thead>
           <tbody>
@@ -420,7 +420,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <tr>
                 <td colspan="6" class="text-center py-5 text-muted font-weight-bold">
                   <i class="fas fa-layer-group fa-3x mb-3 text-secondary opacity-50 d-block"></i>
-                  ບໍ່ພົບຂໍ້ມູນປະເພດສິນຄ້າ
+                  <?php echo htmlspecialchars(t('reports.no_category_data', 'ບໍ່ພົບຂໍ້ມູນປະເພດສິນຄ້າ')); ?>
                 </td>
               </tr>
             <?php else: ?>
@@ -505,7 +505,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <tr style="background-color: #ffffff;">
                     <td></td>
                     <td colspan="6" class="text-muted italic py-2" style="font-size: 0.85rem; padding-left: 28px;">
-                      (ບໍ່ມີປະຫວັດການຂາຍ)
+                      <?php echo htmlspecialchars(t('reports.no_category_sales_history', '(ບໍ່ມີປະຫວັດການຂາຍ)')); ?>
                     </td>
                   </tr>
                 <?php endif; ?>
@@ -516,7 +516,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <?php if (!empty($display_data)): ?>
             <tfoot style="background: #f8fafc; border-top: 2px solid #cbd5e1;">
               <tr class="font-weight-bold" style="font-size: 0.9rem; color: #0f172a;">
-                <td colspan="2" class="text-center py-3 font-weight-bold" style="background: #f8fafc; color: #0f172a;">ລວມທັງໝົດ:</td>
+                <td colspan="2" class="text-center py-3 font-weight-bold" style="background: #f8fafc; color: #0f172a;"><?php echo htmlspecialchars(t('reports.total_all_label', 'ລວມທັງໝົດ:')); ?></td>
                 <td class="text-center py-3 text-dark font-weight-bold" style="background: #f8fafc;"><?php echo number_format($grand_total_qty); ?></td>
                 <td class="text-center py-3 font-weight-bold" style="background: #f8fafc;">
                   <?php if ($grand_total_discount > 0): ?>
@@ -530,7 +530,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               </tr>
               <tr style="font-size: 0.88rem; color: #16a34a;">
                 <td colspan="5" class="text-right py-2 font-weight-bold" style="background: #f8fafc; color: #16a34a;">
-                   ເງິນສົດ:
+                   <?php echo htmlspecialchars(t('reports.total_cash_label', 'ເງິນສົດ:')); ?>
                 </td>
                 <td class="text-right py-2 font-weight-bold" style="background: #f8fafc; color: #16a34a;">
                   <?php echo number_format($cash_total, 0); ?> ₭
@@ -538,7 +538,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               </tr>
               <tr style="font-size: 0.88rem; color: #2563eb;">
                 <td colspan="5" class="text-right py-2 font-weight-bold" style="background: #f8fafc; color: #2563eb;">
-                   ເງິນໂອນ:
+                   <?php echo htmlspecialchars(t('reports.total_transfer_label', 'ເງິນໂອນ:')); ?>
                 </td>
                 <td class="text-right py-2 font-weight-bold" style="background: #f8fafc; color: #2563eb;">
                   <?php echo number_format($transfer_total, 0); ?> ₭
@@ -546,7 +546,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               </tr>
               <tr style="font-size: 0.98rem; border-top: 2px solid #cbd5e1;">
                 <td colspan="5" class="text-right py-2.5 font-weight-bold" style="background: #f1f5f9; color: #0f172a;">
-                   ລວມ:
+                   <?php echo htmlspecialchars(t('reports.total_label', 'ລວມ:')); ?>
                 </td>
                 <td class="text-right py-2.5 font-weight-bold" style="background: #f1f5f9; color: #0f172a; font-size: 1.02rem;">
                   <?php echo number_format($grand_total_paid, 0); ?> ₭

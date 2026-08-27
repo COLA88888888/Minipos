@@ -16,7 +16,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
     <div>
       <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-boxes mr-2" style="color: #a855f7;"></i> ລາຍການຂາຍສິນຄ້າ
+        <i class="fas fa-boxes mr-2" style="color: #a855f7;"></i> <?php echo htmlspecialchars(t('reports.title_item_sales', 'ລາຍການຂາຍສິນຄ້າ')); ?>
       </h5>
     </div>
   </div>

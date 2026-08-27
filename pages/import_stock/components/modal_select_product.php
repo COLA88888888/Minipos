@@ -9,7 +9,7 @@
       <!-- Header with Gradient Background (always pinned, never scrolls) -->
       <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important; flex-shrink: 0;">
         <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.1rem;">
-          ເລືອກສິນຄ້າຈາກຄັງ
+          <?php echo htmlspecialchars(t('stock_transfer.psm_title', 'ເລືອກສິນຄ້າຈາກຄັງ')); ?>
         </h5>
         <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.9;">
           <span aria-hidden="true">&times;</span>
@@ -40,7 +40,7 @@
               <i class="fas fa-filter text-primary mr-1"></i> ປະເພດສິນຄ້າ
             </label> -->
             <select id="modal_category_filter" class="form-control font-weight-bold shadow-sm" onchange="filterModalProducts()" style="height: 42px; border-radius: 8px; border-color: #cbd5e1;">
-              <option value="">-- ທັງໝົດປະເພດສິນຄ້າ --</option>
+              <option value=""><?php echo htmlspecialchars(t('stock_transfer.psm_all_categories', '-- ທັງໝົດປະເພດສິນຄ້າ --')); ?></option>
               <?php if (!empty($categories)): ?>
                 <?php foreach ($categories as $cat): ?>
                   <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
@@ -58,7 +58,7 @@
               <div class="input-group-prepend">
                 <span class="input-group-text bg-white border-right-0"><i class="fas fa-search text-muted"></i></span>
               </div>
-              <input type="text" id="modal_product_search" class="form-control border-left-0 pl-0" placeholder="ຄົ້ນຫາ ຊື່ສິນຄ້າ, ບາໂຄ້ດ, ລະຫັດ..." autocomplete="off" onkeyup="filterModalProducts()" style="height: 42px; font-size: 0.95rem;">
+              <input type="text" id="modal_product_search" class="form-control border-left-0 pl-0" placeholder="<?php echo htmlspecialchars(t('stock_transfer.psm_search_placeholder', 'ຄົ້ນຫາ ຊື່ສິນຄ້າ, ບາໂຄ້ດ, ລະຫັດ...')); ?>" autocomplete="off" onkeyup="filterModalProducts()" style="height: 42px; font-size: 0.95rem;">
             </div>
           </div>
         </div>
@@ -68,11 +68,11 @@
           <div class="d-flex align-items-center">
             <i class="fas fa-check-circle mr-2 text-primary fa-lg"></i>
             <span class="font-weight-bold" style="font-size: 0.92rem;">
-              ເລືອກແລ້ວ <span id="modal_selected_count" class="badge badge-primary font-weight-bold mx-1" style="font-size: 0.88rem; padding: 3px 8px;">0</span> ລາຍການ
+              <?php echo htmlspecialchars(t('stock_transfer.psm_selected_prefix', 'ເລືອກແລ້ວ')); ?> <span id="modal_selected_count" class="badge badge-primary font-weight-bold mx-1" style="font-size: 0.88rem; padding: 3px 8px;">0</span> <?php echo htmlspecialchars(t('stock_transfer.psm_selected_suffix', 'ລາຍການ')); ?>
             </span>
           </div>
           <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3 py-1.5 shadow-sm" onclick="addSelectedModalProductsToCart()" style="border-radius: 8px; font-size: 0.85rem;">
-            <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
+            <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('stock_transfer.psm_add_items_btn', 'ເພີ່ມລາຍການ')); ?>
           </button>
         </div>
 
@@ -81,17 +81,17 @@
           <table class="table table-hover mb-0 align-middle text-nowrap">
             <thead class="text-dark font-weight-bold" style="position: sticky; top: 0; z-index: 10; background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
               <tr>
-                <th class="text-center" style="width: 70px;">ລະຫັດ</th>
-                <th>ຊື່ສິນຄ້າ</th>
-                <th class="text-center">ບາໂຄ້ດ</th>
-                <th class="text-center">ສະຕັອກ</th>
-                <th class="text-right">ລາຄາຊື້</th>
-                <th class="text-right">ລາຄາຂາຍ</th>
+                <th class="text-center" style="width: 70px;"><?php echo htmlspecialchars(t('stock_transfer.psm_col_code', 'ລະຫັດ')); ?></th>
+                <th><?php echo htmlspecialchars(t('stock_transfer.psm_col_name', 'ຊື່ສິນຄ້າ')); ?></th>
+                <th class="text-center"><?php echo htmlspecialchars(t('stock_transfer.psm_col_barcode', 'ບາໂຄ້ດ')); ?></th>
+                <th class="text-center"><?php echo htmlspecialchars(t('stock_transfer.psm_col_stock', 'ສະຕັອກ')); ?></th>
+                <th class="text-right"><?php echo htmlspecialchars(t('stock_transfer.psm_col_buy_price', 'ລາຄາຊື້')); ?></th>
+                <th class="text-right"><?php echo htmlspecialchars(t('stock_transfer.psm_col_sell_price', 'ລາຄາຂາຍ')); ?></th>
                 <th class="text-center" style="width: 120px;">
-                  <div class="custom-control custom-checkbox d-inline-flex align-items-center justify-content-center" title="ເລືອກທັງໝົດ">
+                  <div class="custom-control custom-checkbox d-inline-flex align-items-center justify-content-center" title="<?php echo htmlspecialchars(t('stock_transfer.psm_select_all_title', 'ເລືອກທັງໝົດ')); ?>">
                     <input type="checkbox" class="custom-control-input" id="selectAllModalProducts" onchange="toggleSelectAllModalProducts(this.checked)">
                     <label class="custom-control-label font-weight-bold text-dark" for="selectAllModalProducts" style="cursor: pointer; font-size: 0.85rem; user-select: none;">
-                      ເລືອກ
+                      <?php echo htmlspecialchars(t('stock_transfer.psm_select', 'ເລືອກ')); ?>
                     </label>
                   </div>
                 </th>
@@ -102,7 +102,7 @@
                 <tr>
                   <td colspan="7" class="text-center text-muted py-5">
                     <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
-                    <span class="font-weight-bold">ບໍ່ມີຂໍ້ມູນສິນຄ້າໃນລະບົບ</span>
+                    <span class="font-weight-bold"><?php echo htmlspecialchars(t('stock_transfer.psm_empty', 'ບໍ່ມີຂໍ້ມູນສິນຄ້າໃນລະບົບ')); ?></span>
                   </td>
                 </tr>
               <?php else: ?>
@@ -118,7 +118,7 @@
                     $searchData = strtolower($p['product_name'] . ' ' . $p['barcode'] . ' ' . $allBarcodesStr . ' ' . $p['product_id']);
                     $catId = $p['category_id'] ?? '';
                     $stockQty = intval($p['qty']);
-                    $unitName = $p['unit'] ?: 'ອັນ';
+                    $unitName = $p['unit'] ?: t('stock_transfer.default_unit', 'ອັນ');
                   ?>
                   <tr class="modal-product-row" data-search="<?php echo htmlspecialchars($searchData); ?>" data-category="<?php echo htmlspecialchars($catId); ?>" onclick="toggleRowCheckbox(this, event)" style="cursor: pointer;">
                     
@@ -179,7 +179,7 @@
                           <input type="checkbox" class="custom-control-input modal-product-checkbox" id="chk_modal_prod_<?php echo $p['product_id']; ?>" data-product-id="<?php echo $p['product_id']; ?>" onclick="event.stopPropagation(); checkSingleModalProduct()">
                           <label class="custom-control-label" for="chk_modal_prod_<?php echo $p['product_id']; ?>" style="cursor: pointer;"></label>
                         </div>
-                        <button type="button" class="btn btn-modal-select-green" style="background-color: #10b981 !important; color: #ffffff !important; border: none !important; width: 34px !important; height: 34px !important; border-radius: 6px !important; transform: none !important;" onclick="event.stopPropagation(); selectProductFromModal(<?php echo $p['product_id']; ?>)" title="ເລືອກສິນຄ້ານີ້ດຽວ">
+                        <button type="button" class="btn btn-modal-select-green" style="background-color: #10b981 !important; color: #ffffff !important; border: none !important; width: 34px !important; height: 34px !important; border-radius: 6px !important; transform: none !important;" onclick="event.stopPropagation(); selectProductFromModal(<?php echo $p['product_id']; ?>)" title="<?php echo htmlspecialchars(t('stock_transfer.psm_select_one_title', 'ເລືອກສິນຄ້ານີ້ດຽວ')); ?>">
                           <i class="fas fa-check font-weight-bold" style="color: #ffffff !important; font-size: 0.9rem !important;"></i>
                         </button>
                       </div>

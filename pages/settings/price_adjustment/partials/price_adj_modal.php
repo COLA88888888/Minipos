@@ -95,11 +95,11 @@
           <!-- Grid Row 2: Old Prices Display (Cost vs Sales) -->
           <div class="row" id="old_prices_display" style="display: flex;">
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-muted small mb-1">ລາຄາຊື້ເກົ່າ:</label>
+              <label class="font-weight-bold text-muted small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_old_bprice', 'ລາຄາຊື້ເກົ່າ:')); ?></label>
               <input type="text" id="cur_bprice" class="form-control bg-light text-right" readonly placeholder="0 ₭" style="height: 42px;">
             </div>
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-muted small mb-1">ລາຄາຂາຍເກົ່າ:</label>
+              <label class="font-weight-bold text-muted small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_old_price', 'ລາຄາຂາຍເກົ່າ:')); ?></label>
               <input type="text" id="cur_price" class="form-control bg-light text-right font-weight-bold text-primary" readonly placeholder="0 ₭" style="height: 42px;">
             </div>
           </div>
@@ -107,20 +107,20 @@
           <!-- Grid Row 3: Target Price Type & Calc Type -->
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ປັບລາຄາ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_target_price', 'ປັບລາຄາ:')); ?> <span class="text-danger">*</span></label>
               <select name="target_price_type" id="target_price_type" class="form-control">
-                <option value="price">ປັບ ລາຄາຂາຍ</option>
-                <option value="bprice">ປັບ ລາຄາຊື້</option>
-                <option value="both">ປັບ ທັງລາຄາຂາຍ ແລະ ລາຄາຊື້</option>
+                <option value="price"><?php echo htmlspecialchars(t('price_adjustment.opt_target_price', 'ປັບ ລາຄາຂາຍ')); ?></option>
+                <option value="bprice"><?php echo htmlspecialchars(t('price_adjustment.opt_target_bprice', 'ປັບ ລາຄາຊື້')); ?></option>
+                <option value="both"><?php echo htmlspecialchars(t('price_adjustment.opt_target_both', 'ປັບ ທັງລາຄາຂາຍ ແລະ ລາຄາຊື້')); ?></option>
               </select>
             </div>
 
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ປະເພດການປັບ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_calc_type', 'ປະເພດການປັບ:')); ?> <span class="text-danger">*</span></label>
               <select name="calc_type" id="calc_type" class="form-control">
-                <option value="set">ຕັ້ງລາຄາໃໝ່</option>
-                <option value="increase">ເພີ່ມລາຄາ</option>
-                <option value="decrease">ຫຼຸດລາຄາ</option>
+                <option value="set"><?php echo htmlspecialchars(t('price_adjustment.opt_calc_set', 'ຕັ້ງລາຄາໃໝ່')); ?></option>
+                <option value="increase"><?php echo htmlspecialchars(t('price_adjustment.opt_calc_increase', 'ເພີ່ມລາຄາ')); ?></option>
+                <option value="decrease"><?php echo htmlspecialchars(t('price_adjustment.opt_calc_decrease', 'ຫຼຸດລາຄາ')); ?></option>
               </select>
             </div>
           </div>
@@ -128,7 +128,7 @@
           <!-- Grid Row 4: Adjust Value & Remark -->
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ຈຳນວນເງິນປັບ: <span class="text-danger">*</span></label>
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_adjust_value', 'ຈຳນວນເງິນປັບ:')); ?> <span class="text-danger">*</span></label>
               <div class="input-group">
                 <input type="text" inputmode="decimal" name="adjust_value" id="adjust_value" class="form-control font-weight-bold text-danger text-right" placeholder="0" required style="height: 42px;" oninput="formatNumberInput(this)">
                 <div class="input-group-append"><span class="input-group-text font-weight-bold">₭</span></div>
@@ -136,18 +136,18 @@
             </div>
 
             <div class="col-md-6 mb-3">
-              <label class="font-weight-bold text-dark small mb-1">ໝາຍເຫດ:</label>
-              <input type="text" name="remark" class="form-control" placeholder="ເຊັ່ນ: ຕົ້ນທຶນເພີ່ມ, ປັບລາຄາຂາຍສົ່ງ..." style="height: 42px;">
+              <label class="font-weight-bold text-dark small mb-1"><?php echo htmlspecialchars(t('price_adjustment.label_remark', 'ໝາຍເຫດ:')); ?></label>
+              <input type="text" name="remark" class="form-control" placeholder="<?php echo htmlspecialchars(t('price_adjustment.placeholder_remark', 'ເຊັ່ນ: ຕົ້ນທຶນເພີ່ມ, ປັບລາຄາຂາຍສົ່ງ...')); ?>" style="height: 42px;">
             </div>
           </div>
 
         </div>
         <div class="modal-footer bg-light py-2.5 px-4" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
           <button type="button" class="btn btn-secondary font-weight-bold px-3 py-2" data-dismiss="modal" style="border-radius: 6px;">
-            ຍົກເລີກ
+            <?php echo htmlspecialchars(t('price_adjustment.btn_cancel', 'ຍົກເລີກ')); ?>
           </button>
           <button type="submit" class="btn btn-primary font-weight-bold text-white px-4 py-2 shadow-sm" style="border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-            <i class="fas fa-check-circle mr-1"></i>ບັນທຶກ
+            <i class="fas fa-check-circle mr-1"></i><?php echo htmlspecialchars(t('price_adjustment.btn_save', 'ບັນທຶກ')); ?>
           </button>
         </div>
       </form>

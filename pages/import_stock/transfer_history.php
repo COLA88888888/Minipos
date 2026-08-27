@@ -31,11 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $transfer = $stmtTrf->fetch();
 
             if (!$transfer) {
-                throw new Exception("ບໍ່ພົບຂໍ້ມູນໃບໂອນນີ້ໃນລະບົບ!");
+                throw new Exception(t('transfer_history.err_not_found', 'ບໍ່ພົບຂໍ້ມູນໃບໂອນນີ້ໃນລະບົບ!'));
             }
 
             if ($transfer['status'] === 'cancelled') {
-                throw new Exception("ໃບໂອນນີ້ຖືກຍົກເລີກໄປແລ້ວ!");
+                throw new Exception(t('transfer_history.err_already_cancelled', 'ໃບໂອນນີ້ຖືກຍົກເລີກໄປແລ້ວ!'));
             }
 
             // Fetch details
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 if (!$targetProd || $targetProd['qty'] < $qty) {
                     $prodName = $targetProd ? $targetProd['product_name'] : $item['product_name'];
                     $curQty = $targetProd ? $targetProd['qty'] : 0;
-                    throw new Exception("ບໍ່ສາມາດຍົກເລີກໃບໂອນໄດ້ ເນື່ອງຈາກສິນຄ້າ \"{$prodName}\" ໃນສາຂາປາຍທາງຖືກໃຊ້ ຫຼື ຂາຍໄປແລ້ວ (ສະຕັອກປັດຈຸບັນມີ: {$curQty}, ຕ້ອງການຫັກຄືນ: {$qty})!");
+                    throw new Exception(sprintf(t('transfer_history.err_stock_used', 'ບໍ່ສາມາດຍົກເລີກໃບໂອນໄດ້ ເນື່ອງຈາກສິນຄ້າ "%s" ໃນສາຂາປາຍທາງຖືກໃຊ້ ຫຼື ຂາຍໄປແລ້ວ (ສະຕັອກປັດຈຸບັນມີ: %s, ຕ້ອງການຫັກຄືນ: %s)!'), $prodName, $curQty, $qty));
                 }
             }
 
@@ -121,14 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmtUpdateStatus->execute([$transfer_id]);
 
             $pdo->commit();
-            $message = "ຍົກເລີກໃບໂອນເລກທີ " . $transfer['transfer_code'] . " ແລະ ຄືນສະຕັອກເຂົ້າຕົ້ນທາງສຳເລັດ!";
+            $message = sprintf(t('transfer_history.msg_cancel_success', 'ຍົກເລີກໃບໂອນເລກທີ %s ແລະ ຄືນສະຕັອກເຂົ້າຕົ້ນທາງສຳເລັດ!'), $transfer['transfer_code']);
             $message_type = 'success';
             logActivity($pdo, "ຍົກເລີກໃບໂອນສິນຄ້າ", "Code: {$transfer['transfer_code']}");
         } catch (Exception $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
-            $message = 'ຜິດພາດ: ' . $e->getMessage();
+            $message = t('transfer_history.err_prefix', 'ຜິດພາດ:') . ' ' . $e->getMessage();
             $message_type = 'danger';
         }
     }
@@ -219,13 +219,13 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 10px;">
     <div>
       <h4 class="font-weight-bold text-dark m-0">
-        <i class="fas fa-history text-info mr-2"></i> ປະຫວັດການໂອນສິນຄ້າ
+        <i class="fas fa-history text-info mr-2"></i> <?php echo htmlspecialchars(t('transfer_history.page_title', 'ປະຫວັດການໂອນສິນຄ້າ')); ?>
       </h4>
-      <span class="text-muted" style="font-size: 0.85rem;">ຕິດຕາມ ແລະ ກວດສອບລາຍການໂອນສິນຄ້າລະຫວ່າງສາຂາ</span>
+      <span class="text-muted" style="font-size: 0.85rem;"><?php echo htmlspecialchars(t('transfer_history.page_subtitle', 'ຕິດຕາມ ແລະ ກວດສອບລາຍການໂອນສິນຄ້າລະຫວ່າງສາຂາ')); ?></span>
     </div>
     <div>
       <a href="stock_transfer.php" class="btn btn-primary btn-sm font-weight-bold px-3 py-2" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886);">
-        <i class="fas fa-exchange-alt mr-1"></i> ໂອນສິນຄ້າໃໝ່
+        <i class="fas fa-exchange-alt mr-1"></i> <?php echo htmlspecialchars(t('transfer_history.new_transfer_btn', 'ໂອນສິນຄ້າໃໝ່')); ?>
       </a>
     </div>
   </div>
@@ -236,7 +236,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
           icon: '<?php echo $message_type === "success" ? "success" : "error"; ?>',
-          title: '<?php echo $message_type === "success" ? "ສຳເລັດ" : "ແຈ້ງເຕືອນ"; ?>',
+          title: '<?php echo $message_type === "success" ? htmlspecialchars(t('transfer_history.msg_success_title', 'ສຳເລັດ'), ENT_QUOTES) : htmlspecialchars(t('transfer_history.msg_error_title', 'ແຈ້ງເຕືອນ'), ENT_QUOTES); ?>',
           text: '<?php echo addslashes($message); ?>',
           confirmButtonColor: '#2563eb'
         });

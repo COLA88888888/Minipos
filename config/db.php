@@ -485,6 +485,26 @@ try {
             $pdo->exec("ALTER TABLE products ADD COLUMN `unit` VARCHAR(100) DEFAULT NULL");
         }
 
+        // products.unit_id is the real link into the units table (mirrors category_id ->
+        // categories). products.unit (the plain-text name) stays alongside it as a synced
+        // display cache — dropping it would require touching every existing consumer that
+        // still reads it directly (POS cart/receipt JS, stock_transfer, reports, product_units).
+        $hasUnitId = $pdo->query("SHOW COLUMNS FROM products LIKE 'unit_id'")->fetch();
+        if (!$hasUnitId) {
+            $pdo->exec("ALTER TABLE products ADD COLUMN `unit_id` INT DEFAULT NULL");
+        }
+
+        // One-time (idempotent) backfill: link existing products to their matching row in
+        // units by name, scoped to the same branch — covers products added/edited before
+        // this FK existed. COLLATE needed since products.unit and units.unit_name don't
+        // share a collation (see api/units_backend.php for the same mismatch).
+        $pdo->exec("
+            UPDATE products p
+            JOIN units u ON u.store_id = p.store_id AND u.unit_name = p.unit COLLATE utf8mb4_unicode_ci
+            SET p.unit_id = u.unit_id
+            WHERE p.unit_id IS NULL AND p.unit IS NOT NULL AND p.unit != ''
+        ");
+
         // ລົບຟິວພາສາອັງກິດ (_en) ທີ່ບໍ່ໄດ້ໃຊ້ງານ
         $pdo->exec("ALTER TABLE categories DROP COLUMN IF EXISTS category_name_en");
         $pdo->exec("ALTER TABLE products DROP COLUMN IF EXISTS product_name_en");

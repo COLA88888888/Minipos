@@ -1,0 +1,72 @@
+<?php
+// pages/import_stock/transfer_history.php + components/history_*.php
+// strings - English
+return [
+    'transfer_history.page_title' => 'Transfer History',
+    'transfer_history.page_subtitle' => 'Track and review inter-branch stock transfers',
+    'transfer_history.new_transfer_btn' => 'New Transfer',
+    'transfer_history.msg_success_title' => 'Success',
+    'transfer_history.msg_error_title' => 'Notice',
+
+    'transfer_history.from_date' => 'From Date:',
+    'transfer_history.to_date' => 'To Date:',
+    'transfer_history.from_store' => 'Source Branch:',
+    'transfer_history.to_store' => 'Destination Branch:',
+    'transfer_history.all_opt' => '-- All --',
+    'transfer_history.search_label' => 'Search Code/Notes:',
+    'transfer_history.search_placeholder' => 'Transfer code, notes...',
+    'transfer_history.search_btn' => 'Search',
+    'transfer_history.clear_btn' => 'Clear',
+
+    'transfer_history.col_no' => 'No.',
+    'transfer_history.col_code' => 'Transfer Code',
+    'transfer_history.col_date' => 'Transfer Date',
+    'transfer_history.col_creator' => 'Transferred By',
+    'transfer_history.col_from_store' => 'Source Branch',
+    'transfer_history.col_to_store' => 'Destination Branch',
+    'transfer_history.col_items' => 'Items',
+    'transfer_history.col_total_qty' => 'Total Qty',
+    'transfer_history.col_status' => 'Status',
+    'transfer_history.col_view' => 'View',
+    'transfer_history.empty_state' => 'No transfer history found',
+    'transfer_history.view_detail_title' => 'Click to view details',
+    'transfer_history.items_unit' => 'item(s)',
+    'transfer_history.status_completed' => 'Completed',
+    'transfer_history.status_cancelled' => 'Cancelled',
+    'transfer_history.view_detail_btn_title' => 'View Details',
+
+    // Detail modal
+    'transfer_history.modal_title' => 'Stock Transfer Details',
+    'transfer_history.modal_from_store' => 'Origin branch:',
+    'transfer_history.modal_to_store' => 'Destination branch:',
+    'transfer_history.modal_date' => 'Transfer date:',
+    'transfer_history.modal_creator' => 'Performed by:',
+    'transfer_history.modal_status' => 'Status:',
+    'transfer_history.modal_items_heading' => 'Transferred items:',
+    'transfer_history.modal_col_product' => 'Product Name',
+    'transfer_history.modal_col_barcode' => 'Barcode',
+    'transfer_history.modal_col_qty' => 'Transfer Qty',
+    'transfer_history.modal_col_unit' => 'Unit',
+    'transfer_history.modal_notes_label' => 'Notes:',
+    'transfer_history.modal_close_btn' => 'Close',
+    'transfer_history.default_unit' => 'pc',
+
+    // JS
+    'transfer_history.js_error_title' => 'Error',
+    'transfer_history.js_load_failed' => 'Unable to load data',
+    'transfer_history.js_connection_error' => 'A connection error occurred',
+    'transfer_history.js_cancel_confirm_title' => 'Confirm transfer cancellation?',
+    'transfer_history.js_transfer_code_label' => 'Transfer No.:',
+    'transfer_history.js_cancel_confirm_hint' => 'Stock will be deducted back from the destination branch and returned to the origin branch.',
+    'transfer_history.js_confirm_cancel_btn' => 'Confirm Cancel',
+    'transfer_history.js_close_btn' => 'Close',
+    'transfer_history.js_cancel_success' => 'Transfer cancelled successfully!',
+    'transfer_history.js_generic_error' => 'Error!',
+
+    // Backend $message (transfer_history.php)
+    'transfer_history.err_not_found' => 'This transfer was not found in the system!',
+    'transfer_history.err_already_cancelled' => 'This transfer has already been cancelled!',
+    'transfer_history.err_stock_used' => 'Cannot cancel the transfer because product "%s" at the destination branch has been used or sold (current stock: %s, needs to deduct: %s)!',
+    'transfer_history.msg_cancel_success' => 'Transfer No. %s cancelled and stock returned to the origin branch successfully!',
+    'transfer_history.err_prefix' => 'Error:',
+];

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $baseQty = intval($det['total_base_qty']);
 
                     if (($bRem !== null && $bInit !== null && $bRem < $bInit) || ($pQty < $baseQty)) {
-                        throw new Exception("ບໍ່ສາມາດລົບ/ຍົກເລີກໃບບິນນີ້ໄດ້ ເນື່ອງຈາກສິນຄ້ານີ້ມີການເຄື່ອນໄຫວ ຫຼື ຖືກຂາຍອອກໄປແລ້ວ!");
+                        throw new Exception(t('import_list.err_has_movement', 'ບໍ່ສາມາດລົບ/ຍົກເລີກໃບບິນນີ້ໄດ້ ເນື່ອງຈາກສິນຄ້ານີ້ມີການເຄື່ອນໄຫວ ຫຼື ຖືກຂາຍອອກໄປແລ້ວ!'));
                     }
 
                     // Revert stock quantity in products
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $delDet = $pdo->prepare("DELETE FROM import_details WHERE import_detail_id = ?");
                     $delDet->execute([$import_detail_id]);
 
-                    $message = 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!';
+                    $message = t('import_list.msg_cancel_success', 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!');
                     $message_type = 'success';
                     logActivity($pdo, "ຍົກເລີກການຮັບສິນຄ້າເຂົ້າ", "Detail ID: $import_detail_id");
                 }
@@ -104,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $baseQty = intval($det['total_base_qty']);
 
                     if (($bRem !== null && $bInit !== null && $bRem < $bInit) || ($pQty < $baseQty)) {
-                        throw new Exception("ບໍ່ສາມາດລົບໃບບິນນີ້ໄດ້ ເນື່ອງຈາກມີສິນຄ້າໃນໃບບິນນີ້ຖືກຂາຍ ຫຼື ເຄື່ອນໄຫວແລ້ວ!");
+                        throw new Exception(t('import_list.err_bill_has_movement', 'ບໍ່ສາມາດລົບໃບບິນນີ້ໄດ້ ເນື່ອງຈາກມີສິນຄ້າໃນໃບບິນນີ້ຖືກຂາຍ ຫຼື ເຄື່ອນໄຫວແລ້ວ!'));
                     }
                 }
 
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $pdo->prepare("DELETE FROM import_details WHERE import_id = ?")->execute([$import_id]);
                 $pdo->prepare("DELETE FROM imports WHERE import_id = ?")->execute([$import_id]);
 
-                $message = 'ລົບໃບບິນຮັບເຂົ້າສິນຄ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!';
+                $message = t('import_list.msg_delete_bill_success', 'ລົບໃບບິນຮັບເຂົ້າສິນຄ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!');
                 $message_type = 'success';
                 logActivity($pdo, "ລົບໃບບິນຮັບເຂົ້າສິນຄ້າ", "Import ID: $import_id");
 
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $pStmt->execute([$product_id]);
                     $product = $pStmt->fetch();
 
-                    $unit_name = !empty($product['unit']) ? $product['unit'] : 'ອັນ';
+                    $unit_name = !empty($product['unit']) ? $product['unit'] : t('import_list.default_unit', 'ອັນ');
                     $multiplier = 1;
 
                     if ($unit_key !== 'base') {
@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $updBatch = $pdo->prepare("UPDATE product_batches SET expiry_date = ?, initial_qty = ?, quantity = GREATEST(0, quantity + ?) WHERE import_detail_id = ?");
                     $updBatch->execute([$expiry_date, $new_total_base_qty, $diff_base_qty, $import_detail_id]);
 
-                    $message = 'ດັດແກ້ຂໍ້ມູນການຮັບສິນຄ້າເຂົ້າສຳເລັດ!';
+                    $message = t('import_list.msg_edit_detail_success', 'ດັດແກ້ຂໍ້ມູນການຮັບສິນຄ້າເຂົ້າສຳເລັດ!');
                     $message_type = 'success';
                     logActivity($pdo, "ແກ້ໄຂການຮັບສິນຄ້າເຂົ້າ", "Detail ID: $import_detail_id");
                 }
@@ -212,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 if ($pdo->inTransaction()) {
                     $pdo->rollBack();
                 }
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('import_list.err_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -231,11 +231,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $updMaster = $pdo->prepare("UPDATE imports SET supplier_name = ?, import_date = ?, notes = ? WHERE import_id = ?");
                 $updMaster->execute([$supplier_name, $import_date, $notes, $import_id]);
 
-                $message = 'ດັດແກ້ຂໍ້ມູນໃບບິນຮັບເຂົ້າສຳເລັດ!';
+                $message = t('import_list.msg_edit_master_success', 'ດັດແກ້ຂໍ້ມູນໃບບິນຮັບເຂົ້າສຳເລັດ!');
                 $message_type = 'success';
                 logActivity($pdo, "ແກ້ໄຂຂໍ້ມູນໃບບິນຮັບເຂົ້າ", "Import ID: $import_id");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('import_list.err_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -424,12 +424,12 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="row align-items-center">
         <div class="col-sm-6">
           <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-list-alt text-success mr-2"></i> ລາຍການສິນຄ້າຮັບເຂົ້າ
+            <i class="fas fa-list-alt text-success mr-2"></i> <?php echo htmlspecialchars(t('import_list.page_title', 'ລາຍການສິນຄ້າຮັບເຂົ້າ')); ?>
           </h4>
         </div>
         <div class="col-sm-6 text-right">
           <a href="import_stock.php" class="btn btn-primary font-weight-bold shadow-sm" style="border-radius: 8px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-            <i class="fas fa-plus-circle mr-1"></i> ນຳເຂົ້າສິນຄ້າ
+            <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('import_list.import_stock_btn', 'ນຳເຂົ້າສິນຄ້າ')); ?>
           </a>
         </div>
       </div>
@@ -454,11 +454,11 @@ require_once __DIR__ . '/../../layouts/header.php';
           <script>
             $(document).ready(function() {
               Swal.fire({
-                title: 'ດຳເນີນການສຳເລັດ!',
+                title: '<?php echo htmlspecialchars(t('import_list.swal_success_title', 'ດຳເນີນການສຳເລັດ!'), ENT_QUOTES); ?>',
                 text: '<?php echo addslashes($message); ?>',
                 icon: 'success',
                 confirmButtonColor: '#10b981',
-                confirmButtonText: 'ຕົກລົງ',
+                confirmButtonText: '<?php echo htmlspecialchars(t('import_list.ok_button', 'ຕົກລົງ'), ENT_QUOTES); ?>',
                 timer: 3500,
                 timerProgressBar: true
               });
@@ -476,13 +476,12 @@ require_once __DIR__ . '/../../layouts/header.php';
           <div class="row align-items-center">
             <div class="col-md-6">
               <h5 class="card-title font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-                <i class="fas fa-table text-primary mr-2"></i> ຕາຕະລາງລາຍການສິນຄ້າຮັບເຂົ້າ 
-                <!-- <small class="text-primary font-weight-bold">(<?php echo ($view_type === 'bill') ? 'ສະແດງຕາມໃບບິນ' : 'ສະແດງລາຍລະອຽດ'; ?>)</small> -->
+                <i class="fas fa-table text-primary mr-2"></i> <?php echo htmlspecialchars(t('import_list.table_card_title', 'ຕາຕະລາງລາຍການສິນຄ້າຮັບເຂົ້າ')); ?>
               </h5>
             </div>
             <div class="col-md-6 text-right d-flex align-items-center justify-content-end">
               <span class="badge badge-success px-3 py-2 font-weight-bold" style="font-size: 0.9rem; height: 34px; line-height: 18px;">
-                ລວມ <?php echo number_format($total_records); ?> <?php echo ($view_type === 'bill') ? 'ໃບບິນ' : 'ລາຍການ'; ?>
+                <?php echo htmlspecialchars(t('import_list.total_prefix', 'ລວມ')); ?> <?php echo number_format($total_records); ?> <?php echo ($view_type === 'bill') ? htmlspecialchars(t('import_list.unit_bills', 'ໃບບິນ')) : htmlspecialchars(t('import_list.unit_items', 'ລາຍການ')); ?>
               </span>
             </div>
           </div>
@@ -508,7 +507,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                 <div class="input-group-prepend">
                   <span class="input-group-text bg-white border-right-0" style="border-radius: 6px 0 0 6px;"><i class="fas fa-search text-muted"></i></span>
                 </div>
-                <input type="text" id="import_search" class="form-control border-left-0" placeholder="ຄົ້ນຫາ ໃບບິນ, ຊື່ສິນຄ້າ, ຜູ້ສະໜອງ..." onkeyup="filterImportHistory()" style="border-radius: 0 6px 6px 0; height: 36px;">
+                <input type="text" id="import_search" class="form-control border-left-0" placeholder="<?php echo htmlspecialchars(t('import_list.search_placeholder', 'ຄົ້ນຫາ ໃບບິນ, ຊື່ສິນຄ້າ, ຜູ້ສະໜອງ...')); ?>" onkeyup="filterImportHistory()" style="border-radius: 0 6px 6px 0; height: 36px;">
               </div>
             </div>
           </div>
@@ -521,16 +520,16 @@ require_once __DIR__ . '/../../layouts/header.php';
                 <!-- HEADER FOR MODE 1: ຕາມບິນ (Blue Header) -->
                 <thead class=" font-weight-bold">
                   <tr>
-                    <th class="text-center" style="width: 50px;">ລຳດັບ</th>
-                    <th class="text-center">ວັນທີຮັບເຂົ້າ</th>
-                    <th class="text-center">ເລກທີໃບບິນ</th>
-                    <th>ສາຂາ</th>
-                    <th>ຜູ້ສະໜອງ</th>
-                    <th class="text-center">ຈຳນວນລາຍການ</th>
-                    <th class="text-right">ມູນຄ່າທຶນລວມ</th>
-                    <th>ຜູ້ບັນທຶກ</th>
-                    <th>ໝາຍເຫດ</th>
-                    <th class="text-center" style="width: 120px;">ຈັດການ</th>
+                    <th class="text-center" style="width: 50px;"><?php echo htmlspecialchars(t('import_list.col_no', 'ລຳດັບ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_import_date', 'ວັນທີຮັບເຂົ້າ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_invoice_no', 'ເລກທີໃບບິນ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_store', 'ສາຂາ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_supplier', 'ຜູ້ສະໜອງ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_item_count', 'ຈຳນວນລາຍການ')); ?></th>
+                    <th class="text-right"><?php echo htmlspecialchars(t('import_list.col_total_cost', 'ມູນຄ່າທຶນລວມ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_creator', 'ຜູ້ບັນທຶກ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_notes', 'ໝາຍເຫດ')); ?></th>
+                    <th class="text-center" style="width: 120px;"><?php echo htmlspecialchars(t('import_list.col_actions', 'ຈັດການ')); ?></th>
                   </tr>
                 </thead>
                 <tbody id="historyTableBody">
@@ -538,7 +537,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <tr>
                       <td colspan="10" class="text-center text-muted py-5">
                         <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
-                        ບໍ່ມີລາຍການໃບບິນຮັບເຂົ້າໃນຊ່ວງວັນທີນີ້
+                        <?php echo htmlspecialchars(t('import_list.empty_bills', 'ບໍ່ມີລາຍການໃບບິນຮັບເຂົ້າໃນຊ່ວງວັນທີນີ້')); ?>
                       </td>
                     </tr>
                   <?php else: ?>
@@ -564,7 +563,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                         <td class="align-middle font-weight-bold">
                           <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.82rem;">
-                            <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($row['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                            <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($row['store_name'] ?: t('import_list.main_store_default', 'ສາຂາຫຼັກ')); ?>
                           </span>
                         </td>
 
@@ -578,7 +577,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                         <td class="align-middle text-center font-weight-bold text-info">
                           <span class="badge badge-info px-2 py-1" style="font-size: 0.88rem;">
-                            <?php echo number_format($row['item_count']); ?> ລາຍການ
+                            <?php echo number_format($row['item_count']); ?> <?php echo htmlspecialchars(t('import_list.unit_items', 'ລາຍການ')); ?>
                           </span>
                         </td>
 
@@ -596,21 +595,21 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                         <td class="text-center align-middle">
                           <div class="btn-group btn-group-sm">
-                            <button type="button" class="btn btn-outline-info btn-view-bill" title="ເບິ່ງລາຍລະອຽດສິນຄ້າໃນບິນ" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-supplier="<?php echo htmlspecialchars($row['supplier_name'] ?? ''); ?>" data-date="<?php echo $importDate; ?>" data-cost="<?php echo floatval($row['total_cost']); ?>">
+                            <button type="button" class="btn btn-outline-info btn-view-bill" title="<?php echo htmlspecialchars(t('import_list.view_bill_title', 'ເບິ່ງລາຍລະອຽດສິນຄ້າໃນບິນ')); ?>" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-supplier="<?php echo htmlspecialchars($row['supplier_name'] ?? ''); ?>" data-date="<?php echo $importDate; ?>" data-cost="<?php echo floatval($row['total_cost']); ?>">
                               <i class="fas fa-eye"></i>
                             </button>
 
-                            <a href="print_import.php?import_id=<?php echo $row['import_id']; ?>" target="_blank" class="btn btn-outline-primary" title="ພິມໃບບິນ">
+                            <a href="print_import.php?import_id=<?php echo $row['import_id']; ?>" target="_blank" class="btn btn-outline-primary" title="<?php echo htmlspecialchars(t('import_list.print_bill_title', 'ພິມໃບບິນ')); ?>">
                               <i class="fas fa-print"></i>
                             </a>
 
                             <?php if (hasPermission('import_list', 'del') || hasPermission('import_stock', 'del')): ?>
                               <?php if (!$hasMov): ?>
-                                <button type="button" class="btn btn-outline-danger btn-delete-master-bill" title="ລົບບິນນີ້" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>">
+                                <button type="button" class="btn btn-outline-danger btn-delete-master-bill" title="<?php echo htmlspecialchars(t('import_list.delete_bill_title', 'ລົບບິນນີ້')); ?>" data-id="<?php echo $row['import_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>">
                                   <i class="fas fa-trash-alt"></i>
                                 </button>
                               <?php else: ?>
-                                <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດລົບໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
+                                <button type="button" class="btn btn-outline-secondary disabled" title="<?php echo htmlspecialchars(t('import_list.cannot_delete_movement_title', 'ບໍ່ສາມາດລົບໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ')); ?>">
                                   <i class="fas fa-lock"></i>
                                 </button>
                               <?php endif; ?>
@@ -626,17 +625,17 @@ require_once __DIR__ . '/../../layouts/header.php';
                 <!-- HEADER FOR MODE 2: ລາຍລະອຽດ (Blue Header) -->
                 <thead class="font-weight-bold">
                   <tr>
-                    <th class="text-center" style="width: 50px;">ລຳດັບ</th>
-                    <th class="text-center">ວັນທີຮັບເຂົ້າ</th>
-                    <th class="text-center">ເລກທີໃບບິນ</th>
-                    <th>ສາຂາ</th>
-                    <th>ຊື່ສິນຄ້າ</th>
-                    <th class="text-center">ຈຳນວນຮັບເຂົ້າ</th>
-                    <th class="text-center">ຈຳນວນຍ່ອຍລວມ</th>
-                    <th class="text-right">ມູນຄ່າທຶນລວມ</th>
-                    <th class="text-center">ວັນໝົດອາຍຸ</th>
-                    <th>ຜູ້ບັນທຶກ</th>
-                    <th class="text-center" style="width: 110px;">ຈັດການ</th>
+                    <th class="text-center" style="width: 50px;"><?php echo htmlspecialchars(t('import_list.col_no', 'ລຳດັບ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_import_date', 'ວັນທີຮັບເຂົ້າ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_invoice_no', 'ເລກທີໃບບິນ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_store', 'ສາຂາ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_product_name', 'ຊື່ສິນຄ້າ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_received_qty', 'ຈຳນວນຮັບເຂົ້າ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_total_base_qty', 'ຈຳນວນຍ່ອຍລວມ')); ?></th>
+                    <th class="text-right"><?php echo htmlspecialchars(t('import_list.col_total_cost', 'ມູນຄ່າທຶນລວມ')); ?></th>
+                    <th class="text-center"><?php echo htmlspecialchars(t('import_list.col_expiry_date', 'ວັນໝົດອາຍຸ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_list.col_creator', 'ຜູ້ບັນທຶກ')); ?></th>
+                    <th class="text-center" style="width: 110px;"><?php echo htmlspecialchars(t('import_list.col_actions', 'ຈັດການ')); ?></th>
                   </tr>
                 </thead>
                 <tbody id="historyTableBody">
@@ -644,7 +643,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <tr>
                       <td colspan="11" class="text-center text-muted py-5">
                         <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
-                        ບໍ່ມີລາຍການສິນຄ້າຮັບເຂົ້າໃນຊ່ວງວັນທີນີ້
+                        <?php echo htmlspecialchars(t('import_list.empty_details', 'ບໍ່ມີລາຍການສິນຄ້າຮັບເຂົ້າໃນຊ່ວງວັນທີນີ້')); ?>
                       </td>
                     </tr>
                   <?php else: ?>
@@ -661,9 +660,9 @@ require_once __DIR__ . '/../../layouts/header.php';
                             $formattedExp = date('d/m/Y', $expTime);
 
                             if ($daysDiff < 0) {
-                                $expBadge = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-times-circle mr-1"></i> ໝົດອາຍຸ (' . $formattedExp . ')</span>';
+                                $expBadge = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-times-circle mr-1"></i> ' . htmlspecialchars(t('import_list.expired_label', 'ໝົດອາຍຸ')) . ' (' . $formattedExp . ')</span>';
                             } elseif ($daysDiff <= 30) {
-                                $expBadge = '<span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-exclamation-triangle mr-1"></i> ໃກ້ໝົດອາຍຸ (' . $formattedExp . ')</span>';
+                                $expBadge = '<span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-exclamation-triangle mr-1"></i> ' . htmlspecialchars(t('import_list.near_expiry_label', 'ໃກ້ໝົດອາຍຸ')) . ' (' . $formattedExp . ')</span>';
                             } else {
                                 $expBadge = '<span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> ' . $formattedExp . '</span>';
                             }
@@ -700,7 +699,7 @@ require_once __DIR__ . '/../../layouts/header.php';
 
                         <td class="align-middle font-weight-bold">
                           <span class="badge badge-light border text-primary px-2 py-1" style="font-size: 0.82rem;">
-                            <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($row['store_name'] ?: 'ສາຂາຫຼັກ'); ?>
+                            <i class="fas fa-store mr-1 text-primary"></i><?php echo htmlspecialchars($row['store_name'] ?: t('import_list.main_store_default', 'ສາຂາຫຼັກ')); ?>
                           </span>
                         </td>
 
@@ -716,7 +715,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                         </td>
 
                         <td class="align-middle text-center font-weight-bold text-info">
-                          <?php echo number_format($row['total_base_qty']); ?> <?php echo htmlspecialchars($row['base_unit'] ?: 'ອັນ'); ?>
+                          <?php echo number_format($row['total_base_qty']); ?> <?php echo htmlspecialchars($row['base_unit'] ?: t('import_list.default_unit', 'ອັນ')); ?>
                         </td>
 
                         <td class="align-middle text-right font-weight-bold text-primary">
@@ -736,24 +735,24 @@ require_once __DIR__ . '/../../layouts/header.php';
                           <?php if (hasPermission('import_list', 'edit') || hasPermission('import_stock', 'edit') || hasPermission('import_list', 'del') || hasPermission('import_stock', 'del')): ?>
                             <div class="btn-group btn-group-sm">
                               <?php if (hasPermission('import_list', 'edit') || hasPermission('import_stock', 'edit')): ?>
-                                <button type="button" class="btn btn-outline-warning btn-edit-import" title="ແກ້ໄຂ" data-id="<?php echo $row['import_detail_id']; ?>" data-json="<?php echo $rowJson; ?>">
+                                <button type="button" class="btn btn-outline-warning btn-edit-import" title="<?php echo htmlspecialchars(t('import_list.edit_title', 'ແກ້ໄຂ')); ?>" data-id="<?php echo $row['import_detail_id']; ?>" data-json="<?php echo $rowJson; ?>">
                                   <i class="fas fa-edit"></i>
                                 </button>
                               <?php endif; ?>
                               <?php if (hasPermission('import_list', 'del') || hasPermission('import_stock', 'del')): ?>
                                 <?php if (!$hasMovement): ?>
-                                  <button type="button" class="btn btn-outline-danger btn-delete-import" title="ຍົກເລີກ/ລົບບິນນີ້" data-id="<?php echo $row['import_detail_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-name="<?php echo htmlspecialchars($row['product_name']); ?>">
+                                  <button type="button" class="btn btn-outline-danger btn-delete-import" title="<?php echo htmlspecialchars(t('import_list.cancel_delete_title', 'ຍົກເລີກ/ລົບບິນນີ້')); ?>" data-id="<?php echo $row['import_detail_id']; ?>" data-invoice="<?php echo htmlspecialchars($row['invoice_number']); ?>" data-name="<?php echo htmlspecialchars($row['product_name']); ?>">
                                     <i class="fas fa-trash-alt"></i>
                                   </button>
                                 <?php else: ?>
-                                  <button type="button" class="btn btn-outline-secondary disabled" title="ບໍ່ສາມາດຍົກເລີກໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ">
+                                  <button type="button" class="btn btn-outline-secondary disabled" title="<?php echo htmlspecialchars(t('import_list.cannot_cancel_movement_title', 'ບໍ່ສາມາດຍົກເລີກໄດ້ ເນື່ອງຈາກສິນຄ້າມີການເຄື່ອນໄຫວແລ້ວ')); ?>">
                                     <i class="fas fa-lock"></i>
                                   </button>
                                 <?php endif; ?>
                               <?php endif; ?>
                             </div>
                           <?php else: ?>
-                            <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                            <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('import_list.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                           <?php endif; ?>
                         </td>
                       </tr>

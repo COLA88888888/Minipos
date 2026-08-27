@@ -85,6 +85,7 @@ return [
     'products.gen_barcode_btn' => 'Generate',
     'products.field_unit' => 'Unit:',
     'products.unit_placeholder' => 'e.g. box, piece, bottle, cup, bag...',
+    'products.select_unit_placeholder' => '-- Select Unit --',
     'products.field_qty' => 'Stock Quantity:',
     'products.field_qty_optional' => '(optional)',
     'products.field_bprice' => 'Cost Price:',

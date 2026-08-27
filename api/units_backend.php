@@ -72,11 +72,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $pdo->prepare("UPDATE units SET unit_name = ?, description = ? WHERE unit_id = ? AND store_id = ?");
                     $stmt->execute([$name, $desc, $id, $unitActiveStoreId]);
 
+                    // Products link to this unit by unit_id, so the link itself never breaks on
+                    // a rename — but the denormalized `products.unit` text cache (kept for POS
+                    // cart/receipt/report code that still reads it directly) needs updating too.
+                    $pdo->prepare("UPDATE products SET unit = ? WHERE unit_id = ?")->execute([$name, $id]);
+
                     // A unit edited from the main branch also renames the matching unit in
                     // every sub-branch, so products there keep showing the updated name.
                     if ($oldName !== false && $oldName !== '' && isMainBranch($pdo, $unitActiveStoreId)) {
+                        $subUnitsStmt = $pdo->prepare("SELECT unit_id FROM units WHERE unit_name = ? AND store_id != ?");
+                        $subUnitsStmt->execute([$oldName, $unitActiveStoreId]);
+                        $subUnitIds = $subUnitsStmt->fetchAll(PDO::FETCH_COLUMN);
+
                         $subUpdateStmt = $pdo->prepare("UPDATE units SET unit_name = ?, description = ? WHERE unit_name = ? AND store_id != ?");
                         $subUpdateStmt->execute([$name, $desc, $oldName, $unitActiveStoreId]);
+
+                        if ($subUnitIds) {
+                            $syncProductsStmt = $pdo->prepare("UPDATE products SET unit = ? WHERE unit_id = ?");
+                            foreach ($subUnitIds as $subUnitId) {
+                                $syncProductsStmt->execute([$name, $subUnitId]);
+                            }
+                        }
                     }
 
                     $unit_message = 'ແກ້ໄຂຫົວໜ່ວຍສຳເລັດ!';
@@ -91,17 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif ($_POST['action'] === 'delete_unit') {
             $id = intval($_POST['unit_id'] ?? 0);
             if ($id > 0) {
-                // products.unit is a free-text field (not an FK), so "in use" is matched by name
-                $nameStmt = $pdo->prepare("SELECT unit_name FROM units WHERE unit_id = ? AND store_id = ?");
-                $nameStmt->execute([$id, $unitActiveStoreId]);
-                $unitName = $nameStmt->fetchColumn();
-
-                $count = 0;
-                if ($unitName !== false && $unitName !== '') {
-                    $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE unit = ?");
-                    $checkStmt->execute([$unitName]);
-                    $count = (int)$checkStmt->fetchColumn();
-                }
+                // products.unit_id is the real FK link, so "in use" is a direct ID match
+                $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE unit_id = ?");
+                $checkStmt->execute([$id]);
+                $count = (int)$checkStmt->fetchColumn();
 
                 if ($count > 0) {
                     $unit_message = 'ບໍ່ສາມາດລົບຫົວໜ່ວຍນີ້ໄດ້! ເພາະມີລາຍການສິນຄ້າໃຊ້ຫົວໜ່ວຍນີ້ ' . $count . ' ລາຍການ.';
@@ -124,11 +133,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Fetch Units scoped to the active branch only — same shape as api/categories_backend.php.
-// product_count matches by name (products.unit is free-text, not an FK to units.unit_id) —
-// explicit COLLATE needed since products.unit (utf8mb4_unicode_ci) and units.unit_name
-// (utf8mb4_general_ci, the table's default collation) don't match.
+// product_count is a direct unit_id match now that products carries a real FK into units.
 $activeStoreIdForUnit = getActiveStoreId($pdo);
-$stmtUnit = $pdo->prepare("SELECT u.*, (SELECT COUNT(*) FROM products p WHERE p.unit = u.unit_name COLLATE utf8mb4_unicode_ci) AS product_count FROM units u WHERE u.store_id = ? ORDER BY u.unit_id DESC");
+$stmtUnit = $pdo->prepare("SELECT u.*, (SELECT COUNT(*) FROM products p WHERE p.unit_id = u.unit_id) AS product_count FROM units u WHERE u.store_id = ? ORDER BY u.unit_id DESC");
 $stmtUnit->execute([$activeStoreIdForUnit]);
 $allUnits = $stmtUnit->fetchAll();
 

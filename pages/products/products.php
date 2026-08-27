@@ -128,7 +128,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $category_id = intval($_POST['category_id'] ?? 0);
         $bprice      = floatval(str_replace(',', '', $_POST['bprice'] ?? '0'));
         $price       = floatval(str_replace(',', '', $_POST['price'] ?? '0'));
-        $unit        = trim($_POST['unit'] ?? '');
+        // unit_id is the real link into the units table; the plain-text `unit` column is
+        // kept in sync from it so existing readers (POS, receipts, reports) still work.
+        $unit_id     = intval($_POST['unit_id'] ?? 0) ?: null;
+        $unit        = '';
+        if ($unit_id !== null) {
+            $unitNameStmt = $pdo->prepare("SELECT unit_name FROM units WHERE unit_id = ?");
+            $unitNameStmt->execute([$unit_id]);
+            $unit = (string)($unitNameStmt->fetchColumn() ?: '');
+        }
 
         // Handle Image Upload
         $uploadError = null;
@@ -180,8 +188,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                     $qty = $isAdmin ? max(0, intval($_POST['qty'] ?? 0)) : 0;
                     $store_id = getActiveStoreId($pdo);
-                    $stmt = $pdo->prepare("INSERT INTO products (product_id, product_name, barcode, category_id, bprice, price, unit, img_url, qty, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                    $stmt->execute([$product_id, $name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $store_id]);
+                    $stmt = $pdo->prepare("INSERT INTO products (product_id, product_name, barcode, category_id, bprice, price, unit, unit_id, img_url, qty, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $stmt->execute([$product_id, $name, $barcode, $category_id, $bprice, $price, $unit, $unit_id, $img_name, $qty, $store_id]);
 
                     // ບັນທຶກຫຼາຍລາຄາ/ຫຼາຍຫົວໜ່ວຍ (product_units) ຖ້າມີ
                     if (isset($_POST['extra_unit_name']) && is_array($_POST['extra_unit_name'])) {
@@ -220,7 +228,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $category_id = intval($_POST['category_id'] ?? 0);
         $bprice      = floatval(str_replace(',', '', $_POST['bprice'] ?? '0'));
         $price       = floatval(str_replace(',', '', $_POST['price'] ?? '0'));
-        $unit        = trim($_POST['unit'] ?? '');
+        // unit_id is the real link into the units table; the plain-text `unit` column is
+        // kept in sync from it so existing readers (POS, receipts, reports) still work.
+        $unit_id     = intval($_POST['unit_id'] ?? 0) ?: null;
+        $unit        = '';
+        if ($unit_id !== null) {
+            $unitNameStmt = $pdo->prepare("SELECT unit_name FROM units WHERE unit_id = ?");
+            $unitNameStmt->execute([$unit_id]);
+            $unit = (string)($unitNameStmt->fetchColumn() ?: '');
+        }
         $remove_img  = intval($_POST['remove_img'] ?? 0);
 
         if ($product_id > 0 && $name !== '' && $category_id > 0) {
@@ -280,19 +296,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     if ($isAdmin && isset($_POST['qty'])) {
                         $qty = max(0, intval($_POST['qty']));
                         if ($isAdmin || $isMain) {
-                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=?, qty=? WHERE product_id=?");
-                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $product_id]);
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, unit_id=?, img_url=?, qty=? WHERE product_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $unit_id, $img_name, $qty, $product_id]);
                         } else {
-                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=?, qty=? WHERE product_id=? AND store_id=?");
-                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $qty, $product_id, $userStoreId]);
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, unit_id=?, img_url=?, qty=? WHERE product_id=? AND store_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $unit_id, $img_name, $qty, $product_id, $userStoreId]);
                         }
                     } else {
                         if ($isAdmin || $isMain) {
-                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=? WHERE product_id=?");
-                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $product_id]);
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, unit_id=?, img_url=? WHERE product_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $unit_id, $img_name, $product_id]);
                         } else {
-                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, img_url=? WHERE product_id=? AND store_id=?");
-                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $img_name, $product_id, $userStoreId]);
+                            $stmt = $pdo->prepare("UPDATE products SET product_name=?, barcode=?, category_id=?, bprice=?, price=?, unit=?, unit_id=?, img_url=? WHERE product_id=? AND store_id=?");
+                            $stmt->execute([$name, $barcode, $category_id, $bprice, $price, $unit, $unit_id, $img_name, $product_id, $userStoreId]);
                         }
                     }
 
@@ -424,13 +440,13 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="row mb-3 align-items-center">
     <div class="col-sm-6">
       <h5 class="m-0 font-weight-bold" style="color: #1e293b; font-size: 1.15rem;">
-        <i class="fas fa-box text-primary mr-2"></i> ລາຍງານສິນຄ້າທັງໝົດ
+        <i class="fas fa-box text-primary mr-2"></i> <?php echo htmlspecialchars(t('products.page_title', 'ລາຍງານສິນຄ້າທັງໝົດ')); ?>
       </h5>
     </div>
     <div class="col-sm-6 text-right">
       <?php if (hasPermission('products', 'add')): ?>
         <button type="button" class="btn btn-primary px-3" data-toggle="modal" data-target="#addProductModal" style="border-radius: 6px; font-weight: 600; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-          <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມສິນຄ້າໃໝ່
+          <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('products.btn_add_new', 'ເພີ່ມສິນຄ້າໃໝ່')); ?>
         </button>
       <?php endif; ?>
     </div>
@@ -441,11 +457,11 @@ require_once __DIR__ . '/../../layouts/header.php';
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         <?php if ($message_type === 'success'): ?>
-        Swal.fire({ icon: 'success', title: 'ສຳເລັດ', text: '<?php echo addslashes($message); ?>', showConfirmButton: false, timer: 1500 });
+        Swal.fire({ icon: 'success', title: '<?php echo htmlspecialchars(t('products.alert_success_title', 'ສຳເລັດ'), ENT_QUOTES); ?>', text: '<?php echo addslashes($message); ?>', showConfirmButton: false, timer: 1500 });
         <?php elseif ($message_type === 'warning'): ?>
-        Swal.fire({ icon: 'warning', title: 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!', text: '<?php echo addslashes($message); ?>', confirmButtonColor: '#2563eb', confirmButtonText: 'ຕົກລົງ' });
+        Swal.fire({ icon: 'warning', title: '<?php echo htmlspecialchars(t('products.alert_duplicate_title', 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!'), ENT_QUOTES); ?>', text: '<?php echo addslashes($message); ?>', confirmButtonColor: '#2563eb', confirmButtonText: '<?php echo htmlspecialchars(t('products.btn_ok', 'ຕົກລົງ'), ENT_QUOTES); ?>' });
         <?php else: ?>
-        Swal.fire({ icon: 'error', title: 'ແຈ້ງເຕືອນ', text: '<?php echo addslashes($message); ?>', confirmButtonColor: '#2563eb', confirmButtonText: 'ຕົກລົງ' });
+        Swal.fire({ icon: 'error', title: '<?php echo htmlspecialchars(t('products.alert_notice_title', 'ແຈ້ງເຕືອນ'), ENT_QUOTES); ?>', text: '<?php echo addslashes($message); ?>', confirmButtonColor: '#2563eb', confirmButtonText: '<?php echo htmlspecialchars(t('products.btn_ok', 'ຕົກລົງ'), ENT_QUOTES); ?>' });
         <?php endif; ?>
       });
     </script>
@@ -466,7 +482,7 @@ require_once __DIR__ . '/../../layouts/header.php';
             <option value="30">30</option>
             <option value="50">50</option>
             <option value="100">100</option>
-            <option value="all">ທັງໝົດ</option>
+            <option value="all"><?php echo htmlspecialchars(t('products.per_page_all', 'ທັງໝົດ')); ?></option>
           </select>
         </div>
       </div>
@@ -478,7 +494,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <select id="storeFilter" class="form-control font-weight-bold" onchange="switchStoreFilter(this.value)">
             <?php foreach ($stores as $st): ?>
               <option value="<?php echo $st['store_id']; ?>" <?php echo ($selectedStoreId == $st['store_id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? '(ສາງຫຼັກ)' : '(ສາຂາຍ່ອຍ)'; ?>
+                <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? htmlspecialchars(t('products.store_main_suffix', '(ສາງຫຼັກ)')) : htmlspecialchars(t('products.store_branch_suffix', '(ສາຂາຍ່ອຍ)')); ?>
               </option>
             <?php endforeach; ?>
           </select>
@@ -487,7 +503,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <!-- Dropdown: ເລືອກປະເພດ (ທາງໜ້າບັອກຄົ້ນຫາ) -->
         <div class="prod-filter-wrap" style="width: 200px;">
           <select id="categoryFilter" class="form-control" onchange="filterProducts()">
-            <option value="">--ເລືອກປະເພດ--</option>
+            <option value=""><?php echo htmlspecialchars(t('products.category_filter_placeholder', '--ເລືອກປະເພດ--')); ?></option>
             <?php foreach ($categories as $cat): ?>
               <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
             <?php endforeach; ?>
@@ -497,7 +513,7 @@ require_once __DIR__ . '/../../layouts/header.php';
         <!-- Search: ບັອກຄົ້ນຫາ -->
         <div class="search-box-wrap" style="width: 250px;">
           <i class="fas fa-search"></i>
-          <input type="text" id="productSearch" class="form-control" placeholder="ຄົ້ນຫາ ຊື່, ບາໂຄ້ດ..." onkeyup="filterProducts()">
+          <input type="text" id="productSearch" class="form-control" placeholder="<?php echo htmlspecialchars(t('products.search_placeholder', 'ຄົ້ນຫາ ຊື່, ບາໂຄ້ດ...')); ?>" onkeyup="filterProducts()">
         </div>
       </div>
 
@@ -508,17 +524,17 @@ require_once __DIR__ . '/../../layouts/header.php';
       <table class="table-custom" id="productTable">
         <thead>
           <tr>
-            <th class="text-center" style="width: 65px;">ລຳດັບ</th>
-            <th class="text-center" style="width: 85px;">ຮູບພາບ</th>
-            <th class="text-center" style="width: 105px;">ລະຫັດ</th>
-            <th style="width: 175px;">ບາໂຄ້ດ</th>
-            <th style="min-width: 200px;">ຊື່ສິນຄ້າ</th>
-            <th class="text-right" style="width: 125px;">ລາຄາຊື້</th>
-            <th class="text-right" style="width: 125px;">ລາຄາຂາຍ</th>
+            <th class="text-center" style="width: 65px;"><?php echo htmlspecialchars(t('products.col_no', 'ລຳດັບ')); ?></th>
+            <th class="text-center" style="width: 85px;"><?php echo htmlspecialchars(t('products.col_image', 'ຮູບພາບ')); ?></th>
+            <th class="text-center" style="width: 105px;"><?php echo htmlspecialchars(t('products.col_code', 'ລະຫັດ')); ?></th>
+            <th style="width: 175px;"><?php echo htmlspecialchars(t('products.col_barcode', 'ບາໂຄ້ດ')); ?></th>
+            <th style="min-width: 200px;"><?php echo htmlspecialchars(t('products.col_name', 'ຊື່ສິນຄ້າ')); ?></th>
+            <th class="text-right" style="width: 125px;"><?php echo htmlspecialchars(t('products.col_bprice', 'ລາຄາຊື້')); ?></th>
+            <th class="text-right" style="width: 125px;"><?php echo htmlspecialchars(t('products.col_price', 'ລາຄາຂາຍ')); ?></th>
             <?php if ($isAdmin): ?>
-              <th class="text-center" style="width: 95px;">ຈຳນວນ</th>
+              <th class="text-center" style="width: 95px;"><?php echo htmlspecialchars(t('products.col_qty', 'ຈຳນວນ')); ?></th>
             <?php endif; ?>
-            <th class="text-center" style="width: 85px;">ຈັດການ</th>
+            <th class="text-center" style="width: 85px;"><?php echo htmlspecialchars(t('products.col_manage', 'ຈັດການ')); ?></th>
           </tr>
         </thead>
         <tbody>
@@ -526,7 +542,7 @@ require_once __DIR__ . '/../../layouts/header.php';
           <tr id="noProductDataRow" style="<?php echo empty($products) ? '' : 'display: none;'; ?>">
             <td colspan="<?php echo $isAdmin ? 9 : 8; ?>" class="text-center py-5 text-muted">
               <i class="fas fa-box-open fa-2x mb-2 d-block text-secondary"></i>
-              <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;">ບໍ່ມີຂໍ້ມູນສິນຄ້າ</span>
+              <span class="font-weight-bold d-block" style="font-size: 1.05rem; color: #64748b;"><?php echo htmlspecialchars(t('products.empty_state', 'ບໍ່ມີຂໍ້ມູນສິນຄ້າ')); ?></span>
             </td>
           </tr>
           <?php if (!empty($products)): ?>
@@ -584,7 +600,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <?php else: ?>
                       <span class="text-muted">-</span>
                     <?php endif; ?>
-                    <button type="button" class="icon-btn icon-btn-print" title="ປິ່ນບາໂຄ້ດ"
+                    <button type="button" class="icon-btn icon-btn-print" title="<?php echo htmlspecialchars(t('products.tooltip_print', 'ປິ່ນບາໂຄ້ດ')); ?>"
                       onclick='openPrintBarcodeModal(<?php echo json_encode($p); ?>)'>
                       <i class="fas fa-print"></i>
                     </button>
@@ -617,7 +633,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <?php
                       $qty = floatval($p['qty'] ?? 0);
                       $qtyClass = $qty <= 0 ? 'badge-danger' : ($qty <= 10 ? 'badge-warning text-dark' : 'badge-success');
-                      $qtyLabel = $qty <= 0 ? 'ໝົດແລ້ວ (0)' : (number_format($qty) . ' ' . (!empty($p['unit']) ? htmlspecialchars($p['unit']) : ''));
+                      $qtyLabel = $qty <= 0 ? t('products.qty_out_of_stock', 'ໝົດແລ້ວ (0)') : (number_format($qty) . ' ' . (!empty($p['unit']) ? htmlspecialchars($p['unit']) : ''));
                     ?>
                     <span class="badge <?php echo $qtyClass; ?> px-2 py-1" style="border-radius: 6px; font-size: 0.82rem; min-width: 36px;">
                       <?php echo $qtyLabel; ?>
@@ -629,19 +645,19 @@ require_once __DIR__ . '/../../layouts/header.php';
                 <td class="text-center" style="white-space: nowrap;">
                   <?php if (hasPermission('products', 'edit') || hasPermission('products', 'del')): ?>
                     <?php if (hasPermission('products', 'edit')): ?>
-                      <button type="button" class="icon-btn icon-btn-edit mr-1" title="ແກ້ໄຂ"
+                      <button type="button" class="icon-btn icon-btn-edit mr-1" title="<?php echo htmlspecialchars(t('products.tooltip_edit', 'ແກ້ໄຂ')); ?>"
                         onclick='editProduct(<?php echo json_encode($p); ?>)'>
                         <i class="fas fa-edit"></i>
                       </button>
                     <?php endif; ?>
                     <?php if (hasPermission('products', 'del')): ?>
-                      <button type="button" class="icon-btn icon-btn-delete" title="ລົບ"
+                      <button type="button" class="icon-btn icon-btn-delete" title="<?php echo htmlspecialchars(t('products.tooltip_delete', 'ລົບ')); ?>"
                         onclick="confirmDeleteProduct(<?php echo $p['product_id']; ?>, '<?php echo htmlspecialchars(addslashes($p['product_name'])); ?>')">
                         <i class="fas fa-trash-alt"></i>
                       </button>
                     <?php endif; ?>
                   <?php else: ?>
-                    <span class="badge badge-light text-muted" style="font-size: 0.8rem;">ເບິ່ງຢ່າງດຽວ</span>
+                    <span class="badge badge-light text-muted" style="font-size: 0.8rem;"><?php echo htmlspecialchars(t('products.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                   <?php endif; ?>
                 </td>
 
@@ -675,6 +691,18 @@ require_once __DIR__ . '/../../layouts/header.php';
 
 
 <script>
+  var I18N_PRODUCTS = <?php echo tjson([
+      'products.page_prev' => 'ໜ້າກ່ອນໜ້າ',
+      'products.page_next' => 'ໜ້າຖັດໄປ',
+      'products.showing_count_prefix' => 'ສະແດງ',
+      'products.showing_count_suffix' => 'ລາຍການ',
+      'products.confirm_delete_title' => 'ຢືນຢັນການລົບ?',
+      'products.confirm_delete_prefix' => 'ທ່ານຕ້ອງການລົບ',
+      'products.confirm_delete_suffix' => 'ແທ້ຫຼືບໍ່?',
+      'products.confirm_delete_button' => '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
+      'products.cancel' => 'ຍົກເລີກ',
+  ]); ?>;
+
   var DEFAULT_IMG = '<?php echo $base_path; ?>assets/img/image.jpg';
 
   // ====== ຟັງຊັນ Preview ຮູບພາບ ພ້ອມກວດສອບປະເພດ ແລະ ຂະໜາດໄຟລ໌ ======
@@ -797,14 +825,22 @@ require_once __DIR__ . '/../../layouts/header.php';
     $('#edit_barcode').val(p.barcode || '');
     $('#edit_category_id').val(p.category_id);
 
-    // If this product's existing unit isn't in the current branch's units list
-    // (legacy free-text value, or added before ຈັດການຫົວໜ່ວຍ existed), keep it
-    // selectable anyway instead of silently blanking the dropdown.
+    // Selected by unit_id (the real link into the units table, backfilled automatically for
+    // older products — see config/db.php). If a product still has no unit_id at all (the
+    // rare case where its old free-text unit didn't match anything in this branch's units
+    // list), show that old text as an informational placeholder so it's clear the dropdown
+    // needs a real selection rather than silently appearing blank.
     var editUnitSelect = $('#edit_unit');
-    if (p.unit && editUnitSelect.find('option[value="' + p.unit.replace(/"/g, '\\"') + '"]').length === 0) {
-      editUnitSelect.append($('<option></option>').attr('value', p.unit).text(p.unit));
+    if (p.unit_id && editUnitSelect.find('option[value="' + p.unit_id + '"]').length > 0) {
+      editUnitSelect.val(p.unit_id);
+    } else if (p.unit) {
+      if (editUnitSelect.find('option[value=""]').length > 0) {
+        editUnitSelect.find('option[value=""]').text('-- ' + p.unit + ' (ກະລຸນາເລືອກໃໝ່) --');
+      }
+      editUnitSelect.val('');
+    } else {
+      editUnitSelect.val('');
     }
-    editUnitSelect.val(p.unit || '');
     $('#edit_qty').val(p.qty !== undefined && p.qty !== null ? p.qty : 0);
 
     // Format ລາຄາມີຈຸດ
@@ -928,7 +964,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     // 1. ປຸ່ມ ກ່ອນໜ້າ (Previous)
     var prevLi = document.createElement('li');
     prevLi.className = 'page-item ' + (currentPage <= 1 ? 'disabled' : '');
-    prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage > 1 ? 'onclick="goToPage(' + (currentPage - 1) + ')"' : '') + ' title="ໜ້າກ່ອນໜ້າ"><i class="fas fa-chevron-left"></i></a>';
+    prevLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage > 1 ? 'onclick="goToPage(' + (currentPage - 1) + ')"' : '') + ' title="' + I18N_PRODUCTS['products.page_prev'] + '"><i class="fas fa-chevron-left"></i></a>';
     paginationUl.appendChild(prevLi);
 
     // 2. ປຸ່ມເລກໜ້າ (Circular page numbers with smart window)
@@ -977,7 +1013,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     // 3. ປຸ່ມ ຖັດໄປ (Next)
     var nextLi = document.createElement('li');
     nextLi.className = 'page-item ' + (currentPage >= totalPages ? 'disabled' : '');
-    nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage < totalPages ? 'onclick="goToPage(' + (currentPage + 1) + ')"' : '') + ' title="ໜ້າຖັດໄປ"><i class="fas fa-chevron-right"></i></a>';
+    nextLi.innerHTML = '<a class="page-link" href="javascript:void(0)" ' + (currentPage < totalPages ? 'onclick="goToPage(' + (currentPage + 1) + ')"' : '') + ' title="' + I18N_PRODUCTS['products.page_next'] + '"><i class="fas fa-chevron-right"></i></a>';
     paginationUl.appendChild(nextLi);
   }
 
@@ -1006,7 +1042,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     // ອັບເດດ count badge
     var countBadge = document.getElementById('productCount');
     if (countBadge) {
-      countBadge.textContent = 'ສະແດງ ' + filteredRows.length + ' ລາຍການ';
+      countBadge.textContent = I18N_PRODUCTS['products.showing_count_prefix'] + ' ' + filteredRows.length + ' ' + I18N_PRODUCTS['products.showing_count_suffix'];
     }
 
     currentPage = 1;
@@ -1056,14 +1092,14 @@ require_once __DIR__ . '/../../layouts/header.php';
   // ====== Delete confirm ======
   function confirmDeleteProduct(productId, productName) {
     Swal.fire({
-      title: 'ຢືນຢັນການລົບ?',
-      html: 'ທ່ານຕ້ອງການລົບ <strong>"' + productName + '"</strong> ແທ້ຫຼືບໍ່?',
+      title: I18N_PRODUCTS['products.confirm_delete_title'],
+      html: I18N_PRODUCTS['products.confirm_delete_prefix'] + ' <strong>"' + productName + '"</strong> ' + I18N_PRODUCTS['products.confirm_delete_suffix'],
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> ລົບເລີຍ',
-      cancelButtonText: 'ຍົກເລີກ',
+      confirmButtonText: I18N_PRODUCTS['products.confirm_delete_button'],
+      cancelButtonText: I18N_PRODUCTS['products.cancel'],
       heightAuto: false
     }).then(function(result) {
       if (result.isConfirmed) {

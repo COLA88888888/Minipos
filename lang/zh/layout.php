@@ -71,4 +71,8 @@ return [
     'layout.sub_branch_imports' => '分店新增入库商品',
     'layout.click_to_restock' => '点击前往进货页面',
     'layout.default_product' => '商品',
+    'layout.loading' => '正在加载数据...',
+    'layout.logout_confirm_title' => '确认退出登录',
+    'layout.logout_confirm_text' => '确定要退出登录吗？',
+    'layout.cancel' => '取消',
 ];

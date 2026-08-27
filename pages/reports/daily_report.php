@@ -283,7 +283,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
     <div>
       <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-        <i class="fas fa-calendar-day text-info"></i> ລາຍງານປະຈຳວັນ
+        <i class="fas fa-calendar-day text-info"></i> <?php echo htmlspecialchars(t('reports.title_daily', 'ລາຍງານປະຈຳວັນ')); ?>
       </h5>
     </div>
   </div>
@@ -294,7 +294,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- From Date -->
       <div class="report-filter-date-col">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-alt text-primary mr-1"></i> ຕັ້ງແຕ່ວັນທີ:
+          <i class="fas fa-calendar-alt text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.from_date', 'ຕັ້ງແຕ່ວັນທີ:')); ?>
         </label>
         <input type="date" name="from_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($from_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
       </div>
@@ -302,7 +302,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- To Date -->
       <div class="report-filter-date-col">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-calendar-check text-primary mr-1"></i> ຫາວັນທີ:
+          <i class="fas fa-calendar-check text-primary mr-1"></i> <?php echo htmlspecialchars(t('reports.to_date', 'ຫາວັນທີ:')); ?>
         </label>
         <input type="date" name="to_date" class="form-control form-control-sm font-weight-bold" value="<?php echo htmlspecialchars($to_date); ?>" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
       </div>
@@ -310,14 +310,14 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Branch Filter Dropdown -->
       <div class="report-filter-date-col" style="min-width: 170px;">
         <label class="font-weight-bold text-dark mb-1 d-block" style="font-size: 0.82rem; white-space: nowrap;">
-          <i class="fas fa-store text-info mr-1"></i> ສາຂາ:
+          <i class="fas fa-store text-info mr-1"></i> <?php echo htmlspecialchars(t('reports.branch_label', 'ສາຂາ:')); ?>
         </label>
         <select name="store_id" class="form-control form-control-sm font-weight-bold" style="border-radius: 8px; height: 38px; font-size: 0.85rem; border: 1.5px solid #cbd5e1;">
-          <option value="0">-- ທຸກສາຂາ --</option>
+          <option value="0"><?php echo htmlspecialchars(t('reports.all_branches_opt', '-- ທຸກສາຂາ --')); ?></option>
           <?php if (!empty($branchesList)): ?>
             <?php foreach ($branchesList as $b): ?>
               <option value="<?php echo $b['store_id']; ?>" <?php echo ($filter_store_id == $b['store_id']) ? 'selected' : ''; ?>>
-                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? '(ສາຂາໃຫຍ່)' : ''; ?>
+                <?php echo htmlspecialchars($b['store_name']); ?> <?php echo !empty($b['is_main']) ? htmlspecialchars(t('reports.main_branch_suffix', '(ສາຂາໃຫຍ່)')) : ''; ?>
               </option>
             <?php endforeach; ?>
           <?php endif; ?>
@@ -327,9 +327,9 @@ require_once __DIR__ . '/../../layouts/header.php';
       <!-- Search & Refresh Buttons -->
       <div class="d-flex align-items-center" style="gap: 6px; flex: 0 0 auto;">
         <button type="submit" class="btn btn-primary btn-sm font-weight-bold px-3.5 d-inline-flex align-items-center justify-content-center" style="border-radius: 8px; height: 38px; background: linear-gradient(135deg, #2c5aa0, #244886); white-space: nowrap; font-size: 0.85rem;">
-          <i class="fas fa-search mr-1.5"></i> ຄົ້ນຫາ
+          <i class="fas fa-search mr-1.5"></i> <?php echo htmlspecialchars(t('reports.search_btn', 'ຄົ້ນຫາ')); ?>
         </button>
-        <a href="daily_report.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="ລ້າງຄ່າ" style="border-radius: 8px; height: 38px;">
+        <a href="daily_report.php" class="btn btn-light btn-sm border font-weight-bold d-inline-flex align-items-center justify-content-center px-2.5" title="<?php echo htmlspecialchars(t('reports.clear', 'ລ້າງຄ່າ')); ?>" style="border-radius: 8px; height: 38px;">
           <i class="fas fa-redo"></i>
         </a>
       </div>
@@ -341,7 +341,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 1. ລວມຍອດ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ລວມຍອດ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_gross_total', 'ລວມຍອດ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_gross_sales; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -352,7 +352,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 2. ສ່ວນຫຼຸດສິນຄ້າ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ສ່ວນຫຼຸດສິນຄ້າ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_item_discount', 'ສ່ວນຫຼຸດສິນຄ້າ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_item_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -363,7 +363,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 3. ສ່ວນຫຼຸດໃບບິນ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ສ່ວນຫຼຸດໃບບິນ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_bill_discount', 'ສ່ວນຫຼຸດໃບບິນ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_bill_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -374,7 +374,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 4. ໂປຣໂມຊັ່ນ & ຂອງແຖມ (Promotion Summary Block) -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title text-nowrap" style="white-space: nowrap !important;"><i class="fas fa-bullhorn mr-1"></i> ໂປຣໂມຊັ່ນ <?php if ($daily_promo_gifts_count > 0): ?><span class="text-warning font-weight-normal ml-1" style="font-size: 0.75rem;">(ແຖມ: <?php echo number_format($daily_promo_gifts_count); ?>)</span><?php endif; ?></div>
+        <div class="kpi-card-title text-nowrap" style="white-space: nowrap !important;"><i class="fas fa-bullhorn mr-1"></i> <?php echo htmlspecialchars(t('reports.kpi_promotion', 'ໂປຣໂມຊັ່ນ')); ?> <?php if ($daily_promo_gifts_count > 0): ?><span class="text-warning font-weight-normal ml-1" style="font-size: 0.75rem;">(<?php echo htmlspecialchars(t('reports.gift_label', 'ແຖມ')); ?>: <?php echo number_format($daily_promo_gifts_count); ?>)</span><?php endif; ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val text-nowrap" style="white-space: nowrap !important; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_promo_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -385,7 +385,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 4. ສ່ວນຫຼຸດທັງໝົດ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ສ່ວນຫຼຸດທັງໝົດ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_total_discount', 'ສ່ວນຫຼຸດທັງໝົດ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_total_discounts; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -396,7 +396,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 5. ຍອດຂາຍສຸດທິ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #10b981 0%, #047857 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ຍອດຂາຍສຸດທິ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_net_sales', 'ຍອດຂາຍສຸດທິ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_net_sales; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -407,7 +407,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 6. ເງິນສົດ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ເງິນສົດ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.cash_opt', 'ເງິນສົດ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_cash_payments; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -418,7 +418,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 7. ເງິນໂອນ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ເງິນໂອນ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.kpi_transfer', 'ເງິນໂອນ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
           <span class="counter-num" data-target="<?php echo (int)$daily_qr_payments; ?>" data-suffix=" ₭">0 ₭</span>
         </div>
@@ -429,9 +429,10 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 9. ບິນ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ບິນ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.bills_unit', 'ບິນ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-          <span class="counter-num" data-target="<?php echo (int)$daily_bills_count; ?>" data-suffix=" ບິນ">0 ບິນ</span>
+          <?php $u_bills = htmlspecialchars(t('reports.bills_unit', 'ບິນ')); ?>
+          <span class="counter-num" data-target="<?php echo (int)$daily_bills_count; ?>" data-suffix=" <?php echo $u_bills; ?>">0 <?php echo $u_bills; ?></span>
         </div>
       </div>
       <div class="kpi-card-icon"><i class="fas fa-file-invoice"></i></div>
@@ -440,9 +441,10 @@ require_once __DIR__ . '/../../layouts/header.php';
     <!-- 10. ລາຍການ -->
     <div class="kpi-card-item d-flex align-items-center justify-content-between text-white" style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);">
       <div style="z-index: 2; min-width: 0;">
-        <div class="kpi-card-title">ລາຍການ</div>
+        <div class="kpi-card-title"><?php echo htmlspecialchars(t('reports.items_unit', 'ລາຍການ')); ?></div>
         <div class="font-weight-bold mt-1 text-white kpi-card-val" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-          <span class="counter-num" data-target="<?php echo (int)$daily_items_qty; ?>" data-suffix=" ອັນ">0 ອັນ</span>
+          <?php $u_pcs = htmlspecialchars(t('reports.unit_pcs', 'ອັນ')); ?>
+          <span class="counter-num" data-target="<?php echo (int)$daily_items_qty; ?>" data-suffix=" <?php echo $u_pcs; ?>">0 <?php echo $u_pcs; ?></span>
         </div>
       </div>
       <div class="kpi-card-icon"><i class="fas fa-boxes"></i></div>
@@ -455,9 +457,9 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="card-body p-3">
         <div class="d-flex align-items-center justify-content-between mb-2">
           <h6 class="font-weight-bold text-dark mb-0">
-            <i class="fas fa-university text-primary mr-1.5"></i> ຍອດຮັບເງິນໂອນແຍກຕາມທະນາຄານ
+            <i class="fas fa-university text-primary mr-1.5"></i> <?php echo htmlspecialchars(t('reports.bank_breakdown_title', 'ຍອດຮັບເງິນໂອນແຍກຕາມທະນາຄານ')); ?>
           </h6>
-          <span class="badge badge-primary font-weight-bold px-2.5 py-1" style="font-size: 0.82rem;">ລວມ: <?php echo number_format($daily_qr_payments, 0); ?> ₭</span>
+          <span class="badge badge-primary font-weight-bold px-2.5 py-1" style="font-size: 0.82rem;"><?php echo htmlspecialchars(t('reports.total_label', 'ລວມ:')); ?> <?php echo number_format($daily_qr_payments, 0); ?> ₭</span>
         </div>
         <div class="row" style="row-gap: 12px;">
           <?php foreach ($bank_daily_breakdown as $bRow): ?>
@@ -484,7 +486,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   <img src="<?php echo htmlspecialchars($bLogo); ?>" style="width: 32px; height: 32px; object-fit: cover; border-radius: 50% !important; padding: 1px; border: 1.5px solid #cbd5e1; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08);" onerror="this.src='../../assets/img/banks/default.svg';">
                   <div>
                     <div class="font-weight-bold text-dark" style="font-size: 0.82rem; line-height: 1.1;"><?php echo htmlspecialchars($label); ?></div>
-                    <small class="text-muted font-weight-bold" style="font-size: 0.72rem;"><?php echo number_format($bRow['total_tx']); ?> ບິນ</small>
+                    <small class="text-muted font-weight-bold" style="font-size: 0.72rem;"><?php echo number_format($bRow['total_tx']); ?> <?php echo htmlspecialchars(t('reports.bills_unit', 'ບິນ')); ?></small>
                   </div>
                 </div>
                 <div class="font-weight-bold text-right pl-1" style="font-size: 0.92rem; color: <?php echo $bColor; ?>;">
@@ -530,7 +532,7 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="col-12 col-md-8 mb-3">
       <div class="card border-0 shadow-sm" style="border-radius: 14px; padding: 18px 20px;">
         <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
-          <i class="fas fa-chart-bar text-primary mr-2"></i> ຍອດຂາຍສຸດທິລາຍວັນ
+          <i class="fas fa-chart-bar text-primary mr-2"></i> <?php echo htmlspecialchars(t('reports.chart_daily_net_sales', 'ຍອດຂາຍສຸດທິລາຍວັນ')); ?>
         </div>
         <canvas id="chartDailySales" style="max-height: 240px;"></canvas>
       </div>
@@ -540,19 +542,19 @@ require_once __DIR__ . '/../../layouts/header.php';
     <div class="col-12 col-md-4 mb-3">
       <div class="card border-0 shadow-sm" style="border-radius: 14px; padding: 18px 20px; height: 100%;">
         <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
-          <i class="fas fa-chart-pie text-success mr-2"></i> ສັດສ່ວນການຊຳລະ
+          <i class="fas fa-chart-pie text-success mr-2"></i> <?php echo htmlspecialchars(t('reports.chart_payment_ratio', 'ສັດສ່ວນການຊຳລະ')); ?>
         </div>
         <canvas id="chartPaymentMethod" style="max-height: 200px;"></canvas>
         <!-- Legend -->
         <div class="mt-3 d-flex flex-wrap justify-content-center" style="gap: 10px;">
           <div class="d-flex align-items-center" style="gap: 6px; font-size: 0.8rem;">
             <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#6366f1;"></span>
-            <span class="font-weight-bold">ເງິນສົດ</span>
+            <span class="font-weight-bold"><?php echo htmlspecialchars(t('reports.cash_opt', 'ເງິນສົດ')); ?></span>
             <span class="text-muted"><?php echo number_format($totalCash); ?> ₭</span>
           </div>
           <div class="d-flex align-items-center" style="gap: 6px; font-size: 0.8rem;">
             <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:#06b6d4;"></span>
-            <span class="font-weight-bold">ໂອນ</span>
+            <span class="font-weight-bold"><?php echo htmlspecialchars(t('reports.col_transfer', 'ໂອນ')); ?></span>
             <span class="text-muted"><?php echo number_format($totalQr); ?> ₭</span>
           </div>
         </div>
@@ -563,7 +565,7 @@ require_once __DIR__ . '/../../layouts/header.php';
   <!-- Bill Count Line Chart -->
   <div class="card border-0 shadow-sm mb-4" style="border-radius: 14px; padding: 18px 20px;">
     <div class="font-weight-bold text-dark mb-3" style="font-size: 0.92rem;">
-      <i class="fas fa-chart-line text-warning mr-2"></i> ຈຳນວນບິນລາຍວັນ
+      <i class="fas fa-chart-line text-warning mr-2"></i> <?php echo htmlspecialchars(t('reports.chart_daily_bill_count', 'ຈຳນວນບິນລາຍວັນ')); ?>
     </div>
     <canvas id="chartDailyBills" style="max-height: 160px;"></canvas>
   </div>
@@ -611,21 +613,21 @@ document.addEventListener('DOMContentLoaded', function () {
     data: {
       labels: labels,
       datasets: [{
-        label: 'ສຸດທິ (₭)',
+        label: <?php echo json_encode(t('reports.chart_legend_net', 'ສຸດທິ (₭)'), JSON_UNESCAPED_UNICODE); ?>,
         data: netData,
         backgroundColor: 'rgba(37,99,235,0.75)',
         borderColor: '#1d4ed8',
         borderWidth: 1.5,
         borderRadius: 6,
       }, {
-        label: 'ເງິນສົດ (₭)',
+        label: <?php echo json_encode(t('reports.chart_legend_cash', 'ເງິນສົດ (₭)'), JSON_UNESCAPED_UNICODE); ?>,
         data: cashData,
         backgroundColor: 'rgba(99,102,241,0.55)',
         borderColor: '#4338ca',
         borderWidth: 1,
         borderRadius: 4,
       }, {
-        label: 'ໂອນ (₭)',
+        label: <?php echo json_encode(t('reports.chart_legend_transfer', 'ໂອນ (₭)'), JSON_UNESCAPED_UNICODE); ?>,
         data: qrData,
         backgroundColor: 'rgba(6,182,212,0.55)',
         borderColor: '#0e7490',
@@ -663,7 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
   new Chart(document.getElementById('chartPaymentMethod'), {
     type: 'doughnut',
     data: {
-      labels: ['ເງິນສົດ', 'ໂອນ'],
+      labels: [<?php echo json_encode(t('reports.cash_opt', 'ເງິນສົດ'), JSON_UNESCAPED_UNICODE); ?>, <?php echo json_encode(t('reports.col_transfer', 'ໂອນ'), JSON_UNESCAPED_UNICODE); ?>],
       datasets: [{
         data: [<?php echo $totalCash; ?>, <?php echo $totalQr; ?>],
         backgroundColor: ['#6366f1', '#06b6d4'],
@@ -695,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function () {
     data: {
       labels: labels,
       datasets: [{
-        label: 'ຈຳນວນບິນ',
+        label: <?php echo json_encode(t('reports.chart_legend_bill_count', 'ຈຳນວນບິນ'), JSON_UNESCAPED_UNICODE); ?>,
         data: billsData,
         borderColor: '#f59e0b',
         backgroundColor: 'rgba(245,158,11,0.12)',
@@ -711,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function () {
       plugins: {
         legend: { display: false },
         tooltip: {
-          callbacks: { label: function(ctx) { return 'ບິນ: ' + ctx.parsed.y; } }
+          callbacks: { label: function(ctx) { return <?php echo json_encode(t('reports.chart_tooltip_bill', 'ບິນ:') . ' ', JSON_UNESCAPED_UNICODE); ?> + ctx.parsed.y; } }
         }
       },
       scales: {

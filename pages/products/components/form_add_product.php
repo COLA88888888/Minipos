@@ -9,7 +9,7 @@
         <!-- HEADER -->
         <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #2c5aa0, #244886) !important;">
           <h5 class="modal-title font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif; font-size: 1.15rem;">
-            <i class="fas fa-plus-circle mr-2"></i> ເພີ່ມສິນຄ້າໃໝ່
+            <i class="fas fa-plus-circle mr-2"></i> <?php echo htmlspecialchars(t('products.modal_add_title', 'ເພີ່ມສິນຄ້າໃໝ່')); ?>
           </h5>
           <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
@@ -28,14 +28,14 @@
                      class="shadow-sm"
                      style="width: 140px; height: 140px; object-fit: cover; border-radius: 14px; border: 2px dashed #93c5fd; background: #f8fafc; cursor: pointer;"
                      onclick="document.getElementById('add_product_img').click();"
-                     title="ຄລິກເພື່ອເລືອກຮູບພາບ">
+                     title="<?php echo htmlspecialchars(t('products.img_click_select_title', 'ຄລິກເພື່ອເລືອກຮູບພາບ')); ?>">
                 
                 <!-- Camera button -->
                 <button type="button"
                         class="position-absolute d-flex align-items-center justify-content-center shadow-sm border-0"
                         style="right: -6px; bottom: -6px; width: 34px; height: 34px; background: #2563eb; color: #fff; border-radius: 50%; border: 2px solid #fff; cursor: pointer; z-index: 2;"
                         onclick="document.getElementById('add_product_img').click();"
-                        title="ເລືອກຮູບ">
+                        title="<?php echo htmlspecialchars(t('products.img_select_btn_title', 'ເລືອກຮູບ')); ?>">
                   <i class="fas fa-camera" style="font-size: 0.85rem;"></i>
                 </button>
 
@@ -44,12 +44,12 @@
                         onclick="removeProductImg('add');"
                         class="position-absolute align-items-center justify-content-center border-0 shadow-sm"
                         style="right: -6px; top: -6px; width: 30px; height: 30px; background: #ef4444; color: #fff; border-radius: 50%; border: 2px solid #fff; cursor: pointer; display: none; z-index: 3;"
-                        title="ລົບຮູບ">
+                        title="<?php echo htmlspecialchars(t('products.img_remove_btn_title', 'ລົບຮູບ')); ?>">
                   <i class="fas fa-times" style="font-size: 0.82rem;"></i>
                 </button>
               </div>
 
-              <small class="text-muted mt-1 font-weight-bold" style="font-size: 0.78rem;">ຄລິກເພື່ອເລືອກຮູບສິນຄ້າ</small>
+              <small class="text-muted mt-1 font-weight-bold" style="font-size: 0.78rem;"><?php echo htmlspecialchars(t('products.img_select_hint', 'ຄລິກເພື່ອເລືອກຮູບສິນຄ້າ')); ?></small>
               <input type="file" name="product_img" id="add_product_img" accept="image/*" style="display: none;"
                      onchange="previewProductImg(this, 'add_img_preview', 'btn_remove_add_img')">
             </div>
@@ -60,33 +60,33 @@
               <!-- Row 1: ປະເພດສິນຄ້າ (ຂຶ້ນກ່ອນ) & ລະຫັດສິນຄ້າ (Auto) -->
               <div class="row">
                 <div class="col-md-7 mb-3">
-                  <label class="font-weight-bold text-dark mb-1">ປະເພດສິນຄ້າ: <span class="text-danger">*</span></label>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_category', 'ປະເພດສິນຄ້າ:')); ?> <span class="text-danger">*</span></label>
                   <select id="add_category_id" name="category_id" class="form-control" style="border-radius: 6px; height: 40px;" onchange="onAddCategoryChange()" required>
-                    <option value="">-- ເລືອກປະເພດ --</option>
+                    <option value=""><?php echo htmlspecialchars(t('products.select_category_placeholder', '-- ເລືອກປະເພດ --')); ?></option>
                     <?php foreach ($categories as $cat): ?>
                       <option value="<?php echo $cat['category_id']; ?>"><?php echo htmlspecialchars($cat['category_name']); ?></option>
                     <?php endforeach; ?>
                   </select>
                 </div>
                 <div class="col-md-5 mb-3">
-                  <label class="font-weight-bold text-dark mb-1">ລະຫັດສິນຄ້າ:</label>
-                  <input type="text" id="add_product_id_display" class="form-control bg-light font-weight-bold text-primary" placeholder="ເລືອກປະເພດສິນຄ້າ..." style="border-radius: 6px; height: 40px;" readonly>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_product_code', 'ລະຫັດສິນຄ້າ:')); ?></label>
+                  <input type="text" id="add_product_id_display" class="form-control bg-light font-weight-bold text-primary" placeholder="<?php echo htmlspecialchars(t('products.product_code_placeholder', 'ເລືອກປະເພດສິນຄ້າ...')); ?>" style="border-radius: 6px; height: 40px;" readonly>
                 </div>
               </div>
 
               <!-- Row 2: ຊື່ສິນຄ້າ & ບາໂຄ້ດຫຼັກ -->
               <div class="row">
                 <div class="col-md-7 mb-3">
-                  <label class="font-weight-bold text-dark mb-1">ຊື່ສິນຄ້າ: <span class="text-danger">*</span></label>
-                  <input type="text" id="add_product_name" name="product_name" class="form-control" placeholder="ປ້ອນຊື່ສິນຄ້າ..." style="border-radius: 6px; height: 40px;" required>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_product_name', 'ຊື່ສິນຄ້າ:')); ?> <span class="text-danger">*</span></label>
+                  <input type="text" id="add_product_name" name="product_name" class="form-control" placeholder="<?php echo htmlspecialchars(t('products.product_name_placeholder', 'ປ້ອນຊື່ສິນຄ້າ...')); ?>" style="border-radius: 6px; height: 40px;" required>
                 </div>
                 <div class="col-md-5 mb-3">
-                  <label class="font-weight-bold text-dark mb-1">ບາໂຄ້ດ: <span class="text-danger">*</span></label>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_barcode', 'ບາໂຄ້ດ:')); ?> <span class="text-danger">*</span></label>
                   <div class="input-group">
-                    <input type="text" id="add_barcode" name="barcode" class="form-control" placeholder="ສະແກນ ຫຼື ປ້ອນຕົວເລກ..." style="border-radius: 6px 0 0 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                    <input type="text" id="add_barcode" name="barcode" class="form-control" placeholder="<?php echo htmlspecialchars(t('products.barcode_placeholder', 'ສະແກນ ຫຼື ປ້ອນຕົວເລກ...')); ?>" style="border-radius: 6px 0 0 6px; height: 40px;" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                     <div class="input-group-append">
-                      <button type="button" class="btn btn-outline-primary font-weight-bold" onclick="generateEAN13('add_barcode')" title="ສ້າງບາໂຄ້ດ 13 ຫຼັກ" style="border-radius: 0 6px 6px 0; height: 40px; border-color: #cbd5e1;">
-                        <i class="fas fa-barcode mr-1"></i> ສ້າງ
+                      <button type="button" class="btn btn-outline-primary font-weight-bold" onclick="generateEAN13('add_barcode')" title="<?php echo htmlspecialchars(t('products.gen_barcode_title', 'ສ້າງບາໂຄ້ດ 13 ຫຼັກ')); ?>" style="border-radius: 0 6px 6px 0; height: 40px; border-color: #cbd5e1;">
+                        <i class="fas fa-barcode mr-1"></i> <?php echo htmlspecialchars(t('products.gen_barcode_btn', 'ສ້າງ')); ?>
                       </button>
                     </div>
                   </div>
@@ -96,19 +96,19 @@
               <!-- Row 3: ຫົວໜ່ວຍຍ່ອຍພື້ນຖານ & ຈຳນວນສະຕັອກ (ສະເພາະແອັດມິນ) -->
               <div class="row">
                 <div class="<?php echo $isAdmin ? 'col-md-7' : 'col-md-12'; ?> mb-3">
-                  <label class="font-weight-bold text-dark mb-1">ຫົວໜ່ວຍ: <span class="text-danger">*</span></label>
-                  <select name="unit" id="add_unit" class="form-control" style="border-radius: 6px; height: 40px;" required>
-                    <option value="">-- ເລືອກຫົວໜ່ວຍ --</option>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_unit', 'ຫົວໜ່ວຍ:')); ?> <span class="text-danger">*</span></label>
+                  <select name="unit_id" id="add_unit" class="form-control" style="border-radius: 6px; height: 40px;" required>
+                    <option value=""><?php echo htmlspecialchars(t('products.select_unit_placeholder', '-- ເລືອກຫົວໜ່ວຍ --')); ?></option>
                     <?php foreach ($units as $u): ?>
-                      <option value="<?php echo htmlspecialchars($u['unit_name']); ?>"><?php echo htmlspecialchars($u['unit_name']); ?></option>
+                      <option value="<?php echo (int)$u['unit_id']; ?>"><?php echo htmlspecialchars($u['unit_name']); ?></option>
                     <?php endforeach; ?>
                   </select>
                 </div>
                 <?php if ($isAdmin): ?>
                   <div class="col-md-5 mb-3">
                     <label class="font-weight-bold text-dark mb-1">
-                      ຈຳນວນສະຕັອກ: 
-                      <small class="text-muted font-weight-normal">(ຖ້າມີ)</small>
+                      <?php echo htmlspecialchars(t('products.field_qty', 'ຈຳນວນສະຕັອກ:')); ?>
+                      <small class="text-muted font-weight-normal"><?php echo htmlspecialchars(t('products.field_qty_optional', '(ຖ້າມີ)')); ?></small>
                     </label>
                     <input type="number" name="qty" id="add_qty" class="form-control text-center font-weight-bold text-primary" placeholder="0" min="0" value="0" style="border-radius: 6px; height: 40px;">
                   </div>
@@ -118,14 +118,14 @@
               <!-- Row 4: ລາຄາຊື້ & ລາຄາຂາຍຍ່ອຍ -->
               <div class="row">
                 <div class="col-6">
-                  <label class="font-weight-bold text-dark mb-1">ລາຄາຊື້:<span class="text-danger">*</span></label>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_bprice', 'ລາຄາຊື້:')); ?><span class="text-danger">*</span></label>
                   <div class="input-group">
                     <input type="text" id="add_bprice" name="bprice" class="form-control price-input text-right font-weight-bold" placeholder="0" style="border-radius: 6px 0 0 6px; height: 40px; color: #475569;" oninput="formatPriceInput(this)" required>
                     <div class="input-group-append"><span class="input-group-text" style="border-radius: 0 6px 6px 0; font-size: 0.85rem;">₭</span></div>
                   </div>
                 </div>
                 <div class="col-6">
-                  <label class="font-weight-bold text-dark mb-1">ລາຄາຂາຍ: <span class="text-danger">*</span></label>
+                  <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('products.field_price', 'ລາຄາຂາຍ:')); ?> <span class="text-danger">*</span></label>
                   <div class="input-group">
                     <input type="text" id="add_price" name="price" class="form-control price-input text-right font-weight-bold" placeholder="0" style="border-radius: 6px 0 0 6px; height: 40px; color: #16a34a;" oninput="formatPriceInput(this)" required>
                     <div class="input-group-append"><span class="input-group-text" style="border-radius: 0 6px 6px 0; font-size: 0.85rem;">₭</span></div>
@@ -141,12 +141,12 @@
             <div class="d-flex justify-content-between align-items-center mb-2">
               <div>
                 <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">
-                   ລາຄາ ແລະ ຫົວໜ່ວຍເພີ່ມເຕີມ (ຫຼາຍລາຄາ)
+                   <?php echo htmlspecialchars(t('products.multi_unit_title', 'ລາຄາ ແລະ ຫົວໜ່ວຍເພີ່ມເຕີມ (ຫຼາຍລາຄາ)')); ?>
                 </span>
-                <small class="text-muted d-block" style="font-size: 0.78rem;">ຖ້າສິນຄ້ານີ້ມີຂາຍເປັນ ແພັກ (x6 ປ໋ອງ), ແກັດ (x24 ປ໋ອງ)... ສາມາດເພີ່ມໄດ້ທີ່ນີ້ (ຕັດສະຕັອກອັດຕະໂນມັດ)</small>
+                <small class="text-muted d-block" style="font-size: 0.78rem;"><?php echo htmlspecialchars(t('products.multi_unit_hint', 'ຖ້າສິນຄ້ານີ້ມີຂາຍເປັນ ແພັກ (x6 ປ໋ອງ), ແກັດ (x24 ປ໋ອງ)... ສາມາດເພີ່ມໄດ້ທີ່ນີ້ (ຕັດສະຕັອກອັດຕະໂນມັດ)')); ?></small>
               </div>
               <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold" style="border-radius: 6px; font-size: 0.82rem;" onclick="addUnitRow('add')">
-                 ເພີ່ມລາຄາ/ຫົວໜ່ວຍ
+                 <?php echo htmlspecialchars(t('products.btn_add_unit', 'ເພີ່ມລາຄາ/ຫົວໜ່ວຍ')); ?>
               </button>
             </div>
 
@@ -159,9 +159,9 @@
 
         <!-- FOOTER -->
         <div class="modal-footer border-0 pt-0 pb-4 px-4">
-          <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px; cursor: pointer;" data-dismiss="modal">ຍົກເລີກ</button>
+          <button type="button" class="btn btn-light font-weight-bold px-4" style="border-radius: 6px; cursor: pointer;" data-dismiss="modal"><?php echo htmlspecialchars(t('products.cancel', 'ຍົກເລີກ')); ?></button>
           <button type="submit" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="border-radius: 6px; cursor: pointer; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;">
-            <i class="fas fa-save mr-1"></i> ບັນທຶກ
+            <i class="fas fa-save mr-1"></i> <?php echo htmlspecialchars(t('products.btn_save', 'ບັນທຶກ')); ?>
           </button>
         </div>
       </form>
@@ -170,6 +170,34 @@
 </div>
 
 <script>
+var I18N_ADD_PRODUCT = <?php echo tjson([
+    'products.alert_notice_title' => 'ແຈ້ງເຕືອນ',
+    'products.btn_ok' => 'ຕົກລົງ',
+    'products.validate_category' => 'ກະລຸນາເລືອກປະເພດສິນຄ້າ!',
+    'products.validate_name' => 'ກະລຸນາປ້ອນຊື່ສິນຄ້າ!',
+    'products.validate_barcode_required' => 'ກະລຸນາປ້ອນ ຫຼື ສະແກນລະຫັດບາໂຄ້ດສິນຄ້າ!',
+    'products.validate_barcode_numeric' => 'ລະຫັດບາໂຄ້ດຮອງຮັບສະເພາະຕົວເລກ (0-9) ເທົ່ານັ້ນ!',
+    'products.validate_unit' => 'ກະລຸນາປ້ອນຫົວໜ່ວຍ!',
+    'products.validate_bprice' => 'ກະລຸນາປ້ອນລາຄາຊື້!',
+    'products.validate_price' => 'ກະລຸນາປ້ອນລາຄາຂາຍ!',
+    'products.validate_unit_name' => 'ກະລຸນາປ້ອນຊື່ຫົວໜ່ວຍເພີ່ມເຕີມ!',
+    'products.validate_unit_qty' => 'ກະລຸນາປ້ອນຈຳນວນຫົວໜ່ວຍເພີ່ມເຕີມ!',
+    'products.validate_unit_price' => 'ກະລຸນາປ້ອນລາຄາຂາຍຫົວໜ່ວຍເພີ່ມເຕີມ!',
+    'products.alert_duplicate_title' => 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!',
+    'products.duplicate_in_form_text' => 'ລະຫັດບາໂຄ້ດ "{value}" ນີ້ຊໍ້າກັນກັບຫົວໜ່ວຍອື່ນໃນຟອມດຽວກັນ!',
+    'products.duplicate_in_db_text' => 'ລະຫັດບາໂຄ້ດ "{value}" ນີ້ມີໃນລະບົບແລ້ວ!',
+    'products.unit_row_name_label' => 'ຊື່ຫົວໜ່ວຍ:',
+    'products.unit_row_name_placeholder' => 'ເຊັ່ນ: ແພັກ, ແກັດ...',
+    'products.unit_row_qty_label' => 'ຈຳນວນ:',
+    'products.unit_row_qty_placeholder' => 'ເຊັ່ນ: 6',
+    'products.unit_row_bprice_label' => 'ລາຄາຊື້:',
+    'products.unit_row_price_label' => 'ລາຄາຂາຍ:',
+    'products.unit_row_barcode_label' => 'ບາໂຄ້ດ:',
+    'products.unit_row_barcode_placeholder' => 'ບາໂຄ້ດ...',
+    'products.gen_barcode_title' => 'ສ້າງບາໂຄ້ດ 13 ຫຼັກ',
+    'products.unit_row_delete_title' => 'ລົບແຖວນີ້',
+]); ?>;
+
 // ດຶງລຳດັບການປ້ອນສິນຄ້າເພີ່ມເຂົ້າທົ່ວລະບົບ (Sequence: 0001, 0002, 0003...)
 var GLOBAL_NEXT_SEQ = '<?php echo htmlspecialchars($nextSeqFormatted ?? "0001"); ?>';
 
@@ -208,34 +236,34 @@ function addUnitRow(mode, data) {
     <div class="card bg-light border-0 mb-2 p-2 unit-row shadow-none" style="border-radius: 8px;">
       <div class="row align-items-center">
         <div class="col-md-3 col-6 mb-2 mb-md-0">
-          <label class="small text-muted font-weight-bold mb-1">ຊື່ຫົວໜ່ວຍ: <span class="text-danger">*</span></label>
-          <input type="text" name="extra_unit_name[]" class="form-control form-control-sm" placeholder="ເຊັ່ນ: ແພັກ, ແກັດ..." value="${unitName}" required>
+          <label class="small text-muted font-weight-bold mb-1">${I18N_ADD_PRODUCT['products.unit_row_name_label']} <span class="text-danger">*</span></label>
+          <input type="text" name="extra_unit_name[]" class="form-control form-control-sm" placeholder="${I18N_ADD_PRODUCT['products.unit_row_name_placeholder']}" value="${unitName}" required>
         </div>
         <div class="col-md-2 col-6 mb-2 mb-md-0">
-          <label class="small text-muted font-weight-bold mb-1">ຈຳນວນ: <span class="text-danger">*</span></label>
-          <input type="number" name="extra_unit_multiplier[]" class="form-control form-control-sm text-center" placeholder="ເຊັ່ນ: 6" min="2" value="${multiplier}" required>
+          <label class="small text-muted font-weight-bold mb-1">${I18N_ADD_PRODUCT['products.unit_row_qty_label']} <span class="text-danger">*</span></label>
+          <input type="number" name="extra_unit_multiplier[]" class="form-control form-control-sm text-center" placeholder="${I18N_ADD_PRODUCT['products.unit_row_qty_placeholder']}" min="2" value="${multiplier}" required>
         </div>
         <div class="col-md-2 col-6 mb-2 mb-md-0">
-          <label class="small text-muted font-weight-bold mb-1">ລາຄາຊື້:</label>
+          <label class="small text-muted font-weight-bold mb-1">${I18N_ADD_PRODUCT['products.unit_row_bprice_label']}</label>
           <input type="text" name="extra_unit_bprice[]" class="form-control form-control-sm text-right price-input" placeholder="0" value="${bprice}" oninput="formatPriceInput(this)">
         </div>
         <div class="col-md-2 col-6 mb-2 mb-md-0">
-          <label class="small text-muted font-weight-bold mb-1">ລາຄາຂາຍ: <span class="text-danger">*</span></label>
+          <label class="small text-muted font-weight-bold mb-1">${I18N_ADD_PRODUCT['products.unit_row_price_label']} <span class="text-danger">*</span></label>
           <input type="text" name="extra_unit_price[]" class="form-control form-control-sm text-right font-weight-bold text-success price-input" placeholder="0" value="${price}" oninput="formatPriceInput(this)" required>
         </div>
         <div class="col-md-2 col-10 mb-2 mb-md-0">
-          <label class="small text-muted font-weight-bold mb-1">ບາໂຄ້ດ:</label>
+          <label class="small text-muted font-weight-bold mb-1">${I18N_ADD_PRODUCT['products.unit_row_barcode_label']}</label>
           <div class="input-group input-group-sm">
-            <input type="text" name="extra_unit_barcode[]" class="form-control form-control-sm" placeholder="ບາໂຄ້ດ..." value="${barcode}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+            <input type="text" name="extra_unit_barcode[]" class="form-control form-control-sm" placeholder="${I18N_ADD_PRODUCT['products.unit_row_barcode_placeholder']}" value="${barcode}" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
             <div class="input-group-append">
-              <button type="button" class="btn btn-outline-primary" onclick="generateEAN13(this)" title="ສ້າງບາໂຄ້ດ 13 ຫຼັກ">
+              <button type="button" class="btn btn-outline-primary" onclick="generateEAN13(this)" title="${I18N_ADD_PRODUCT['products.gen_barcode_title']}">
                 <i class="fas fa-barcode"></i>
               </button>
             </div>
           </div>
         </div>
         <div class="col-md-1 col-2 text-right pt-md-3">
-          <button type="button" class="btn btn-sm btn-outline-danger border-0" title="ລົບແຖວນີ້" onclick="$(this).closest('.unit-row').remove();">
+          <button type="button" class="btn btn-sm btn-outline-danger border-0" title="${I18N_ADD_PRODUCT['products.unit_row_delete_title']}" onclick="$(this).closest('.unit-row').remove();">
             <i class="fas fa-trash-alt"></i>
           </button>
         </div>
@@ -257,10 +285,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາເລືອກປະເພດສິນຄ້າ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_category'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_category_id').focus();
     });
@@ -270,10 +298,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາປ້ອນຊື່ສິນຄ້າ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_name'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_product_name').focus();
     });
@@ -283,10 +311,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາປ້ອນ ຫຼື ສະແກນລະຫັດບາໂຄ້ດສິນຄ້າ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_barcode_required'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_barcode').focus();
     });
@@ -296,10 +324,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ລະຫັດບາໂຄ້ດຮອງຮັບສະເພາະຕົວເລກ (0-9) ເທົ່ານັ້ນ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_barcode_numeric'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_barcode').focus();
     });
@@ -309,10 +337,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາປ້ອນຫົວໜ່ວຍ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_unit'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_unit').focus();
     });
@@ -322,10 +350,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາປ້ອນລາຄາຊື້!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_bprice'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_bprice').focus();
     });
@@ -335,10 +363,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ແຈ້ງເຕືອນ',
-      text: 'ກະລຸນາປ້ອນລາຄາຂາຍ!',
+      title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+      text: I18N_ADD_PRODUCT['products.validate_price'],
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $('#add_price').focus();
     });
@@ -357,10 +385,10 @@ function submitAddProduct(e) {
       var inputEl = $(this).find('input[name="extra_unit_name[]"]');
       Swal.fire({
         icon: 'warning',
-        title: 'ແຈ້ງເຕືອນ',
-        text: 'ກະລຸນາປ້ອນຊື່ຫົວໜ່ວຍເພີ່ມເຕີມ!',
+        title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+        text: I18N_ADD_PRODUCT['products.validate_unit_name'],
         confirmButtonColor: '#2563eb',
-        confirmButtonText: 'ຕົກລົງ'
+        confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
       }).then(function() {
         inputEl.focus();
       });
@@ -372,10 +400,10 @@ function submitAddProduct(e) {
       var inputEl = $(this).find('input[name="extra_unit_multiplier[]"]');
       Swal.fire({
         icon: 'warning',
-        title: 'ແຈ້ງເຕືອນ',
-        text: 'ກະລຸນາປ້ອນຈຳນວນຫົວໜ່ວຍເພີ່ມເຕີມ!',
+        title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+        text: I18N_ADD_PRODUCT['products.validate_unit_qty'],
         confirmButtonColor: '#2563eb',
-        confirmButtonText: 'ຕົກລົງ'
+        confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
       }).then(function() {
         inputEl.focus();
       });
@@ -387,10 +415,10 @@ function submitAddProduct(e) {
       var inputEl = $(this).find('input[name="extra_unit_price[]"]');
       Swal.fire({
         icon: 'warning',
-        title: 'ແຈ້ງເຕືອນ',
-        text: 'ກະລຸນາປ້ອນລາຄາຂາຍຫົວໜ່ວຍເພີ່ມເຕີມ!',
+        title: I18N_ADD_PRODUCT['products.alert_notice_title'],
+        text: I18N_ADD_PRODUCT['products.validate_unit_price'],
         confirmButtonColor: '#2563eb',
-        confirmButtonText: 'ຕົກລົງ'
+        confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
       }).then(function() {
         inputEl.focus();
       });
@@ -421,10 +449,10 @@ function submitAddProduct(e) {
     if (e) e.preventDefault();
     Swal.fire({
       icon: 'warning',
-      title: 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!',
-      text: 'ລະຫັດບາໂຄ້ດ "' + dupValue + '" ນີ້ຊໍ້າກັນກັບຫົວໜ່ວຍອື່ນໃນຟອມດຽວກັນ!',
+      title: I18N_ADD_PRODUCT['products.alert_duplicate_title'],
+      text: I18N_ADD_PRODUCT['products.duplicate_in_form_text'].replace('{value}', dupValue),
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     });
     return false;
   }
@@ -459,10 +487,10 @@ function checkBarcodeDuplicate(inputEl, productId) {
   if (duplicateCount > 1) {
     Swal.fire({
       icon: 'warning',
-      title: 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!',
-      text: 'ລະຫັດບາໂຄ້ດ "' + barcode + '" ນີ້ຊໍ້າກັນກັບຫົວໜ່ວຍອື່ນໃນຟອມດຽວກັນ!',
+      title: I18N_ADD_PRODUCT['products.alert_duplicate_title'],
+      text: I18N_ADD_PRODUCT['products.duplicate_in_form_text'].replace('{value}', barcode),
       confirmButtonColor: '#2563eb',
-      confirmButtonText: 'ຕົກລົງ'
+      confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
     }).then(function() {
       $input.val('').focus();
     });
@@ -483,10 +511,10 @@ function checkBarcodeDuplicate(inputEl, productId) {
       if (res && res.exists) {
         Swal.fire({
           icon: 'warning',
-          title: 'ລະຫັດບາໂຄ້ດຊໍ້າກັນ!',
-          text: res.message || ('ລະຫັດບາໂຄ້ດ "' + barcode + '" ນີ້ມີໃນລະບົບແລ້ວ!'),
+          title: I18N_ADD_PRODUCT['products.alert_duplicate_title'],
+          text: res.message || I18N_ADD_PRODUCT['products.duplicate_in_db_text'].replace('{value}', barcode),
           confirmButtonColor: '#2563eb',
-          confirmButtonText: 'ຕົກລົງ'
+          confirmButtonText: I18N_ADD_PRODUCT['products.btn_ok']
         }).then(function() {
           $input.val('').focus();
         });

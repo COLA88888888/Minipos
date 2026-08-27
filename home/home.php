@@ -410,7 +410,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-chart-area text-primary mr-2"></i> <?php echo htmlspecialchars(t('home.chart_monthly_revenue', 'ກາຟລາຍຮັບປະຈຳເດືອນ')); ?> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
+            <i class="fas fa-chart-area text-primary mr-2"></i> <span><?php echo htmlspecialchars(t('home.chart_monthly_revenue', 'ກາຟລາຍຮັບປະຈຳເດືອນ')); ?></span> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
           </h6>
           <span class="badge badge-light border text-primary font-weight-bold px-2.5 py-1"><?php echo htmlspecialchars(t('home.months_12', '12 ເດືອນ')); ?></span>
         </div>
@@ -446,7 +446,7 @@ require_once __DIR__ . '/../layouts/header.php';
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: #ffffff;">
         <div class="card-header bg-white border-0 py-3 px-3.5 d-flex justify-content-between align-items-center">
           <h6 class="font-weight-bold text-dark mb-0" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-percentage text-warning mr-2"></i> <?php echo htmlspecialchars(t('home.chart_profit_margin', 'ກາຟອັດຕາກຳໄລ %')); ?> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
+            <i class="fas fa-percentage text-warning mr-2"></i> <span><?php echo htmlspecialchars(t('home.chart_profit_margin', 'ກາຟອັດຕາກຳໄລ %')); ?></span> (<?php echo htmlspecialchars(sprintf(t('home.year_label', 'ປີ %d'), $selected_year)); ?>)
           </h6>
         </div>
         <div class="card-body p-3">
@@ -490,6 +490,10 @@ var I18N_HOME = <?php echo tjson([
     'home.legend_margin' => 'ອັດຕາກຳໄລ (%)',
     'home.legend_qty_sold' => 'ຈຳນວນຂາຍ',
     'home.no_sales_data' => 'ບໍ່ມີຂໍ້ມູນການຂາຍ',
+    'home.month_1' => 'ມ.ກ', 'home.month_2' => 'ກ.ພ', 'home.month_3' => 'ມີ.ນາ',
+    'home.month_4' => 'ເມ.ສາ', 'home.month_5' => 'ພຶ.ພາ', 'home.month_6' => 'ມິ.ຖຸ',
+    'home.month_7' => 'ກໍ.ກົດ', 'home.month_8' => 'ສ.ຫ', 'home.month_9' => 'ກ.ຍ',
+    'home.month_10' => 'ຕ.ລ', 'home.month_11' => 'ພ.ຈ', 'home.month_12' => 'ທ.ວ',
 ]); ?>;
 
 $(document).ready(function() {
@@ -591,10 +595,14 @@ $(document).ready(function() {
     top10Qty   = [0];
   }
 
+  // Chart instances kept so their labels can be re-translated on an instant language switch
+  var monthlyRevenueChartObj = null;
+  var profitMarginChartObj = null;
+
   // ===== 1. Monthly Revenue & Profit Chart =====
   var ctxMonthly = document.getElementById('monthlyRevenueChart');
   if (ctxMonthly) {
-    new Chart(ctxMonthly, {
+    monthlyRevenueChartObj = new Chart(ctxMonthly, {
       type: 'bar',
       data: {
         labels: monthLabels,
@@ -682,7 +690,7 @@ $(document).ready(function() {
   // ===== 3. Profit Margin % Chart =====
   var ctxMargin = document.getElementById('profitMarginChart');
   if (ctxMargin) {
-    new Chart(ctxMargin, {
+    profitMarginChartObj = new Chart(ctxMargin, {
       type: 'line',
       data: {
         labels: monthLabels,
@@ -781,5 +789,33 @@ $(document).ready(function() {
       }
     });
   }
+
+  // The dashboard language switch is instant (no reload), so the chart <canvas> bitmaps keep
+  // their build-time labels. The shell updates I18N_HOME in place then fires 'pos:langchange';
+  // rebuild the affected charts' month-axis and legend labels from the refreshed dictionary.
+  function refreshChartLangs() {
+    var newMonthLabels = [];
+    for (var m = 1; m <= 12; m++) {
+      newMonthLabels.push(I18N_HOME['home.month_' + m] || monthLabels[m - 1]);
+    }
+    monthLabels = newMonthLabels;
+
+    if (monthlyRevenueChartObj) {
+      monthlyRevenueChartObj.data.labels = monthLabels;
+      var mds = monthlyRevenueChartObj.data.datasets;
+      if (mds[0]) mds[0].label = I18N_HOME['home.legend_sales'];
+      if (mds[1]) mds[1].label = I18N_HOME['home.legend_cost'];
+      if (mds[2]) mds[2].label = I18N_HOME['home.legend_profit'];
+      monthlyRevenueChartObj.update();
+    }
+    if (profitMarginChartObj) {
+      profitMarginChartObj.data.labels = monthLabels;
+      if (profitMarginChartObj.data.datasets[0]) {
+        profitMarginChartObj.data.datasets[0].label = I18N_HOME['home.legend_margin'];
+      }
+      profitMarginChartObj.update();
+    }
+  }
+  window.addEventListener('pos:langchange', refreshChartLangs);
 });
 </script>

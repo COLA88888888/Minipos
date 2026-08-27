@@ -62,11 +62,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("INSERT INTO promotions (promo_name, promo_type, discount_type, discount_value, gift_product_name, gift_qty, start_date, end_date, min_qty, min_amount, target_type, target_name, target_unit_name, status, branch_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->execute([$promo_name, $promo_type, $discount_type, $discount_value, $gift_product_name, $gift_qty, $start_date, $end_date, $min_qty, $min_amount, $target_type, $target_name, $target_unit_name, $status, $branch_id]);
-                $message = 'ເພີ່ມໂປຣໂມຊັ່ນໃໝ່ສຳເລັດ!';
+                $message = t('promotions.msg_added', 'ເພີ່ມໂປຣໂມຊັ່ນໃໝ່ສຳເລັດ!');
                 $message_type = 'success';
                 logActivity($pdo, "ເພີ່ມໂປຣໂມຊັ່ນ", $promo_name);
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('promotions.err_prefix', 'ຜິດພາດ:') . ' ' . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -100,11 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             try {
                 $stmt = $pdo->prepare("UPDATE promotions SET promo_name = ?, promo_type = ?, discount_type = ?, discount_value = ?, gift_product_name = ?, gift_qty = ?, start_date = ?, end_date = ?, min_qty = ?, min_amount = ?, target_type = ?, target_name = ?, target_unit_name = ?, branch_id = ? WHERE id = ?");
                 $stmt->execute([$promo_name, $promo_type, $discount_type, $discount_value, $gift_product_name, $gift_qty, $start_date, $end_date, $min_qty, $min_amount, $target_type, $target_name, $target_unit_name, $branch_id, $id]);
-                $message = 'ອັບເດດໂປຣໂມຊັ່ນສຳເລັດ!';
+                $message = t('promotions.msg_updated', 'ອັບເດດໂປຣໂມຊັ່ນສຳເລັດ!');
                 $message_type = 'success';
                 logActivity($pdo, "ແກ້ໄຂໂປຣໂມຊັ່ນ", "$promo_name (ID: $id)");
             } catch (Exception $e) {
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('promotions.err_prefix', 'ຜິດພາດ:') . ' ' . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -118,18 +118,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $promoDate = $chk->fetchColumn();
                 
                 if ($promoDate && $promoDate < date('Y-m-d')) {
-                    $message = "ໂປຣໂມຊັ່ນນີ້ໝົດອາຍຸແລ້ວ (" . date('d/m/Y', strtotime($promoDate)) . ")! ກະລຸນາກົດ \"ແກ້ໄຂ\" ເພື່ອປ່ຽນວັນທີສິ້ນສຸດກ່ອນເປີດໃຊ້ງານ.";
+                    $message = t('promotions.msg_expired_pre', 'ໂປຣໂມຊັ່ນນີ້ໝົດອາຍຸແລ້ວ (') . date('d/m/Y', strtotime($promoDate)) . t('promotions.msg_expired_post', ')! ກະລຸນາກົດ "ແກ້ໄຂ" ເພື່ອປ່ຽນວັນທີສິ້ນສຸດກ່ອນເປີດໃຊ້ງານ.');
                     $message_type = 'warning';
                 } else {
                     $stmt = $pdo->prepare("UPDATE promotions SET status = 1 WHERE id = ?");
                     $stmt->execute([$id]);
-                    $message = 'ເປີດໃຊ້ງານໂປຣໂມຊັ່ນສຳເລັດ!';
+                    $message = t('promotions.msg_enabled', 'ເປີດໃຊ້ງານໂປຣໂມຊັ່ນສຳເລັດ!');
                     $message_type = 'success';
                 }
             } else {
                 $stmt = $pdo->prepare("UPDATE promotions SET status = 0 WHERE id = ?");
                 $stmt->execute([$id]);
-                $message = 'ປິດໃຊ້ງານໂປຣໂມຊັ່ນສຳເລັດ!';
+                $message = t('promotions.msg_disabled', 'ປິດໃຊ້ງານໂປຣໂມຊັ່ນສຳເລັດ!');
                 $message_type = 'success';
             }
         }
@@ -138,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if ($id > 0) {
             $stmt = $pdo->prepare("DELETE FROM promotions WHERE id = ?");
             $stmt->execute([$id]);
-            $message = 'ລົບໂປຣໂມຊັ່ນສຳເລັດ!';
+            $message = t('promotions.msg_deleted', 'ລົບໂປຣໂມຊັ່ນສຳເລັດ!');
             $message_type = 'success';
         }
     }

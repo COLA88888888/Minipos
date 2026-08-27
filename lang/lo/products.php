@@ -85,6 +85,7 @@ return [
     'products.gen_barcode_btn' => 'ສ້າງ',
     'products.field_unit' => 'ຫົວໜ່ວຍ:',
     'products.unit_placeholder' => 'ເຊັ່ນ: ປ໋ອງ, ອັນ, ຕຸກ, ແກ້ວ, ຖົງ...',
+    'products.select_unit_placeholder' => '-- ເລືອກຫົວໜ່ວຍ --',
     'products.field_qty' => 'ຈຳນວນສະຕັອກ:',
     'products.field_qty_optional' => '(ຖ້າມີ)',
     'products.field_bprice' => 'ລາຄາຊື້:',

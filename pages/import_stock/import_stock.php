@@ -14,13 +14,16 @@ if (empty($_SESSION['user_id']) || (!hasPermission('import_stock') && ($_SESSION
 $message = '';
 $message_type = '';
 
+// Let a receipt line record the sell price applied at receipt time (nullable, additive migration)
+try { $pdo->exec("ALTER TABLE import_details ADD COLUMN sell_price DECIMAL(15,2) NULL AFTER cost_price"); } catch (Throwable $e) {}
+
 // ====== HANDLE POST ACTIONS ======
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
     // --- 1. ACTION: IMPORT STOCK BILL (MULTI-ITEM OR SINGLE ITEM) ---
     if ($_POST['action'] === 'import_stock_bill') {
         if (!hasPermission('import_stock', 'add')) {
-            $message = 'ທ່ານບໍ່ມີສິດໃນການເພີ່ມ ຫຼື ບັນທຶກຮັບເຂົ້າສິນຄ້າ!';
+            $message = t('import_stock.err_no_permission', 'ທ່ານບໍ່ມີສິດໃນການເພີ່ມ ຫຼື ບັນທຶກຮັບເຂົ້າສິນຄ້າ!');
             $message_type = 'warning';
         } else {
         $invoice_number = trim($_POST['invoice_number'] ?? '');
@@ -61,6 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $unit_key     = trim($item['unit_key'] ?? 'base');
                     $quantity     = intval($item['quantity'] ?? 0);
                     $cost_price   = floatval($item['cost_price'] ?? 0);
+                    $sell_price   = floatval($item['sell_price'] ?? 0);
                     $expiry_date  = !empty($item['expiry_date']) ? $item['expiry_date'] : null;
 
                     if ($product_id <= 0 || $quantity <= 0) continue;
@@ -73,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
                     if (!$product) continue;
 
-                    $unit_name = !empty($product['unit']) ? $product['unit'] : 'ອັນ';
+                    $unit_name = !empty($product['unit']) ? $product['unit'] : t('import_stock.default_unit', 'ອັນ');
                     $multiplier = 1;
 
                     if ($unit_key !== 'base') {
@@ -90,10 +94,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $total_cost     = $quantity * $cost_price;
 
                     // Insert into import_details
-                    $insDet = $pdo->prepare("INSERT INTO import_details (import_id, product_id, unit_name, multiplier, quantity, total_base_qty, cost_price, total_cost, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                    $insDet = $pdo->prepare("INSERT INTO import_details (import_id, product_id, unit_name, multiplier, quantity, total_base_qty, cost_price, sell_price, total_cost, expiry_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                     $insDet->execute([
                         $import_id, $product_id, $unit_name, $multiplier,
-                        $quantity, $total_base_qty, $cost_price, $total_cost, $expiry_date
+                        $quantity, $total_base_qty, $cost_price, ($sell_price > 0 ? $sell_price : null), $total_cost, $expiry_date
                     ]);
                     $import_detail_id = $pdo->lastInsertId();
 
@@ -101,24 +105,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $insBatch = $pdo->prepare("INSERT INTO product_batches (product_id, import_detail_id, expiry_date, initial_qty, quantity) VALUES (?, ?, ?, ?, ?)");
                     $insBatch->execute([$product_id, $import_detail_id, $expiry_date, $total_base_qty, $total_base_qty]);
 
-                    // Update product stock and buy price
-                    $updProd = $pdo->prepare("UPDATE products SET qty = qty + ?, bprice = ? WHERE product_id = ? AND store_id = ?");
-                    $updProd->execute([$total_base_qty, $cost_price, $product_id, $activeStoreId]);
+                    // Update product stock + buy price, and the sell price too when one was entered
+                    if ($sell_price > 0) {
+                        $updProd = $pdo->prepare("UPDATE products SET qty = qty + ?, bprice = ?, price = ? WHERE product_id = ? AND store_id = ?");
+                        $updProd->execute([$total_base_qty, $cost_price, $sell_price, $product_id, $activeStoreId]);
+                    } else {
+                        $updProd = $pdo->prepare("UPDATE products SET qty = qty + ?, bprice = ? WHERE product_id = ? AND store_id = ?");
+                        $updProd->execute([$total_base_qty, $cost_price, $product_id, $activeStoreId]);
+                    }
 
                     $insertedCount++;
                 }
 
                 $pdo->commit();
-                $message = "ບັນທຶກໃບບິນຮັບສິນຄ້າເຂົ້າເລກທີ $invoice_number ສຳເລັດ (ລວມ $insertedCount ລາຍການ)!";
+                $message = sprintf(t('import_stock.msg_bill_success', 'ບັນທຶກໃບບິນຮັບສິນຄ້າເຂົ້າເລກທີ %s ສຳເລັດ (ລວມ %s ລາຍການ)!'), $invoice_number, $insertedCount);
                 $message_type = 'success';
                 logActivity($pdo, "ຮັບສິນຄ້າເຂົ້າ (ໃບບິນ)", "ໃບບິນ: $invoice_number, $insertedCount ລາຍການ, ລວມ: " . number_format($total_bill_cost) . " ₭");
             } catch (Exception $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('import_stock.err_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         } else {
-            $message = 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການຮັບເຂົ້າຢ່າງນ້ອຍ 1 ລາຍການ!';
+            $message = t('import_stock.err_no_items', 'ກະລຸນາເພີ່ມສິນຄ້າໃສ່ລາຍການຮັບເຂົ້າຢ່າງນ້ອຍ 1 ລາຍການ!');
             $message_type = 'danger';
         }
         }
@@ -148,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $baseQty = intval($det['total_base_qty']);
 
                     if (($bRem !== null && $bInit !== null && $bRem < $bInit) || ($pQty < $baseQty)) {
-                        throw new Exception("ບໍ່ສາມາດລົບ/ຍົກເລີກໃບບິນນີ້ໄດ້ ເນື່ອງຈາກສິນຄ້ານີ້ມີການເຄື່ອນໄຫວ ຫຼື ຖືກຂາຍອອກໄປແລ້ວ!");
+                        throw new Exception(t('import_stock.err_has_movement', 'ບໍ່ສາມາດລົບ/ຍົກເລີກໃບບິນນີ້ໄດ້ ເນື່ອງຈາກສິນຄ້ານີ້ມີການເຄື່ອນໄຫວ ຫຼື ຖືກຂາຍອອກໄປແລ້ວ!'));
                     }
 
                     // Revert stock quantity in products
@@ -167,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $delDet = $pdo->prepare("DELETE FROM import_details WHERE import_detail_id = ?");
                     $delDet->execute([$import_detail_id]);
 
-                    $message = 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!';
+                    $message = t('import_stock.msg_cancel_success', 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າສຳເລັດ (ປັບສະຕັອກຄືນແລ້ວ)!');
                     $message_type = 'success';
                     logActivity($pdo, "ຍົກເລີກການຮັບສິນຄ້າເຂົ້າ", "Detail ID: $import_detail_id");
                 }
@@ -187,6 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $supplier_name    = trim($_POST['supplier_name'] ?? '');
         $quantity         = intval($_POST['quantity'] ?? 0);
         $cost_price       = floatval($_POST['cost_price'] ?? 0);
+        $sell_price       = floatval($_POST['sell_price'] ?? 0);
         $unit_key         = trim($_POST['unit_key'] ?? 'base');
         $expiry_date      = !empty($_POST['expiry_date']) ? $_POST['expiry_date'] : null;
         $notes            = trim($_POST['notes'] ?? '');
@@ -207,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $pStmt->execute([$product_id]);
                     $product = $pStmt->fetch();
 
-                    $unit_name = !empty($product['unit']) ? $product['unit'] : 'ອັນ';
+                    $unit_name = !empty($product['unit']) ? $product['unit'] : t('import_stock.default_unit', 'ອັນ');
                     $multiplier = 1;
 
                     if ($unit_key !== 'base') {
@@ -226,23 +236,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     $diff_base_qty = $new_total_base_qty - $oldDet['total_base_qty'];
                     $diff_cost     = $new_total_cost - $oldDet['total_cost'];
 
-                    // Update products stock
-                    $updStock = $pdo->prepare("UPDATE products SET qty = GREATEST(0, qty + ?), bprice = ? WHERE product_id = ?");
-                    $updStock->execute([$diff_base_qty, $cost_price, $product_id]);
+                    // Update products stock + buy price, and the sell price when one was entered
+                    if ($sell_price > 0) {
+                        $updStock = $pdo->prepare("UPDATE products SET qty = GREATEST(0, qty + ?), bprice = ?, price = ? WHERE product_id = ?");
+                        $updStock->execute([$diff_base_qty, $cost_price, $sell_price, $product_id]);
+                    } else {
+                        $updStock = $pdo->prepare("UPDATE products SET qty = GREATEST(0, qty + ?), bprice = ? WHERE product_id = ?");
+                        $updStock->execute([$diff_base_qty, $cost_price, $product_id]);
+                    }
 
                     // Update master import
                     $updImp = $pdo->prepare("UPDATE imports SET supplier_name = ?, total_cost = GREATEST(0, total_cost + ?), notes = IF(? != '', ?, notes) WHERE import_id = ?");
                     $updImp->execute([$supplier_name, $diff_cost, $notes, $notes, $oldDet['import_id']]);
 
                     // Update import_details
-                    $updDet = $pdo->prepare("UPDATE import_details SET unit_name = ?, multiplier = ?, quantity = ?, total_base_qty = ?, cost_price = ?, total_cost = ?, expiry_date = ? WHERE import_detail_id = ?");
-                    $updDet->execute([$unit_name, $multiplier, $quantity, $new_total_base_qty, $cost_price, $new_total_cost, $expiry_date, $import_detail_id]);
+                    $updDet = $pdo->prepare("UPDATE import_details SET unit_name = ?, multiplier = ?, quantity = ?, total_base_qty = ?, cost_price = ?, sell_price = ?, total_cost = ?, expiry_date = ? WHERE import_detail_id = ?");
+                    $updDet->execute([$unit_name, $multiplier, $quantity, $new_total_base_qty, $cost_price, ($sell_price > 0 ? $sell_price : null), $new_total_cost, $expiry_date, $import_detail_id]);
 
                     // Update product_batches
                     $updBatch = $pdo->prepare("UPDATE product_batches SET expiry_date = ?, initial_qty = ?, quantity = GREATEST(0, quantity + ?) WHERE import_detail_id = ?");
                     $updBatch->execute([$expiry_date, $new_total_base_qty, $diff_base_qty, $import_detail_id]);
 
-                    $message = 'ດັດແກ້ຂໍ້ມູນການຮັບສິນຄ້າເຂົ້າສຳເລັດ!';
+                    $message = t('import_stock.msg_edit_success', 'ດັດແກ້ຂໍ້ມູນການຮັບສິນຄ້າເຂົ້າສຳເລັດ!');
                     $message_type = 'success';
                     logActivity($pdo, "ແກ້ໄຂການຮັບສິນຄ້າເຂົ້າ", "Detail ID: $import_detail_id");
                 }
@@ -250,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $pdo->commit();
             } catch (Exception $e) {
                 if ($pdo->inTransaction()) $pdo->rollBack();
-                $message = 'ຜິດພາດ: ' . $e->getMessage();
+                $message = t('import_stock.err_prefix', 'ຜິດພາດ: ') . $e->getMessage();
                 $message_type = 'danger';
             }
         }
@@ -348,7 +363,7 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="row align-items-center">
         <div class="col-sm-6">
           <h4 class="m-0 font-weight-bold text-dark" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-            <i class="fas fa-truck-loading text-primary mr-2"></i> ຮັບສິນຄ້າເຂົ້າສະຕັອກ
+            <i class="fas fa-truck-loading text-primary mr-2"></i> <?php echo htmlspecialchars(t('import_stock.page_title', 'ຮັບສິນຄ້າເຂົ້າສະຕັອກ')); ?>
           </h4>
         </div>
       </div>
@@ -373,11 +388,11 @@ require_once __DIR__ . '/../../layouts/header.php';
           <script>
             $(document).ready(function() {
               Swal.fire({
-                title: 'ບັນທຶກສຳເລັດ!',
+                title: '<?php echo htmlspecialchars(t('import_stock.swal_saved_title', 'ບັນທຶກສຳເລັດ!'), ENT_QUOTES); ?>',
                 text: '<?php echo addslashes($message); ?>',
                 icon: 'success',
                 confirmButtonColor: '#10b981',
-                confirmButtonText: 'ຕົກລົງ',
+                confirmButtonText: '<?php echo htmlspecialchars(t('import_stock.ok_button', 'ຕົກລົງ'), ENT_QUOTES); ?>',
                 timer: 3500,
                 timerProgressBar: true
               });
@@ -399,7 +414,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- 1. Auto Invoice Number -->
               <div class="col-md-3 mb-2 mb-md-0">
                 <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
-                  ເລກທີໃບບິນຮັບເຂົ້າ <small class="text-muted"></small>
+                  <?php echo htmlspecialchars(t('import_stock.invoice_no_label', 'ເລກທີໃບບິນຮັບເຂົ້າ')); ?> <small class="text-muted"></small>
                 </label>
                 <input type="text" name="invoice_number" id="invoice_number_input" class="form-control font-weight-bold bg-white text-primary border-primary" value="<?php echo $next_invoice; ?>" readonly style="height: 42px; border-radius: 8px; cursor: not-allowed; font-size: 1.05rem;">
               </div>
@@ -407,7 +422,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- 2. Import Date (Editable Date Picker - No Time) -->
               <div class="col-md-3 mb-2 mb-md-0">
                 <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
-                  ວັນທີຮັບເຂົ້າ <span class="text-danger">*</span>
+                  <?php echo htmlspecialchars(t('import_stock.import_date_label', 'ວັນທີຮັບເຂົ້າ')); ?> <span class="text-danger">*</span>
                 </label>
                 <input type="date" name="import_date" id="import_date_input" class="form-control font-weight-bold" value="<?php echo date('Y-m-d'); ?>" required style="height: 42px; border-radius: 8px;">
               </div>
@@ -415,7 +430,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- 3. Receiver Name -->
               <div class="col-md-3 mb-2 mb-md-0">
                 <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
-                  ຜູ້ບັນທຶກ / ຜູ້ຮັບເຂົ້າ
+                  <?php echo htmlspecialchars(t('import_stock.receiver_label', 'ຜູ້ບັນທຶກ / ຜູ້ຮັບເຂົ້າ')); ?>
                 </label>
                 <input type="text" class="form-control bg-white font-weight-bold" value="<?php echo htmlspecialchars($receiverName); ?>" readonly style="height: 42px; border-radius: 8px;">
               </div>
@@ -423,9 +438,9 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- 4. Supplier Name -->
               <div class="col-md-3">
                 <label class="font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
-                  ຊື່ຜູ້ສະໜອງ / ຮ້ານສົ່ງ
+                  <?php echo htmlspecialchars(t('import_stock.supplier_label', 'ຊື່ຜູ້ສະໜອງ / ຮ້ານສົ່ງ')); ?>
                 </label>
-                <input type="text" name="supplier_name" id="supplier_name_input" class="form-control" placeholder="ປ້ອນຊື່ຜູ້ສະໜອງ (ຖ້າມີ)" style="height: 42px; border-radius: 8px;">
+                <input type="text" name="supplier_name" id="supplier_name_input" class="form-control" placeholder="<?php echo htmlspecialchars(t('import_stock.supplier_placeholder', 'ປ້ອນຊື່ຜູ້ສະໜອງ (ຖ້າມີ)')); ?>" style="height: 42px; border-radius: 8px;">
               </div>
             </div>
 
@@ -434,13 +449,13 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- Barcode / Search Box -->
               <div class="col-md-4 mb-3 mb-md-0">
                 <label class="font-weight-bold text-dark mb-1">
-                  ສະແກນບາໂຄ້ດ / ລະຫັດສິນຄ້າ <span class="text-danger">*</span>
+                  <?php echo htmlspecialchars(t('import_stock.scan_barcode_label', 'ສະແກນບາໂຄ້ດ / ລະຫັດສິນຄ້າ')); ?> <span class="text-danger">*</span>
                 </label>
                 <div class="input-group">
-                  <input type="text" id="direct_barcode_input" class="form-control" placeholder="ສະແກນບາໂຄ້ດ ຫຼື ປ້ອນລະຫັດ..." autocomplete="off" style="height: 42px; border-radius: 8px 0 0 8px; border: 1.5px solid #007bff;" oninput="onDirectBarcodeChange()" onkeydown="onDirectBarcodeKeyDown(event)">
+                  <input type="text" id="direct_barcode_input" class="form-control" placeholder="<?php echo htmlspecialchars(t('import_stock.scan_barcode_placeholder', 'ສະແກນບາໂຄ້ດ ຫຼື ປ້ອນລະຫັດ...')); ?>" autocomplete="off" style="height: 42px; border-radius: 8px 0 0 8px; border: 1.5px solid #007bff;" oninput="onDirectBarcodeChange()" onkeydown="onDirectBarcodeKeyDown(event)">
                   <div class="input-group-append">
-                    <button type="button" class="btn btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#productSelectModal" title="ເປີດປັອບອັບເລືອກສິນຄ້າ" style="height: 42px; border: 1.5px solid #007bff !important; border-radius: 0 8px 8px 0 !important; background-color: #eff6ff; color: #0056b3;">
-                      <i class="fas fa-search-plus mr-1"></i> ເລືອກສິນຄ້າ
+                    <button type="button" class="btn btn-outline-primary font-weight-bold" data-toggle="modal" data-target="#productSelectModal" title="<?php echo htmlspecialchars(t('import_stock.open_select_product_modal', 'ເປີດປັອບອັບເລືອກສິນຄ້າ')); ?>" style="height: 42px; border: 1.5px solid #007bff !important; border-radius: 0 8px 8px 0 !important; background-color: #eff6ff; color: #0056b3;">
+                      <i class="fas fa-search-plus mr-1"></i> <?php echo htmlspecialchars(t('import_stock.select_product_button', 'ເລືອກສິນຄ້າ')); ?>
                     </button>
                   </div>
                 </div>
@@ -449,29 +464,29 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- Quantity Input (Positioned directly next to Barcode Box) -->
               <div class="col-md-2 mb-3 mb-md-0">
                 <label class="font-weight-bold text-dark mb-1">
-                  ຈຳນວນ <span class="text-danger">*</span>
+                  <?php echo htmlspecialchars(t('import_stock.qty_label', 'ຈຳນວນ')); ?> <span class="text-danger">*</span>
                 </label>
                 <input type="number" id="direct_qty" class="form-control font-weight-bold border-primary text-center" min="1" value="1" style="height: 42px; border-radius: 8px; font-size: 1.1rem;" onkeydown="onQtyKeyDown(event)">
               </div>
 
               <!-- Unit Select -->
               <div class="col-md-2 mb-3 mb-md-0">
-                <label class="font-weight-bold text-dark mb-1">ຫົວໜ່ວຍ</label>
+                <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('import_stock.unit_label', 'ຫົວໜ່ວຍ')); ?></label>
                 <select id="direct_unit_key" class="form-control" style="height: 42px; border-radius: 8px;">
-                  <option value="base">ຫົວໜ່ວຍ</option>
+                  <option value="base"><?php echo htmlspecialchars(t('import_stock.unit_label', 'ຫົວໜ່ວຍ')); ?></option>
                 </select>
               </div>
 
               <!-- Expiry Date -->
               <div class="col-md-2 mb-3 mb-md-0">
-                <label class="font-weight-bold text-dark mb-1">ວັນໝົດອາຍຸ</label>
+                <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('import_stock.expiry_date_label', 'ວັນໝົດອາຍຸ')); ?></label>
                 <input type="date" id="direct_expiry_date" class="form-control" style="height: 42px; border-radius: 8px;">
               </div>
 
-              <!-- Add Item Button -->
+              <!-- Add Item Button (buy/sell price are edited inline in the items table below) -->
               <div class="col-md-2">
                 <button type="button" class="btn btn-primary font-weight-bold btn-block shadow-sm" style="height: 42px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="addCurrentItemToCart()">
-                  <i class="fas fa-plus-circle mr-1"></i> ເພີ່ມລາຍການ
+                  <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('import_stock.add_item_button', 'ເພີ່ມລາຍການ')); ?>
                 </button>
               </div>
             </div>
@@ -481,9 +496,9 @@ require_once __DIR__ . '/../../layouts/header.php';
               <div>
                 <span class="font-weight-bold text-dark d-block" id="direct_matched_name" style="font-size: 1rem;">-</span>
                 <small class="text-muted">
-                   ບາໂຄ້ດ: <span id="direct_matched_barcode" class="font-weight-bold text-primary mr-2">-</span>
-                   ລາຄາຊື້: <span id="direct_matched_bprice" class="font-weight-bold text-danger mr-2">0 ₭</span>
-                   ສະຕັອກປັດຈຸບັນ: <span id="direct_matched_stock" class="font-weight-bold text-success">0</span>
+                   <?php echo htmlspecialchars(t('import_stock.barcode_label', 'ບາໂຄ້ດ:')); ?> <span id="direct_matched_barcode" class="font-weight-bold text-primary mr-2">-</span>
+                   <?php echo htmlspecialchars(t('import_stock.bprice_label', 'ລາຄາຊື້:')); ?> <span id="direct_matched_bprice" class="font-weight-bold text-danger mr-2">0 ₭</span>
+                   <?php echo htmlspecialchars(t('import_stock.current_stock_label', 'ສະຕັອກປັດຈຸບັນ:')); ?> <span id="direct_matched_stock" class="font-weight-bold text-success">0</span>
                 </small>
               </div>
               <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetDirectSelection()"><i class="fas fa-times"></i></button>
@@ -494,20 +509,21 @@ require_once __DIR__ . '/../../layouts/header.php';
               <table class="table table-hover mb-0 align-middle">
                 <thead class="font-weight-bold">
                   <tr>
-                    <th class="text-center" style="width: 50px;">ລຳດັບ</th>
-                    <th>ຊື່ສິນຄ້າ</th>
-                    <th class="text-center" style="width: 160px;">ຈຳນວນຮັບເຂົ້າ</th>
-                    <th class="text-right" style="width: 160px;">ລາຄາຊື້</th>
-                    <th class="text-right" style="width: 180px;">ລວມ</th>
-                    <th class="text-center" style="width: 80px;">ຈັດການ</th>
+                    <th class="text-center" style="width: 50px;"><?php echo htmlspecialchars(t('import_stock.col_no', 'ລຳດັບ')); ?></th>
+                    <th><?php echo htmlspecialchars(t('import_stock.col_product_name', 'ຊື່ສິນຄ້າ')); ?></th>
+                    <th class="text-center" style="width: 160px;"><?php echo htmlspecialchars(t('import_stock.col_import_qty', 'ຈຳນວນຮັບເຂົ້າ')); ?></th>
+                    <th class="text-right" style="width: 150px;"><?php echo htmlspecialchars(t('import_stock.col_bprice', 'ລາຄາຊື້')); ?></th>
+                    <th class="text-right" style="width: 150px;"><?php echo htmlspecialchars(t('import_stock.col_sell_price', 'ລາຄາຂາຍ')); ?></th>
+                    <th class="text-right" style="width: 160px;"><?php echo htmlspecialchars(t('import_stock.col_total', 'ລວມ')); ?></th>
+                    <th class="text-center" style="width: 80px;"><?php echo htmlspecialchars(t('import_stock.col_actions', 'ຈັດການ')); ?></th>
                   </tr>
                 </thead>
                 <tbody id="cart_table_body">
                   <tr id="empty_cart_row">
-                    <td colspan="6" class="text-center text-muted py-5">
+                    <td colspan="7" class="text-center text-muted py-5">
                       <i class="fas fa-box-open fa-3x d-block mb-2 text-muted" style="opacity: 0.4;"></i>
-                      <span class="font-weight-bold">ຍັງບໍ່ມີລາຍການສິນຄ້າໃນໃບບິນ</span><br>
-                      <small>ກະລຸນາກະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າຮັບເຂົ້າ</small>
+                      <span class="font-weight-bold"><?php echo htmlspecialchars(t('import_stock.empty_cart_title', 'ຍັງບໍ່ມີລາຍການສິນຄ້າໃນໃບບິນ')); ?></span><br>
+                      <small><?php echo htmlspecialchars(t('import_stock.empty_cart_hint', 'ກະລຸນາກະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າຮັບເຂົ້າ')); ?></small>
                     </td>
                   </tr>
                 </tbody>
@@ -516,7 +532,7 @@ require_once __DIR__ . '/../../layouts/header.php';
               <!-- Table Pagination Bar: Displays when > 10 items -->
               <div id="cart_pagination_row" class="px-3 py-2 bg-light border-top d-none align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">
                 <div class="text-muted font-weight-bold" style="font-size: 0.88rem;">
-                  ສະແດງ <span id="cart_page_start" class="text-dark">1</span> - <span id="cart_page_end" class="text-dark">10</span> ຈາກທັງໝົດ <span id="cart_page_total" class="text-primary">0</span> ລາຍການ
+                  <?php echo htmlspecialchars(t('import_stock.showing_prefix', 'ສະແດງ')); ?> <span id="cart_page_start" class="text-dark">1</span> - <span id="cart_page_end" class="text-dark">10</span> <?php echo htmlspecialchars(t('import_stock.showing_from_total', 'ຈາກທັງໝົດ')); ?> <span id="cart_page_total" class="text-primary">0</span> <?php echo htmlspecialchars(t('import_stock.items_unit', 'ລາຍການ')); ?>
                 </div>
                 <div>
                   <ul class="pagination pagination-circle mb-0 justify-content-end" id="cartTablePagination">
@@ -528,10 +544,10 @@ require_once __DIR__ . '/../../layouts/header.php';
               <div class="card-footer bg-light border-top p-3 d-flex align-items-center justify-content-end" style="border-color: #e2e8f0 !important;">
                 <?php if (hasPermission('import_stock', 'add')): ?>
                   <button type="button" class="btn btn-primary font-weight-bold px-4 shadow-sm" style="height: 38px; border-radius: 6px; background: linear-gradient(135deg, #2c5aa0, #244886); border: none;" onclick="submitDirectImportBill()">
-                    <i class="fas fa-save mr-1.5" style="font-size: 1.1rem;"></i> ບັນທຶກສະຕັອກ
+                    <i class="fas fa-save mr-1.5" style="font-size: 1.1rem;"></i> <?php echo htmlspecialchars(t('import_stock.save_stock_button', 'ບັນທຶກສະຕັອກ')); ?>
                   </button>
                 <?php else: ?>
-                  <span class="badge badge-light text-muted" style="font-size: 0.9rem;">ເບິ່ງຢ່າງດຽວ</span>
+                  <span class="badge badge-light text-muted" style="font-size: 0.9rem;"><?php echo htmlspecialchars(t('import_stock.view_only', 'ເບິ່ງຢ່າງດຽວ')); ?></span>
                 <?php endif; ?>
               </div>
             </div>

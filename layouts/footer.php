@@ -9,7 +9,7 @@ if (!isset($base_path)) {
     <script src="<?php echo $base_path; ?>plugins/select2/js/select2.full.min.js"></script>
     <!-- Flatpickr Lao Datepicker JS -->
     <script src="<?php echo $base_path; ?>assets/js/flatpickr.min.js"></script>
-    
+
     <script>
       // Smart Preloader: Immediately cancel timer & hide preloader on fast page load
       function hidePreloader() {
@@ -23,6 +23,58 @@ if (!isset($base_path)) {
       hidePreloader();
       document.addEventListener('DOMContentLoaded', hidePreloader);
       window.addEventListener('load', hidePreloader);
+
+      // ===== KEEP THE KIP SYMBOL (U+20AD) ON THE SAME LINE AS ITS AMOUNT (every page) =====
+      // Currency prints all over as number_format(...) . ' K' with a normal, breakable space,
+      // so a narrow column can drop the symbol to its own line. Replace the whitespace between
+      // a digit and the kip sign with a non-breaking space, and keep doing it for content
+      // rendered later (POS cart, AJAX tables, count-up animations, modals).
+      (function() {
+          var KIP = '₭';
+          var NBSP = String.fromCharCode(160);
+          var KIP_RE = /(\d)\s+₭/g;
+          function fixKipInNode(node) {
+              var v = node.nodeValue;
+              if (!v || v.indexOf(KIP) === -1) return;
+              var next = v.replace(KIP_RE, '$1' + NBSP + KIP);
+              if (next !== v) node.nodeValue = next;
+          }
+          function walkAndFix(root) {
+              if (!root) return;
+              if (root.nodeType === 3) { fixKipInNode(root); return; }
+              if (root.nodeType !== 1) return;
+              var tag = root.tagName;
+              if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return;
+              var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+              var n;
+              while ((n = walker.nextNode())) fixKipInNode(n);
+          }
+          function boot() {
+              walkAndFix(document.body);
+              if (!('MutationObserver' in window) || !document.body) return;
+              var queued = false, pending = [];
+              var mo = new MutationObserver(function(muts) {
+                  for (var i = 0; i < muts.length; i++) {
+                      var m = muts[i];
+                      if (m.type === 'characterData') { pending.push(m.target); }
+                      else { for (var j = 0; j < m.addedNodes.length; j++) pending.push(m.addedNodes[j]); }
+                  }
+                  if (queued) return;
+                  queued = true;
+                  requestAnimationFrame(function() {
+                      queued = false;
+                      var batch = pending; pending = [];
+                      for (var k = 0; k < batch.length; k++) walkAndFix(batch[k]);
+                  });
+              });
+              mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+          }
+          if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', boot);
+          } else {
+              boot();
+          }
+      })();
 
       document.addEventListener('DOMContentLoaded', function() {
           // ===== SIDEBAR SMART SCROLL =====

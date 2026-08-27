@@ -146,7 +146,7 @@ $header_site_logo = $base_path . 'assets/img/logosystem/Wlaodev.jpg';
               <div></div><div></div><div></div><div></div>
               <div></div><div></div><div></div><div></div>
             </div>
-            <span class="preloader-text">ກຳລັງດຶງຂໍ້ມູນ...</span>
+            <span class="preloader-text"><?php echo htmlspecialchars(t('layout.loading', 'ກຳລັງດຶງຂໍ້ມູນ...')); ?></span>
         </div>
     </div>
     <script>

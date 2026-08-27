@@ -85,6 +85,7 @@ return [
     'products.gen_barcode_btn' => '生成',
     'products.field_unit' => '单位:',
     'products.unit_placeholder' => '例如：盒、个、瓶、杯、袋...',
+    'products.select_unit_placeholder' => '-- 选择单位 --',
     'products.field_qty' => '库存数量:',
     'products.field_qty_optional' => '(可选)',
     'products.field_bprice' => '进货价:',

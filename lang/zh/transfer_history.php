@@ -1,0 +1,72 @@
+<?php
+// pages/import_stock/transfer_history.php + components/history_*.php
+// strings - Chinese (Simplified)
+return [
+    'transfer_history.page_title' => '调货历史',
+    'transfer_history.page_subtitle' => '追踪并核查分店间的调货记录',
+    'transfer_history.new_transfer_btn' => '新调货单',
+    'transfer_history.msg_success_title' => '成功',
+    'transfer_history.msg_error_title' => '提示',
+
+    'transfer_history.from_date' => '起始日期：',
+    'transfer_history.to_date' => '结束日期：',
+    'transfer_history.from_store' => '调出分店：',
+    'transfer_history.to_store' => '调入分店：',
+    'transfer_history.all_opt' => '-- 全部 --',
+    'transfer_history.search_label' => '搜索单号/备注：',
+    'transfer_history.search_placeholder' => '调货单号、备注...',
+    'transfer_history.search_btn' => '搜索',
+    'transfer_history.clear_btn' => '清除',
+
+    'transfer_history.col_no' => '序号',
+    'transfer_history.col_code' => '调货单号',
+    'transfer_history.col_date' => '调货日期',
+    'transfer_history.col_creator' => '经办人',
+    'transfer_history.col_from_store' => '调出分店',
+    'transfer_history.col_to_store' => '调入分店',
+    'transfer_history.col_items' => '商品明细',
+    'transfer_history.col_total_qty' => '总数量',
+    'transfer_history.col_status' => '状态',
+    'transfer_history.col_view' => '查看',
+    'transfer_history.empty_state' => '未找到调货记录',
+    'transfer_history.view_detail_title' => '点击查看详情',
+    'transfer_history.items_unit' => '项',
+    'transfer_history.status_completed' => '已完成',
+    'transfer_history.status_cancelled' => '已取消',
+    'transfer_history.view_detail_btn_title' => '查看详情',
+
+    // Detail modal
+    'transfer_history.modal_title' => '调货单详情',
+    'transfer_history.modal_from_store' => '调出分店：',
+    'transfer_history.modal_to_store' => '调入分店：',
+    'transfer_history.modal_date' => '调货日期：',
+    'transfer_history.modal_creator' => '操作人：',
+    'transfer_history.modal_status' => '状态：',
+    'transfer_history.modal_items_heading' => '调货商品明细：',
+    'transfer_history.modal_col_product' => '商品名称',
+    'transfer_history.modal_col_barcode' => '条码',
+    'transfer_history.modal_col_qty' => '调货数量',
+    'transfer_history.modal_col_unit' => '单位',
+    'transfer_history.modal_notes_label' => '备注 (Notes)：',
+    'transfer_history.modal_close_btn' => '关闭',
+    'transfer_history.default_unit' => '件',
+
+    // JS
+    'transfer_history.js_error_title' => '错误',
+    'transfer_history.js_load_failed' => '无法加载数据',
+    'transfer_history.js_connection_error' => '连接时发生错误',
+    'transfer_history.js_cancel_confirm_title' => '确认取消调货单？',
+    'transfer_history.js_transfer_code_label' => '调货单号：',
+    'transfer_history.js_cancel_confirm_hint' => '系统将从调入分店扣回库存，并退回给调出分店。',
+    'transfer_history.js_confirm_cancel_btn' => '确认取消',
+    'transfer_history.js_close_btn' => '关闭',
+    'transfer_history.js_cancel_success' => '调货单取消成功！',
+    'transfer_history.js_generic_error' => '出错了！',
+
+    // Backend $message (transfer_history.php)
+    'transfer_history.err_not_found' => '系统中未找到此调货单！',
+    'transfer_history.err_already_cancelled' => '此调货单已被取消！',
+    'transfer_history.err_stock_used' => '无法取消调货单，因为调入分店的商品“%s”已被使用或售出（当前库存：%s，需扣回：%s）！',
+    'transfer_history.msg_cancel_success' => '调货单号 %s 已取消，库存已退回调出分店！',
+    'transfer_history.err_prefix' => '错误：',
+];

@@ -85,6 +85,7 @@ return [
     'products.gen_barcode_btn' => 'สร้าง',
     'products.field_unit' => 'หน่วย:',
     'products.unit_placeholder' => 'เช่น: กล่อง, ชิ้น, ขวด, แก้ว, ถุง...',
+    'products.select_unit_placeholder' => '-- เลือกหน่วยนับ --',
     'products.field_qty' => 'จำนวนสต็อก:',
     'products.field_qty_optional' => '(ถ้ามี)',
     'products.field_bprice' => 'ราคาซื้อ:',

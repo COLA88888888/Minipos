@@ -552,6 +552,10 @@ if (!hasPermission('dashboard')) {
         'layout.sub_branch_imports' => 'ສາຂາຍ່ອຍເພີ່ມສິນຄ້າເຂົ້າ',
         'layout.click_to_restock' => 'ກົດເພື່ອໄປໜ້ານຳເຂົ້າສິນຄ້າ',
         'layout.default_product' => 'ສິນຄ້າ',
+        'layout.logout' => 'ອອກຈາກລະບົບ',
+        'layout.logout_confirm_title' => 'ຢືນຢັນການອອກຈາກລະບົບ',
+        'layout.logout_confirm_text' => 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?',
+        'layout.cancel' => 'ຍົກເລີກ',
     ]); ?>;
 
     // I18N_ALL_LAYOUT: sidebar/navbar strings for EVERY supported language (not just the
@@ -564,11 +568,31 @@ if (!hasPermission('dashboard')) {
         }
         echo json_encode($allLayoutDict, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT);
     ?>;
+
+    // I18N_ALL_MERGED: every lang/*/*.php domain merged per language (same dict t() uses
+    // server-side), embedded once so the CURRENT iframe page's own already-rendered content can
+    // also be translated instantly client-side — no reload. Pages don't carry data-i18n
+    // attributes on their body content (only the shell does), so translateIframeContent() below
+    // works by reverse-matching each visible text node's current string back to its translation
+    // key in the outgoing language's dict, then swapping in the incoming language's value for
+    // that same key. Text that doesn't match any known dict value (product names, numbers,
+    // prices, anything sprintf-formatted with a %d already substituted in) is simply left alone.
+    var I18N_ALL_MERGED = <?php
+        $allMergedDict = [];
+        foreach (POS_SUPPORTED_LANGS as $lc) {
+            $allMergedDict[$lc] = loadLangDictionary($lc);
+        }
+        echo json_encode($allMergedDict, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT);
+    ?>;
     var POS_LANG_META_JS = <?php echo json_encode(POS_LANG_META, JSON_UNESCAPED_UNICODE | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
 
-    // Language flag switcher: repaints the sidebar/navbar chrome instantly (no reload), persists
-    // the choice server-side in the background, then refreshes only the iframe content so the
-    // current page's own server-rendered text picks up the new language too.
+    // Tracks the language the iframe's current page content was actually rendered in
+    // server-side, so a flag click knows which dict to reverse-match FROM.
+    var CURRENT_ACTIVE_LANG = '<?php echo getCurrentLang(); ?>';
+
+    // Language flag switcher: repaints the sidebar/navbar chrome AND the current iframe page's
+    // content instantly, client-side — no reload, no waiting on the network. The choice is still
+    // persisted server-side in the background so the next real navigation renders pre-translated.
     document.addEventListener('DOMContentLoaded', function() {
       function applyLangInstantly(lang) {
         var dict = I18N_ALL_LAYOUT[lang];
@@ -603,18 +627,139 @@ if (!hasPermission('dashboard')) {
         });
       }
 
+      var reverseMapCache = {};
+      function getReverseMap(fromLang) {
+        if (reverseMapCache[fromLang]) return reverseMapCache[fromLang];
+        var dict = I18N_ALL_MERGED[fromLang] || {};
+        var rev = {};
+        for (var key in dict) {
+          if (!Object.prototype.hasOwnProperty.call(dict, key)) continue;
+          var val = (dict[key] || '').trim();
+          if (val && !(val in rev)) rev[val] = key; // first key wins on a shared-text collision
+        }
+        reverseMapCache[fromLang] = rev;
+        return rev;
+      }
+
+      function translateIframeContent(fromLang, toLang) {
+        var frameEl = document.querySelector('iframe[name="frame"]');
+        if (!frameEl) return;
+        var frameDoc;
+        try {
+          frameDoc = frameEl.contentDocument || frameEl.contentWindow.document;
+        } catch (e) {
+          return; // cross-origin guard, shouldn't happen — the iframe is always same-origin
+        }
+        if (!frameDoc || !frameDoc.body) return;
+
+        var rev = getReverseMap(fromLang);
+        var toDict = I18N_ALL_MERGED[toLang] || {};
+
+        var walker = frameDoc.createTreeWalker(frameDoc.body, NodeFilter.SHOW_TEXT, {
+          acceptNode: function(node) {
+            var tag = node.parentNode && node.parentNode.tagName;
+            if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+        var node;
+        while ((node = walker.nextNode())) {
+          var trimmed = node.nodeValue.trim();
+          if (!trimmed) continue;
+          var key = rev[trimmed];
+          if (key && toDict[key]) {
+            var lead = node.nodeValue.match(/^\s*/)[0];
+            var trail = node.nodeValue.match(/\s*$/)[0];
+            node.nodeValue = lead + toDict[key] + trail;
+          }
+        }
+
+        ['placeholder', 'title'].forEach(function(attr) {
+          frameDoc.querySelectorAll('[' + attr + ']').forEach(function(el) {
+            var val = (el.getAttribute(attr) || '').trim();
+            var key = rev[val];
+            if (key && toDict[key]) el.setAttribute(attr, toDict[key]);
+          });
+        });
+
+        frameDoc.querySelectorAll('input[type="submit"], input[type="button"], input[type="reset"]').forEach(function(el) {
+          var val = (el.value || '').trim();
+          var key = rev[val];
+          if (key && toDict[key]) el.value = toDict[key];
+        });
+      }
+
+      // Re-point the iframe page's own JS i18n dictionaries (I18N_*, PROMO_I18N, …) at the
+      // incoming language, so a Swal/alert fired AFTER a flag switch — with no reload — speaks
+      // the new language too, not just the already-painted DOM. Every such object is a flat
+      // map keyed by the same "domain.key" strings t()/tjson() use, so we can find them by
+      // shape on the (same-origin) iframe window and swap each value from I18N_ALL_MERGED.
+      function retranslateIframeI18nObjects(toLang) {
+        var frameEl = document.querySelector('iframe[name="frame"]');
+        if (!frameEl) return;
+        var win;
+        try { win = frameEl.contentWindow; } catch (e) { return; }
+        if (!win) return;
+        var toDict = I18N_ALL_MERGED[toLang];
+        if (!toDict) return;
+        var props;
+        try { props = Object.keys(win); } catch (e) { return; }
+        // "domain.key" shape — the exact form t()/tjson() keys take.
+        var KEY_RE = /^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/;
+        var hasOwn = Object.prototype.hasOwnProperty;
+        props.forEach(function(prop) {
+          var obj;
+          try { obj = win[prop]; } catch (e) { return; }
+          // Plain dictionary only: object, not null, not an Array/DOM/function. Don't compare
+          // prototypes across realms (the iframe has its own Object.prototype) — the key
+          // heuristic below is strict enough on its own.
+          if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
+          if (typeof obj.nodeType === 'number') return; // DOM node
+          var oKeys;
+          try { oKeys = Object.keys(obj); } catch (e) { return; }
+          if (!oKeys.length || oKeys.length > 2000) return;
+          var isI18n = oKeys.some(function(k) {
+            return KEY_RE.test(k) && hasOwn.call(toDict, k);
+          });
+          if (!isI18n) return;
+          oKeys.forEach(function(k) {
+            if (hasOwn.call(toDict, k)) {
+              try { obj[k] = toDict[k]; } catch (e) {}
+            }
+          });
+        });
+      }
+
       document.querySelectorAll('.lang-flag-btn').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
           var lang = btn.getAttribute('data-lang');
-          if (!lang) return;
+          if (!lang || lang === CURRENT_ACTIVE_LANG) return;
+          var fromLang = CURRENT_ACTIVE_LANG;
 
-          // 1. Instant, client-side repaint of the persistent chrome — no waiting on the network.
+          // 1. Instant, client-side repaint of the persistent chrome.
           applyLangInstantly(lang);
 
-          // 2. Persist the choice server-side in the background — no reload. The current iframe
-          //    page's own PHP-rendered text keeps its language until the user next navigates,
-          //    at which point it's already rendered server-side in the new language.
+          // 2. Instant, client-side translation of the current iframe page's own content —
+          //    no reload, matching the shell's zero-network-wait feel.
+          translateIframeContent(fromLang, lang);
+
+          // 2b. Re-point that page's JS i18n dictionaries so its popups switch too.
+          retranslateIframeI18nObjects(lang);
+
+          // 2c. Notify the iframe page so it can redo anything the DOM walker can't reach —
+          //     e.g. redraw <canvas> charts whose labels are baked into the bitmap.
+          try {
+            var _frameForEvt = document.querySelector('iframe[name="frame"]');
+            if (_frameForEvt && _frameForEvt.contentWindow) {
+              _frameForEvt.contentWindow.dispatchEvent(new Event('pos:langchange'));
+            }
+          } catch (e) {}
+
+          CURRENT_ACTIVE_LANG = lang;
+
+          // 3. Persist the choice server-side in the background, purely so the NEXT real
+          //    navigation is already rendered in this language from the start.
           fetch('../lang/set_lang.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1723,14 +1868,14 @@ if (!hasPermission('dashboard')) {
 
   function confirmLogout() {
     Swal.fire({
-      title: '<span style="font-size:1.15rem; font-weight:700; color:#1e293b;">ຢືນຢັນການອອກຈາກລະບົບ</span>',
-      html: '<div style="font-size:0.90rem; color:#475569; font-weight:600; margin-top:4px;">ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?</div>',
+      title: '<span style="font-size:1.15rem; font-weight:700; color:#1e293b;">' + I18N_LAYOUT['layout.logout_confirm_title'] + '</span>',
+      html: '<div style="font-size:0.90rem; color:#475569; font-weight:600; margin-top:4px;">' + I18N_LAYOUT['layout.logout_confirm_text'] + '</div>',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: '<i class="fas fa-power-off mr-1"></i> ອອກຈາກລະບົບ',
-      cancelButtonText: 'ຍົກເລີກ',
+      confirmButtonText: '<i class="fas fa-power-off mr-1"></i> ' + I18N_LAYOUT['layout.logout'],
+      cancelButtonText: I18N_LAYOUT['layout.cancel'],
       heightAuto: false
     }).then(function(result) {
       if (result.isConfirmed) {
@@ -1859,6 +2004,58 @@ if (!hasPermission('dashboard')) {
       </div>
     </div>
   </div>
+
+<script>
+  // Keep the kip symbol (U+20AD) glued to its amount in the app shell too (low-stock alerts,
+  // transfer modals, JS-rendered notification rows). Mirrors the pass in layouts/footer.php;
+  // the shell doesn't include that file.
+  (function() {
+      var KIP = '₭';
+      var NBSP = String.fromCharCode(160);
+      var KIP_RE = /(\d)\s+₭/g;
+      function fixKipInNode(node) {
+          var v = node.nodeValue;
+          if (!v || v.indexOf(KIP) === -1) return;
+          var next = v.replace(KIP_RE, '$1' + NBSP + KIP);
+          if (next !== v) node.nodeValue = next;
+      }
+      function walkAndFix(root) {
+          if (!root) return;
+          if (root.nodeType === 3) { fixKipInNode(root); return; }
+          if (root.nodeType !== 1) return;
+          var tag = root.tagName;
+          if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') return;
+          var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+          var n;
+          while ((n = walker.nextNode())) fixKipInNode(n);
+      }
+      function boot() {
+          walkAndFix(document.body);
+          if (!('MutationObserver' in window) || !document.body) return;
+          var queued = false, pending = [];
+          var mo = new MutationObserver(function(muts) {
+              for (var i = 0; i < muts.length; i++) {
+                  var m = muts[i];
+                  if (m.type === 'characterData') { pending.push(m.target); }
+                  else { for (var j = 0; j < m.addedNodes.length; j++) pending.push(m.addedNodes[j]); }
+              }
+              if (queued) return;
+              queued = true;
+              requestAnimationFrame(function() {
+                  queued = false;
+                  var batch = pending; pending = [];
+                  for (var k = 0; k < batch.length; k++) walkAndFix(batch[k]);
+              });
+          });
+          mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+      }
+      if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', boot);
+      } else {
+          boot();
+      }
+  })();
+</script>
 
 </body>
 </html>

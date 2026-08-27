@@ -19,6 +19,7 @@
       'stock_transfer.empty_cart_hint' => 'ກະລຸນາສະແກນບາໂຄ້ດ ຫຼື ກົດປຸ່ມ "ເລືອກສິນຄ້າ" ເພື່ອເພີ່ມສິນຄ້າທີ່ຈະໂອນ',
       'stock_transfer.default_unit' => 'ອັນ',
       'stock_transfer.unit_label' => 'ຫົວໜ່ວຍ',
+      'stock_transfer.barcode_label' => 'ບາໂຄ້ດ:',
       'stock_transfer.err_select_target_store_title' => 'ກະລຸນາເລືອກສາຂາ',
       'stock_transfer.err_select_target_store_text' => 'ກະລຸນາເລືອກສາຂາປາຍທາງທີ່ຈະໂອນສິນຄ້າໄປຫາ!',
       'stock_transfer.err_no_items_title' => 'ບໍ່ມີລາຍການ',

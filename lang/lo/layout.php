@@ -71,4 +71,8 @@ return [
     'layout.sub_branch_imports' => 'ສາຂາຍ່ອຍເພີ່ມສິນຄ້າເຂົ້າ',
     'layout.click_to_restock' => 'ກົດເພື່ອໄປໜ້ານຳເຂົ້າສິນຄ້າ',
     'layout.default_product' => 'ສິນຄ້າ',
+    'layout.loading' => 'ກຳລັງດຶງຂໍ້ມູນ...',
+    'layout.logout_confirm_title' => 'ຢືນຢັນການອອກຈາກລະບົບ',
+    'layout.logout_confirm_text' => 'ທ່ານຕ້ອງການອອກຈາກລະບົບແທ້ຫຼືບໍ່?',
+    'layout.cancel' => 'ຍົກເລີກ',
 ];

@@ -71,4 +71,8 @@ return [
     'layout.sub_branch_imports' => 'Branches added new stock',
     'layout.click_to_restock' => 'Click to go to the import stock page',
     'layout.default_product' => 'Product',
+    'layout.loading' => 'Loading data...',
+    'layout.logout_confirm_title' => 'Confirm logout',
+    'layout.logout_confirm_text' => 'Are you sure you want to log out?',
+    'layout.cancel' => 'Cancel',
 ];

@@ -204,6 +204,14 @@ function filterGrid() {
     }
   });
 
-  $('#productGridEmpty').toggle(visibleCount === 0);
+  // Show the "ບໍ່ມີຂໍ້ມູນສິນຄ້າ" placeholder whenever the current category / search yields nothing
+  if (visibleCount === 0) {
+    $('#productGridEmpty').css('display', 'block');
+  } else {
+    $('#productGridEmpty').css('display', 'none');
+  }
 }
+
+// Run once on load so an empty default view (or a store with no products) shows the placeholder
+$(function() { filterGrid(); });
 </script>

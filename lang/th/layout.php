@@ -71,4 +71,8 @@ return [
     'layout.sub_branch_imports' => 'สาขาย่อยเพิ่มสินค้าเข้า',
     'layout.click_to_restock' => 'คลิกเพื่อไปหน้านำเข้าสินค้า',
     'layout.default_product' => 'สินค้า',
+    'layout.loading' => 'กำลังโหลดข้อมูล...',
+    'layout.logout_confirm_title' => 'ยืนยันการออกจากระบบ',
+    'layout.logout_confirm_text' => 'คุณต้องการออกจากระบบใช่หรือไม่?',
+    'layout.cancel' => 'ยกเลิก',
 ];

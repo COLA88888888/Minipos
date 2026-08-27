@@ -2,6 +2,21 @@
 // Component: JavaScript Logic for Import List (import_list.php)
 ?>
 <script>
+  var I18N_IMPORT_LIST = <?php echo tjson([
+      'import_list.default_unit' => 'ອັນ',
+      'import_list.js_no_items_in_bill' => 'ບໍ່ມີລາຍການສິນຄ້າໃນໃບບິນນີ້',
+      'import_list.js_cannot_edit_moved' => 'ບໍ່ສາມາດແກ້ໄຂໄດ້ (ສິນຄ້າເຄື່ອນໄຫວແລ້ວ)',
+      'import_list.js_edit' => 'ແກ້ໄຂ',
+      'import_list.js_delete' => 'ລົບ',
+      'import_list.js_cancel_import_title' => 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າ?',
+      'import_list.js_cancel_import_text' => 'ທ່ານຕ້ອງການຍົກເລີກໃບບິນທີ [%s] ສິນຄ້າ (%s) ແທ້ບໍ? ສະຕັອກຈະຖືກປັບຫຼຸດລົງຄືນ!',
+      'import_list.js_btn_delete_bill' => 'ລົບບິນນີ້',
+      'import_list.js_delete_bill_title' => 'ລົບໃບບິນຮັບເຂົ້າສິນຄ້າ?',
+      'import_list.js_delete_bill_text' => 'ທ່ານຕ້ອງການລົບໃບບິນທີ [%s] ທັງໝົດແທ້ບໍ? ສິນຄ້າທັງໝົດໃນໃບບິນນີ້ຈະຖືກປັບຫຼຸດສະຕັອກຄືນ!',
+      'import_list.modal_btn_cancel' => 'ຍົກເລີກ',
+      'import_list.js_export_name' => 'ລາຍການສິນຄ້າຮັບເຂົ້າ',
+  ]); ?>;
+
   var PRODUCTS_LIST = <?php echo json_encode($products); ?>;
   var PRODUCTS_UNITS = <?php echo json_encode($product_units_map); ?>;
   var BILL_ITEMS_MAP = <?php echo json_encode($billItemsMap); ?>;
@@ -221,7 +236,7 @@
           <x:ExcelWorkbook>
             <x:ExcelWorksheets>
               <x:ExcelWorksheet>
-                <x:Name>ລາຍການສິນຄ້າຮັບເຂົ້າ</x:Name>
+                <x:Name>${I18N_IMPORT_LIST['import_list.js_export_name']}</x:Name>
                 <x:WorksheetOptions>
                   <x:DisplayGridlines/>
                 </x:WorksheetOptions>
@@ -277,7 +292,7 @@
 
     var a = document.createElement('a');
     a.href = url;
-    a.download = 'ລາຍການສິນຄ້າຮັບເຂົ້າ_' + new Date().toISOString().slice(0, 10) + '.xls';
+    a.download = I18N_IMPORT_LIST['import_list.js_export_name'] + '_' + new Date().toISOString().slice(0, 10) + '.xls';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -296,17 +311,17 @@
     tbody.empty();
 
     if (items.length === 0) {
-      tbody.html('<tr><td colspan="6" class="text-center text-muted py-4">ບໍ່ມີລາຍການສິນຄ້າໃນໃບບິນນີ້</td></tr>');
+      tbody.html('<tr><td colspan="6" class="text-center text-muted py-4">' + I18N_IMPORT_LIST['import_list.js_no_items_in_bill'] + '</td></tr>');
     } else {
       items.forEach(function(item, idx) {
         var actionCol = '';
         if (parseInt(item.has_movement) === 1) {
-          actionCol = '<i class="fas fa-lock text-muted" title="ບໍ່ສາມາດແກ້ໄຂໄດ້ (ສິນຄ້າເຄື່ອນໄຫວແລ້ວ)"></i>';
+          actionCol = '<i class="fas fa-lock text-muted" title="' + I18N_IMPORT_LIST['import_list.js_cannot_edit_moved'] + '"></i>';
         } else {
           var safeJson = JSON.stringify(item).replace(/'/g, "&apos;");
           actionCol = `
-            <button class="btn btn-sm btn-outline-warning rounded-circle px-2 py-1 mr-1 btn-edit-import-detail" data-invoice="${invoiceNo}" data-json='${safeJson}' title="ແກ້ໄຂ"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-sm btn-outline-danger rounded-circle px-2 py-1 btn-delete-import-detail" data-id="${item.import_detail_id}" data-invoice="${invoiceNo}" data-name="${escapeHtml(item.product_name)}" title="ລົບ"><i class="fas fa-trash"></i></button>
+            <button class="btn btn-sm btn-outline-warning rounded-circle px-2 py-1 mr-1 btn-edit-import-detail" data-invoice="${invoiceNo}" data-json='${safeJson}' title="${I18N_IMPORT_LIST['import_list.js_edit']}"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline-danger rounded-circle px-2 py-1 btn-delete-import-detail" data-id="${item.import_detail_id}" data-invoice="${invoiceNo}" data-name="${escapeHtml(item.product_name)}" title="${I18N_IMPORT_LIST['import_list.js_delete']}"><i class="fas fa-trash"></i></button>
           `;
         }
 
@@ -350,7 +365,7 @@
     var unitSelect = $('#edit_unit_key');
     unitSelect.empty();
 
-    var baseUnit = row.base_unit || 'ອັນ';
+    var baseUnit = row.base_unit || I18N_IMPORT_LIST['import_list.default_unit'];
     unitSelect.append(`<option value="base">${escapeHtml(baseUnit)} (1)</option>`);
 
     var productId = row.product_id;
@@ -366,14 +381,14 @@
 
   function confirmDeleteImport(importDetailId, invoiceNumber, productName) {
     Swal.fire({
-      title: 'ຍົກເລີກການຮັບສິນຄ້າເຂົ້າ?',
-      text: "ທ່ານຕ້ອງການຍົກເລີກໃບບິນທີ [" + invoiceNumber + "] ສິນຄ້າ (" + productName + ") ແທ້ບໍ? ສະຕັອກຈະຖືກປັບຫຼຸດລົງຄືນ!",
+      title: I18N_IMPORT_LIST['import_list.js_cancel_import_title'],
+      text: I18N_IMPORT_LIST['import_list.js_cancel_import_text'].replace('%s', invoiceNumber).replace('%s', productName),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'ລົບບິນນີ້',
-      cancelButtonText: 'ຍົກເລີກ'
+      confirmButtonText: I18N_IMPORT_LIST['import_list.js_btn_delete_bill'],
+      cancelButtonText: I18N_IMPORT_LIST['import_list.modal_btn_cancel']
     }).then((result) => {
       if (result.isConfirmed) {
         var form = document.createElement('form');
@@ -400,14 +415,14 @@
 
   function confirmDeleteMasterBill(importId, invoiceNumber) {
     Swal.fire({
-      title: 'ລົບໃບບິນຮັບເຂົ້າສິນຄ້າ?',
-      text: "ທ່ານຕ້ອງການລົບໃບບິນທີ [" + invoiceNumber + "] ທັງໝົດແທ້ບໍ? ສິນຄ້າທັງໝົດໃນໃບບິນນີ້ຈະຖືກປັບຫຼຸດສະຕັອກຄືນ!",
+      title: I18N_IMPORT_LIST['import_list.js_delete_bill_title'],
+      text: I18N_IMPORT_LIST['import_list.js_delete_bill_text'].replace('%s', invoiceNumber),
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ef4444',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'ລົບບິນນີ້',
-      cancelButtonText: 'ຍົກເລີກ'
+      confirmButtonText: I18N_IMPORT_LIST['import_list.js_btn_delete_bill'],
+      cancelButtonText: I18N_IMPORT_LIST['import_list.modal_btn_cancel']
     }).then((result) => {
       if (result.isConfirmed) {
         var form = document.createElement('form');
