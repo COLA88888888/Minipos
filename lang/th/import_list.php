@@ -2,6 +2,7 @@
 // pages/import_stock/import_list.php
 // strings - Thai
 return [
+    'import_list.grand_total' => 'รวมทั้งหมด:',
     'import_list.page_title' => 'รายการสินค้ารับเข้า',
     'import_list.import_stock_btn' => 'รับสินค้าเข้า',
     'import_list.err_has_movement' => 'ไม่สามารถลบ/ยกเลิกใบบิลนี้ได้ เนื่องจากสินค้านี้มีการเคลื่อนไหวหรือถูกขายไปแล้ว!',

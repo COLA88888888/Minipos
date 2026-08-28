@@ -504,9 +504,10 @@ require_once __DIR__ . '/../../layouts/header.php';
               <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetDirectSelection()"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- LIVE IMPORT ITEMS TABLE (ຕາຕະລາງລາຍການຮັບເຂົ້າ ໃນໜ້າຈໍ) -->
-            <div class="table-responsive border rounded mb-3 shadow-sm" style="border-radius: 12px; overflow: hidden; background-color: #ffffff;">
-              <table class="table table-hover mb-0 align-middle">
+            <!-- LIVE IMPORT ITEMS TABLE (ຕາຕະລາງລາຍການຮັບເຂົ້າ ໃນໜ້າຈໍ) — single-row rows, scrolls sideways on mobile -->
+            <div class="border rounded mb-3 shadow-sm" style="border-radius: 12px; overflow: hidden; background-color: #ffffff;">
+              <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+              <table class="table table-hover mb-0 align-middle text-nowrap" style="min-width: 720px;">
                 <thead class="font-weight-bold">
                   <tr>
                     <th class="text-center" style="width: 50px;"><?php echo htmlspecialchars(t('import_stock.col_no', 'ລຳດັບ')); ?></th>
@@ -528,6 +529,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                   </tr>
                 </tbody>
               </table>
+              </div>
 
               <!-- Table Pagination Bar: Displays when > 10 items -->
               <div id="cart_pagination_row" class="px-3 py-2 bg-light border-top d-none align-items-center justify-content-between" style="border-color: #cbd5e1 !important;">

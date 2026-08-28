@@ -18,6 +18,7 @@ return [
     'products.col_name' => '商品名称',
     'products.col_bprice' => '进货价',
     'products.col_price' => '销售价',
+    'products.grand_total' => '合计：',
     'products.col_qty' => '库存',
     'products.col_manage' => '操作',
     'products.empty_state' => '暂无商品数据',

@@ -2,6 +2,7 @@
 // pages/import_stock/import_list.php
 // strings - Lao baseline (original text)
 return [
+    'import_list.grand_total' => 'ລວມທັງໝົດ:',
     'import_list.page_title' => 'ລາຍການສິນຄ້າຮັບເຂົ້າ',
     'import_list.import_stock_btn' => 'ນຳເຂົ້າສິນຄ້າ',
     'import_list.err_has_movement' => 'ບໍ່ສາມາດລົບ/ຍົກເລີກໃບບິນນີ້ໄດ້ ເນື່ອງຈາກສິນຄ້ານີ້ມີການເຄື່ອນໄຫວ ຫຼື ຖືກຂາຍອອກໄປແລ້ວ!',

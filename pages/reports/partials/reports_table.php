@@ -159,6 +159,9 @@
                     <button type="button" class="btn btn-sm btn-light border shadow-sm text-info" onclick="printBill('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="<?php echo htmlspecialchars(t('reports.print_bill_title', 'ພິມໃບບິນ')); ?>" style="width: 34px; height: 34px; padding: 0; font-size: 1.05rem;">
                       <i class="fas fa-print"></i>
                     </button>
+                    <button type="button" class="btn btn-sm btn-light border shadow-sm text-success" onclick="printDeliveryNote('<?php echo htmlspecialchars($row['bill_no']); ?>')" title="<?php echo htmlspecialchars(t('reports.print_delivery_note_title', 'ພິມບິນສົ່ງເຄື່ອງ')); ?>" style="width: 34px; height: 34px; padding: 0; font-size: 1.05rem;">
+                      <i class="fas fa-truck"></i>
+                    </button>
                     <?php
                       $canDeleteBill = hasPermission('delete_bills') || ($_SESSION['status'] ?? '') === 'ຜູ້ບໍລິຫານ';
                       if (($row['status'] ?? 'SUCCESS') !== 'CANCEL' && $canDeleteBill):

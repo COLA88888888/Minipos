@@ -2,6 +2,7 @@
 // pages/import_stock/import_list.php
 // strings - English
 return [
+    'import_list.grand_total' => 'Grand Total:',
     'import_list.page_title' => 'Received Stock List',
     'import_list.import_stock_btn' => 'Receive Stock',
     'import_list.err_has_movement' => 'This entry cannot be deleted/cancelled because this product already has movement or has been sold!',

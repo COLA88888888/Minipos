@@ -83,7 +83,8 @@ $whereClause = implode(" AND ", $where);
 // ຕົ້ນທຶນ = ເງິນທີ່ນຳສິນຄ້າເຂົ້າສາຂາ (ຈາກ imports.total_cost) ໃນຊ່ວງວັນທີ/ສາຂາທີ່ເລືອກ — ນັບທັງສິນຄ້າທີ່ຊື້ເຂົ້າໂດຍກົງ
 // ແລະ ສິນຄ້າທີ່ໂອນມາຈາກສາຂາອື່ນ (stock_transfer.php ຈະສ້າງແຖວ imports ໃຫ້ສາຂາປາຍທາງອັດຕະໂນມັດ, ເບິ່ງ execute_transfer)
 $total_sales  = 0.00;
-$total_cost   = 0.00;
+$total_cost   = 0.00;   // ຕົ້ນທຶນນຳເຂົ້າສິນຄ້າ (imports.total_cost) — ປະໄວ້ໃຫ້ຮູ້
+$cogs         = 0.00;   // ຕົ້ນທຶນການຊື້ສິນຄ້າ = ຕົ້ນທຶນຂອງລາຍການທີ່ຂາຍອອກຈິງ (SUM save_qty * cost_price)
 $total_profit = 0.00;
 $profit_pct   = 0.00;
 
@@ -108,8 +109,22 @@ try {
     $stmtCost->execute($importParams);
     $total_cost = floatval($stmtCost->fetchColumn() ?? 0);
 
+    // ຕົ້ນທຶນການຊື້ສິນຄ້າ (COGS) = ຕົ້ນທຶນຂອງລາຍການສິນຄ້າທີ່ຂາຍອອກຈິງ ຈາກ tbsale_save_detail
+    // (save_qty ຄູນ cost_price ຕໍ່ຫົວໜ່ວຍທີ່ຂາຍ — ຄືກັບທີ່ພ້ອມຄິດຕອນ checkout ໃນ pos_backend.php)
+    try {
+        $stmtCogs = $pdo->prepare("
+            SELECT COALESCE(SUM(d.save_qty * d.cost_price), 0)
+            FROM tbsale_save_detail d
+            INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+            WHERE {$whereClause}
+        ");
+        $stmtCogs->execute($params);
+        $cogs = floatval($stmtCogs->fetchColumn() ?? 0);
+    } catch (Exception $e) { $cogs = 0.00; }
+
     // ຖ້າຍັງບໍ່ມີຍອດຂາຍເລີຍໃນຊ່ວງນີ້ ໃຫ້ກຳໄລເປັນ 0 (ບໍ່ໃຫ້ເປັນຄ່າລົບ) — ຄ່າລົບຈິງໆ (ຂາຍໄດ້ແຕ່ຕົ້ນທຶນສູງກວ່າ) ຍັງສະແດງໄດ້ຕາມປົກກະຕິ
-    $total_profit = ($total_sales > 0) ? ($total_sales - $total_cost) : 0.00;
+    // ກຳໄລ = ຍອດຂາຍ - ຕົ້ນທຶນການຊື້ສິນຄ້າ (COGS), ບໍ່ແມ່ນ - ຕົ້ນທຶນນຳເຂົ້າທັງໝົດ
+    $total_profit = ($total_sales > 0) ? ($total_sales - $cogs) : 0.00;
     $profit_pct = ($total_sales > 0) ? round(($total_profit / $total_sales) * 100, 1) : 0.0;
 } catch (Exception $e) {}
 
@@ -140,22 +155,16 @@ try {
         $monthly_sales[$m] = floatval($mRow['sales']);
     }
 
-    // ຕົ້ນທຶນລາຍເດືອນ = ເງິນນຳເຂົ້າສິນຄ້າຕົວຈິງໃນເດືອນນັ້ນ (ຈາກ imports, ນັບທັງໂອນລະຫວ່າງສາຂານຳ)
-    $monthlyImportWhere = ["YEAR(i.import_date) = :imp_yr"];
-    $monthlyImportParams = [':imp_yr' => $selected_year];
-    if ($selected_store > 0) {
-        $monthlyImportWhere[] = "i.store_id = :imp_store_id";
-        $monthlyImportParams[':imp_store_id'] = $selected_store;
-    }
-    $monthlyImportWhereClause = implode(" AND ", $monthlyImportWhere);
-
+    // ຕົ້ນທຶນລາຍເດືອນ = ຕົ້ນທຶນຍອດຂາຍ (COGS) ຂອງລາຍການທີ່ຂາຍອອກໃນເດືອນນັ້ນ ຈາກ tbsale_save_detail
+    // ເພື່ອໃຫ້ກາຟ "ກຳໄລ" = ຍອດຂາຍ - ຕົ້ນທຶນຍອດຂາຍ ກົງກັບບັອກສະຫຼຸບຂ້າງເທິງ
     $stmtMonthlyCost = $pdo->prepare("
-        SELECT MONTH(i.import_date) AS m, COALESCE(SUM(i.total_cost), 0) AS cost
-        FROM imports i
-        WHERE {$monthlyImportWhereClause}
-        GROUP BY MONTH(i.import_date)
+        SELECT MONTH(s.sale_date) AS m, COALESCE(SUM(d.save_qty * d.cost_price), 0) AS cost
+        FROM tbsale_save_detail d
+        INNER JOIN tbsale_save s ON d.save_bill = s.sale_save_bill
+        WHERE {$monthlyWhereClause}
+        GROUP BY MONTH(s.sale_date)
     ");
-    $stmtMonthlyCost->execute($monthlyImportParams);
+    $stmtMonthlyCost->execute($monthlyParams);
     while ($mcRow = $stmtMonthlyCost->fetch(PDO::FETCH_ASSOC)) {
         $m = (int)$mcRow['m'];
         $monthly_cost[$m] = floatval($mcRow['cost']);
@@ -316,14 +325,14 @@ require_once __DIR__ . '/../layouts/header.php';
     </form>
   </div>
 
-  <!-- Row 1: 4 Key Metrics Cards (Modern Gradient & Animated CountUp) -->
+  <!-- Row 1: 5 Key Metrics Cards (Modern Gradient & Animated CountUp) -->
   <div class="row mb-4">
     <!-- Card 1: Total Sales -->
-    <div class="col-lg-3 col-md-6 col-6 mb-3 mb-lg-0">
+    <div class="col-lg col-md-4 col-6 mb-3 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_sales', 'ຍອດຂາຍທັງໝົດ')); ?></span>
+            <span class="text-white font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_sales', 'ຍອດຂາຍທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-cash-register text-white metric-icon"></i>
             </div>
@@ -336,11 +345,11 @@ require_once __DIR__ . '/../layouts/header.php';
     </div>
 
     <!-- Card 2: Total Cost -->
-    <div class="col-lg-3 col-md-6 col-6 mb-3 mb-lg-0">
+    <div class="col-lg col-md-4 col-6 mb-3 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_cost', 'ຕົ້ນທຶນທັງໝົດ')); ?></span>
+            <span class="text-white font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_cost', 'ຕົ້ນທຶນສິນຄ້າທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-boxes text-white metric-icon"></i>
             </div>
@@ -352,12 +361,29 @@ require_once __DIR__ . '/../layouts/header.php';
       </div>
     </div>
 
-    <!-- Card 3: Total Profit -->
-    <div class="col-lg-3 col-md-6 col-6 mb-3 mb-lg-0">
+    <!-- Card 3: Cost of Goods Sold — ຕົ້ນທຶນການຊື້ສິນຄ້າ (ຕົ້ນທຶນຂອງລາຍການທີ່ຂາຍອອກຈິງ) -->
+    <div class="col-lg col-md-4 col-6 mb-3 mb-lg-0">
+      <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: #ffffff;">
+        <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
+          <div class="d-flex justify-content-between align-items-start mb-1.5">
+            <span class="text-white font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_cogs', 'ຕົ້ນທຶນການຂາຍ')); ?></span>
+            <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
+              <i class="fas fa-shopping-cart text-white metric-icon"></i>
+            </div>
+          </div>
+          <h4 class="font-weight-bold text-white mb-0" style="font-family: sans-serif; word-break: break-word; white-space: normal; line-height: 1.2;">
+            <span class="metric-num counter-num" data-target="<?php echo (float)$cogs; ?>" data-decimals="0">0</span> <small class="metric-currency">₭</small>
+          </h4>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4: Total Profit -->
+    <div class="col-lg col-md-4 col-6 mb-3 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #10b981 0%, #047857 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_profit', 'ກຳໄລທັງໝົດ')); ?></span>
+            <span class="text-white font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_total_profit', 'ກຳໄລທັງໝົດ')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-chart-line text-white metric-icon"></i>
             </div>
@@ -369,12 +395,12 @@ require_once __DIR__ . '/../layouts/header.php';
       </div>
     </div>
 
-    <!-- Card 4: Profit Margin % -->
-    <div class="col-lg-3 col-md-6 col-6 mb-3 mb-lg-0">
+    <!-- Card 5: Profit Margin % -->
+    <div class="col-lg col-md-4 col-6 mb-3 mb-lg-0">
       <div class="card border-0 shadow-sm h-100" style="border-radius: 14px; background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); color: #ffffff;">
         <div class="card-body p-3 p-lg-3.5 position-relative overflow-hidden">
           <div class="d-flex justify-content-between align-items-start mb-1.5">
-            <span class="text-white-50 font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_profit_pct', 'ກຳໄລ %')); ?></span>
+            <span class="text-white font-weight-bold metric-title"><?php echo htmlspecialchars(t('home.card_profit_pct', 'ກຳໄລ %')); ?></span>
             <div class="rounded-circle d-flex align-items-center justify-content-center metric-icon-box" style="background: rgba(255,255,255,0.22);">
               <i class="fas fa-percentage text-white metric-icon"></i>
             </div>

@@ -1,4 +1,15 @@
 <script>
+// Show the customer's phone on the receipt only when there is one
+function setReceiptCustomerPhone(phone) {
+  phone = (phone || '').toString().trim();
+  if (phone) {
+    $('#rc_customer_phone').text(phone);
+    $('#rc_customer_phone_row').attr('style', 'color:#000;font-weight:600;display:flex;').show();
+  } else {
+    $('#rc_customer_phone_row').attr('style', 'display:none !important;').hide();
+  }
+}
+
 // ==========================================
 // REAL-TIME CROSS-WINDOW STOCK BROADCAST SYNC
 // ==========================================
@@ -394,7 +405,8 @@ function processCheckout() {
     bank_account_id: activeBankId,
     bank_name:       activeBankName,
     customer_id:     selectedCustomer ? selectedCustomer.customer_id : null,
-    customer_name:   selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ'
+    customer_name:   selectedCustomer ? selectedCustomer.customer_name : 'ລູກຄ້າທົ່ວໄປ',
+    customer_phone:  selectedCustomer ? (selectedCustomer.phone || '') : ''
   };
 
   $.ajax({
@@ -463,6 +475,15 @@ function handleOnlineCheckoutReceiptUI(res) {
   $('#rc_date').text(res.date);
   $('#rc_cashier').text(cashierName);
   $('#rc_customer').text(res.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+  setReceiptCustomerPhone(res.customer_phone || (selectedCustomer && selectedCustomer.phone) || '');
+  window.__deliveryNoteData = {
+    bill:     res.invoice_number,
+    date:     res.date,
+    customer: res.customer_name || 'ລູກຄ້າທົ່ວໄປ',
+    phone:    res.customer_phone || (selectedCustomer && selectedCustomer.phone) || '',
+    address:  (selectedCustomer && (selectedCustomer.address || selectedCustomer.notes)) || '',
+    items:    (res.details || []).map(function(d) { return { name: d.proname || '', qty: d.qty, unit: d.unit_name || '' }; })
+  };
   $('#rc_subtotal').text(res.subtotal.toLocaleString() + ' ₭');
   $('#rc_discount').text(res.discount_amount.toLocaleString() + ' ₭');
 
@@ -512,6 +533,16 @@ function handleOnlineCheckoutReceiptUI(res) {
   $('#rc_total').text(res.total_amount.toLocaleString() + ' ₭');
   $('#rc_change').text(res.change.toLocaleString() + ' ₭');
 
+  // Customer loyalty points — show only the points earned on this sale (running balance
+  // is not printed on the receipt; it's visible on the Customers page instead).
+  var ptsEarned = parseInt(res.points_earned) || 0;
+  if (ptsEarned > 0) {
+    $('#rc_points_earned').text(ptsEarned.toLocaleString());
+    $('#rc_points_row').css('display', 'flex');
+  } else {
+    $('#rc_points_row').hide();
+  }
+
   var cashAmt = parseFloat(res.cash_received) || 0;
   var qrAmt   = parseFloat(res.qr_received) || 0;
 
@@ -540,8 +571,8 @@ function handleOnlineCheckoutReceiptUI(res) {
       $('#rc_bank_qr_img').hide();
     }
     var labelBank = bName ? bName : '';
-    $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
-    $('#rc_bank_acc_lbl').hide();
+    var scanTransferLbl = <?php echo json_encode(t('pos.receipt_scan_transfer', 'ສະແກນ QR ໂອນຊຳລະ'), JSON_UNESCAPED_UNICODE); ?>;
+    $('#rc_bank_name_lbl').text(labelBank ? scanTransferLbl + ' (' + labelBank + ')' : scanTransferLbl);
     $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
   } else {
     $('.receipt-qr-box').attr('style', 'display:none!important;').hide();
@@ -616,8 +647,8 @@ function printReceipt() {
     <link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">
     <style>
       @page { size: 80mm auto; margin: 0mm; }
-      * { box-sizing: border-box; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif !important; color: #000 !important; }
-      html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 12px; line-height: 1.4; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      * { box-sizing: border-box; font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif !important; color: #000 !important; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+      html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; color: #000 !important; font-size: 13px; font-weight: 600; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .text-center { text-align: center !important; } .text-right { text-align: right !important; }
       .font-weight-bold { font-weight: 700 !important; color: #000 !important; } 
       .small { font-size: 11.5px !important; color: #000 !important; font-weight: 600 !important; }
@@ -629,7 +660,7 @@ function printReceipt() {
       .receipt-header-address, .receipt-header-tel { font-size: 12px !important; font-weight: 600 !important; color: #000 !important; line-height: 1.4 !important; }
       .receipt-footer-msg { font-size: 12.5px !important; font-weight: 700 !important; color: #000 !important; border-top: 1px dashed #000 !important; margin-top: 10px !important; padding-top: 8px !important; text-align: center !important; }
       img.receipt-logo { max-width:80px!important; max-height:80px!important; height:auto!important; display:block!important; margin:10px auto 2px auto!important; object-fit:contain!important; }
-      img.receipt-qr-img { max-width:100px!important; max-height:100px!important; height:auto!important; display:block!important; margin:6px auto 2px auto!important; object-fit:contain!important; }
+      img.receipt-qr-img { max-width:130px!important; max-height:130px!important; height:auto!important; display:block!important; margin:6px auto 2px auto!important; object-fit:contain!important; image-rendering:-webkit-optimize-contrast; image-rendering:crisp-edges; image-rendering:pixelated; }
       table { width:100%; border-collapse:collapse; margin:4px 0; font-size:11.5px; color: #000 !important; }
       td,th { padding:3px 0; vertical-align:top; color: #000 !important; font-weight: 600 !important; }
       th { font-weight: 700 !important; }
@@ -678,6 +709,91 @@ function printReceipt() {
     } else {
       setTimeout(doTriggerPOSPrint, 600);
     }
+  }
+}
+
+// ============================
+// DELIVERY NOTE (ບິນສົ່ງເຄື່ອງ) — pulls sender (store) + recipient (customer) + items from the sale
+// ============================
+function printDeliveryNote() {
+  var d = window.__deliveryNoteData;
+  if (!d) {
+    Swal.fire({ icon: 'info', title: '<?php echo htmlspecialchars(t('pos.delivery_note', 'ບິນສົ່ງເຄື່ອງ'), ENT_QUOTES); ?>', text: '-', timer: 1200, showConfirmButton: false });
+    return;
+  }
+
+  $('#dn_bill').text(d.bill || '-');
+  $('#dn_date').text(d.date || '-');
+  $('#dn_customer').text(d.customer || '-');
+
+  if ((d.phone || '').toString().trim()) {
+    $('#dn_phone').text(d.phone);
+    $('#dn_phone_row').css('display', 'flex');
+  } else {
+    $('#dn_phone_row').css('display', 'none');
+  }
+  if ((d.address || '').toString().trim()) {
+    $('#dn_address').text(d.address);
+    $('#dn_address_row').css('display', 'block');
+  } else {
+    $('#dn_address_row').css('display', 'none');
+  }
+
+  var rows = '';
+  (d.items || []).forEach(function(it) {
+    var unit = it.unit ? (' ' + it.unit) : '';
+    rows += '<tr>' +
+      '<td style="padding:2px 0;vertical-align:top;">' + (it.name || '') + '</td>' +
+      '<td style="text-align:right;padding:2px 0;vertical-align:top;">' + (parseFloat(it.qty) || 0) + unit + '</td>' +
+    '</tr>';
+  });
+  $('#dn_items').html(rows || '<tr><td colspan="2" style="text-align:center;padding:6px 0;">-</td></tr>');
+
+  var printContent = document.getElementById('deliveryNoteArea').innerHTML;
+  var iframe = document.getElementById('posPrintIframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'posPrintIframe';
+    iframe.style.cssText = 'position:fixed;right:-9999px;bottom:-9999px;width:300px;height:300px;border:none;opacity:0;pointer-events:none;';
+    document.body.appendChild(iframe);
+  }
+  var doc = iframe.contentWindow || iframe.contentDocument;
+  if (doc.document) doc = doc.document;
+
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
+    + '<title><?php echo htmlspecialchars(t('pos.delivery_note', 'ບິນສົ່ງເຄື່ອງ'), ENT_QUOTES); ?></title>'
+    + '<link rel="stylesheet" href="<?php echo $base_path; ?>assets/css/local-font.css">'
+    + '<link rel="stylesheet" href="<?php echo $base_path; ?>plugins/fontawesome-free/css/all.min.css">'
+    + '<style>'
+    + '@page { size: 80mm auto; margin: 0mm; }'
+    + '* { box-sizing: border-box; font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', Arial, sans-serif !important; color: #000 !important; -webkit-font-smoothing: antialiased; }'
+    + 'html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; font-size: 13px; font-weight: 600; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
+    + 'table { width: 100%; border-collapse: collapse; }'
+    + 'td, th { color: #000 !important; }'
+    + 'img { max-width: 70px; max-height: 70px; object-fit: contain; display: block; margin: 6px auto 2px auto; }'
+    + '.fas, .far, .fa { font-family: "Font Awesome 6 Free" !important; }'
+    + '[style*="display: none"], [style*="display:none"] { display: none !important; }'
+    + '@media print { html, body { width: 100%; padding: 2mm; } }'
+    + '</style></head><body>' + printContent + '</body></html>');
+  doc.close();
+
+  var images = doc.getElementsByTagName('img');
+  var total = images.length, loaded = 0, fired = false;
+  function fire() {
+    if (fired) return;
+    fired = true;
+    try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+    catch (e) { window.print(); }
+  }
+  if (total === 0) {
+    setTimeout(fire, 250);
+  } else {
+    for (var i = 0; i < total; i++) {
+      if (images[i].complete && images[i].naturalWidth !== 0) { loaded++; }
+      else { images[i].onload = images[i].onerror = function() { loaded++; if (loaded >= total) setTimeout(fire, 150); }; }
+    }
+    setTimeout(fire, loaded >= total ? 250 : 700);
   }
 }
 
@@ -921,6 +1037,15 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
     $('#rc_date').text(now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
     $('#rc_cashier').text(cashierName);
     $('#rc_customer').text(saleObj.customer_name || 'ລູກຄ້າທົ່ວໄປ');
+    setReceiptCustomerPhone(saleObj.customer_phone || saleObj.phone || (selectedCustomer && selectedCustomer.phone) || '');
+    window.__deliveryNoteData = {
+      bill:     offlineBillNum,
+      date:     now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}),
+      customer: saleObj.customer_name || 'ລູກຄ້າທົ່ວໄປ',
+      phone:    saleObj.customer_phone || saleObj.phone || (selectedCustomer && selectedCustomer.phone) || '',
+      address:  saleObj.customer_address || (selectedCustomer && (selectedCustomer.address || selectedCustomer.notes)) || '',
+      items:    (saleObj.cart || []).map(function(item) { return { name: item.product_name || '', qty: item.quantity, unit: item.unit_name || '' }; })
+    };
     $('#rc_subtotal').text(offSubtotal.toLocaleString() + ' ₭');
     $('#rc_discount').text(saleObj.discount_amount.toLocaleString() + ' ₭');
 
@@ -943,6 +1068,7 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
     }
     $('#rc_total').text(total.toLocaleString() + ' ₭');
     $('#rc_change').text(change.toLocaleString() + ' ₭');
+    $('#rc_points_row').hide();
 
     var offCashAmt = parseFloat(saleObj.cash_received) || 0;
     var offQrAmt   = parseFloat(saleObj.qr_received) || 0;
@@ -972,8 +1098,8 @@ function handleOfflineCheckoutFallback(saleObj, total, change) {
         $('#rc_bank_qr_img').hide();
       }
       var labelBank = bName ? bName : '';
-      $('#rc_bank_name_lbl').text(labelBank ? 'ສະແກນ QR ໂອນຊຳລະ (' + labelBank + ')' : 'ສະແກນ QR ໂອນຊຳລະ');
-      $('#rc_bank_acc_lbl').hide();
+      var scanTransferLbl = <?php echo json_encode(t('pos.receipt_scan_transfer', 'ສະແກນ QR ໂອນຊຳລະ'), JSON_UNESCAPED_UNICODE); ?>;
+      $('#rc_bank_name_lbl').text(labelBank ? scanTransferLbl + ' (' + labelBank + ')' : scanTransferLbl);
       $('.receipt-qr-box').attr('style', 'display:block!important; text-align:center; margin:8px 0;').show();
     } else {
       $('.receipt-qr-box').attr('style', 'display:none!important;').hide();

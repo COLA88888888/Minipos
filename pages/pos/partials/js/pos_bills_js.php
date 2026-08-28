@@ -321,6 +321,7 @@ function updateHeldOrdersBadge() {
 
 function openHeldOrdersModal() {
   if ($('#btnHeldOrders').is(':disabled')) return;
+  $('#heldOrdersSearch').val('');
   renderHeldOrders();
   $('#heldOrdersModal').modal('show');
 }
@@ -330,11 +331,22 @@ function renderHeldOrders() {
   container.empty();
 
   if (heldOrders.length === 0) {
-    container.html(`<div class="text-center py-4 text-muted">ບໍ່ມີບິນທີ່ພັກໄວ້</div>`);
+    container.html(`<div class="text-center py-4 text-muted"><?php echo htmlspecialchars(t('pos.held_no_orders', 'ບໍ່ມີບິນທີ່ພັກໄວ້'), ENT_QUOTES); ?></div>`);
     return;
   }
 
+  var heldSearchQ = ($('#heldOrdersSearch').val() || '').toLowerCase().trim();
+  var heldShownCount = 0;
+
   heldOrders.forEach(function(order, idx) {
+    // Match against bill number, time, customer name/phone and every product name
+    var haystack = ['#' + (idx + 1), order.time || '',
+      (order.customer && order.customer.customer_name) || '',
+      (order.customer && order.customer.phone) || ''];
+    (order.cart || []).forEach(function(ci) { haystack.push(ci.product_name || ''); });
+    if (heldSearchQ && haystack.join(' ').toLowerCase().indexOf(heldSearchQ) === -1) return;
+    heldShownCount++;
+
     var lineCount = (order.cart || []).length;
     var totalQty  = 0;
     var totalAmount = 0;
@@ -364,21 +376,21 @@ function renderHeldOrders() {
       <div class="held-item-card">
         <div class="d-flex justify-content-between align-items-start mb-1">
           <div>
-            <span class="badge badge-warning font-weight-bold mr-1">ບິນພັກ #${idx + 1}</span>
+            <span class="badge badge-warning font-weight-bold mr-1"><?php echo htmlspecialchars(t('pos.held_bill_label', 'ບິນພັກ'), ENT_QUOTES); ?> #${idx + 1}</span>
             <span class="small text-muted"><i class="fas fa-clock mr-1"></i>${order.time}</span>
           </div>
           <h5 class="font-weight-bold text-success mb-0">${netTotal.toLocaleString()} ₭</h5>
         </div>
         <div class="small text-muted mb-1">
-          <i class="fas fa-user mr-1"></i> ລູກຄ້າ: <strong>${order.customer.customer_name}</strong> | 
-          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${lineCount}</strong> ລາຍການ (${totalQty} ຈຳນວນ)
+          <i class="fas fa-user mr-1"></i> <?php echo htmlspecialchars(t('pos.receipt_customer', 'ລູກຄ້າ:'), ENT_QUOTES); ?> <strong>${order.customer.customer_name}</strong> |
+          <i class="fas fa-shopping-basket mr-1 ml-1"></i> <strong>${lineCount}</strong> <?php echo htmlspecialchars(t('pos.cart_count_items', 'ລາຍການ'), ENT_QUOTES); ?> (${totalQty} <?php echo htmlspecialchars(t('pos.cart_count_qty', 'ຈຳນວນ'), ENT_QUOTES); ?>)
         </div>
         ${itemsListHtml}
         <div class="d-flex justify-content-end mt-2" style="gap: 6px;">
           <button class="btn btn-sm btn-success font-weight-bold" onclick="restoreHeldOrder('${order.id}')">
-            <i class="fas fa-undo mr-1"></i> ເອີ້ນຄືນບິນ
+            <i class="fas fa-undo mr-1"></i> <?php echo htmlspecialchars(t('pos.recall_bill', 'ເອີ້ນຄືນບິນ'), ENT_QUOTES); ?>
           </button>
-          <button class="btn btn-sm btn-outline-danger" onclick="deleteHeldOrder('${order.id}')" title="ລຶບ">
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteHeldOrder('${order.id}')" title="<?php echo htmlspecialchars(t('pos.delete', 'ລຶບ'), ENT_QUOTES); ?>">
             <i class="fas fa-trash-alt"></i>
           </button>
         </div>
@@ -386,6 +398,10 @@ function renderHeldOrders() {
     `;
     container.append(cardHtml);
   });
+
+  if (heldShownCount === 0) {
+    container.html(`<div class="text-center py-4 text-muted"><?php echo htmlspecialchars(t('pos.held_no_match', 'ບໍ່ພົບບິນທີ່ພັກໄວ້ຕົງກັບການຄົ້ນຫາ'), ENT_QUOTES); ?></div>`);
+  }
 }
 
 function restoreHeldOrder(orderId) {

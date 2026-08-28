@@ -132,6 +132,47 @@ html, body {
     border-top: none !important;
 }
 
+/* Tablet / short screens (desktop 2-column layout): if the cart panel content is taller
+   than the viewport, let the panel scroll and keep the checkout buttons pinned & visible. */
+@media (min-width: 992px) {
+    .pos-cart {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
+    .cart-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 6 !important;
+        box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.08) !important;
+    }
+}
+
+/* Tablet portrait / mobile: pin the checkout buttons to the bottom of the cart tab too */
+@media (max-width: 991.98px) {
+    .pos-cart.mobile-active .cart-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 60 !important;
+        box-shadow: 0 -4px 14px rgba(15, 23, 42, 0.08) !important;
+    }
+}
+
+/* The dashboard iframe host renders taller than the visible area (AdminLTE double-counts the
+   navbar height as .content-wrapper margin-top), pushing the bottom of the POS cart — the
+   ລວມມູນຄ່າ / ສ່ວນຫຼຸດ / ຍອດຊຳລະ card and the ລ້າງ / ຊຳລະເງິນ buttons — below the fold on
+   tablet. Shrink the scrolling item list so that whole white card rides up into view, and
+   drop the sticky-to-bottom pin (it was sticking the card to an off-screen edge).
+   Tune the 560px: raise it if the ຊຳລະເງິນ button is still clipped, lower it if the item list is too short. */
+@media (max-width: 991.98px) {
+    .pos-cart.mobile-active .cart-items {
+        max-height: calc(100vh - 560px) !important;
+    }
+    .pos-cart.mobile-active .cart-footer {
+        position: static !important;
+        bottom: auto !important;
+    }
+}
+
 /* Responsive adjustments for mobile/tablet */
 @media (max-width: 991.98px) {
     html, body {

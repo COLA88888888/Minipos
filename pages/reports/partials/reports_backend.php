@@ -116,8 +116,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
         $stmtB = $pdo->prepare("
             SELECT s.*, sl.vat_amount, sl.tax_type, sl.vat_rate,
                    COALESCE(NULLIF(u.fname, ''), s.user_receive, 'Admin') AS cashier_display_name,
+                   TRIM(CONCAT(IFNULL(u.fname, ''), ' ', IFNULL(u.lname, ''))) AS seller_full_name,
+                   u.tel AS seller_tel,
                    COALESCE(NULLIF(s.customer_name, ''), 'ລູກຄ້າທົ່ວໄປ') AS customer_display_name
-            FROM tbsale_save s 
+            FROM tbsale_save s
             LEFT JOIN sales sl ON s.sale_save_bill = sl.invoice_number 
             LEFT JOIN tbuser u ON (s.user_receive = u.username OR s.user_receive = u.fname)
             WHERE s.sale_save_bill = :bill
@@ -163,6 +165,40 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_bill_details') {
                     if (empty($billData['bank_name'])) {
                         $billData['bank_name'] = $bInfo['bank_name'] ?? '';
                     }
+                }
+            } catch (Throwable $e) {}
+        }
+
+        // Delivery-note extras: sender = the staff member who made this sale (name + phone) on the
+        // selling branch's letterhead logo; recipient = the customer's phone/address
+        $billData['sender_name'] = !empty($billData['seller_full_name'])
+            ? $billData['seller_full_name']
+            : ($billData['cashier_display_name'] ?? ($billData['user_receive'] ?? 'Admin'));
+        $billData['sender_tel']  = trim((string)($billData['seller_tel'] ?? ''));
+        $billData['sender_logo'] = 'assets/img/logo/' . (!empty($companyTax['img_url']) ? basename($companyTax['img_url']) : 'logo.png');
+        $dnStoreId = intval($billData['store_id'] ?? 0);
+        if ($dnStoreId > 0) {
+            try {
+                $stStmt = $pdo->prepare("SELECT logo_path FROM tbstore WHERE store_id = ? LIMIT 1");
+                $stStmt->execute([$dnStoreId]);
+                $stRow = $stStmt->fetch(PDO::FETCH_ASSOC);
+                if ($stRow && !empty($stRow['logo_path'])) {
+                    $billData['sender_logo'] = str_replace('\\', '/', $stRow['logo_path']);
+                }
+            } catch (Throwable $e) {}
+        }
+        $billData['customer_phone']   = '';
+        $billData['customer_address'] = '';
+        if (!empty($billData['customer_id'])) {
+            try {
+                $cStmt = $pdo->prepare("SELECT phone, address, notes FROM customers WHERE customer_id = ? LIMIT 1");
+                $cStmt->execute([$billData['customer_id']]);
+                $cRow = $cStmt->fetch(PDO::FETCH_ASSOC);
+                if ($cRow) {
+                    $billData['customer_phone']   = $cRow['phone'] ?? '';
+                    // Address falls back to the notes field (addresses are often stored there)
+                    $addr = trim((string)($cRow['address'] ?? ''));
+                    $billData['customer_address'] = $addr !== '' ? $addr : trim((string)($cRow['notes'] ?? ''));
                 }
             } catch (Throwable $e) {}
         }

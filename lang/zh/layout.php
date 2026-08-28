@@ -9,6 +9,7 @@ return [
     'layout.pos_item_sales' => '销售记录',
     'layout.customers' => '客户管理',
     'layout.products_group' => '商品信息',
+    'layout.stock_intake_group' => '入库',
     'layout.categories' => '商品分类',
     'layout.units' => '单位管理',
     'layout.products' => '商品列表',
@@ -37,6 +38,7 @@ return [
     'layout.promotions' => '促销活动',
     'layout.price_adjustment' => '商品调价',
     'layout.printers' => '打印机设置',
+    'layout.loyalty' => '客户积分',
     'layout.database' => '数据库',
     'layout.online_status' => '在线',
 

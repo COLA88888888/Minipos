@@ -243,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 // ====== GET FILTER PARAMETERS ======
-$from_date = $_GET['from_date'] ?? date('Y-m-d');
+$from_date = $_GET['from_date'] ?? date('Y-m-01');
 $to_date   = $_GET['to_date']   ?? date('Y-m-d');
 $view_type = $_GET['view_type'] ?? 'bill';
 
@@ -410,6 +410,8 @@ if ($view_type === 'bill') {
 }
 
 $total_records = count($importList);
+$grandTotalCost = 0;
+foreach ($importList as $gRow) { $grandTotalCost += (float)($gRow['total_cost'] ?? 0); }
 
 require_once __DIR__ . '/../../layouts/header.php';
 ?>
@@ -550,7 +552,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                         $searchStr = strtolower(($row['invoice_number'] ?? '') . ' ' . ($row['supplier_name'] ?? '') . ' ' . ($row['store_name'] ?? '') . ' ' . ($row['notes'] ?? '') . ' ' . $creatorName);
                         $hasMov = !empty($row['has_movement']);
                       ?>
-                      <tr class="import-row" data-search="<?php echo htmlspecialchars($searchStr); ?>">
+                      <tr class="import-row" data-search="<?php echo htmlspecialchars($searchStr); ?>" data-cost="<?php echo (float)($row['total_cost'] ?? 0); ?>">
                         <td class="align-middle text-center text-muted font-weight-bold row-index"><?php echo $idx++; ?></td>
                         
                         <td class="align-middle text-center text-secondary font-weight-bold" style="font-size: 0.9rem;">
@@ -620,6 +622,15 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <?php endforeach; ?>
                   <?php endif; ?>
                 </tbody>
+                <?php if (!empty($importList)): ?>
+                <tfoot>
+                  <tr style="background:#f8fafc;font-weight:800;border-top:2px solid #cbd5e1;">
+                    <td colspan="6" class="text-right"><?php echo htmlspecialchars(t('import_list.grand_total', 'ລວມທັງໝົດ:')); ?></td>
+                    <td class="text-right text-success" style="font-size:1rem;" id="importGrandTotal"><?php echo number_format($grandTotalCost); ?> ₭</td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tfoot>
+                <?php endif; ?>
 
               <?php else: ?>
                 <!-- HEADER FOR MODE 2: ລາຍລະອຽດ (Blue Header) -->
@@ -686,7 +697,7 @@ require_once __DIR__ . '/../../layouts/header.php';
                             $hasMovement = true;
                         }
                       ?>
-                      <tr class="import-row" data-search="<?php echo htmlspecialchars($searchStr); ?>">
+                      <tr class="import-row" data-search="<?php echo htmlspecialchars($searchStr); ?>" data-cost="<?php echo (float)($row['total_cost'] ?? 0); ?>">
                         <td class="align-middle text-center text-muted font-weight-bold row-index"><?php echo $idx++; ?></td>
                         
                         <td class="align-middle text-center text-secondary font-weight-bold" style="font-size: 0.88rem;">
@@ -759,6 +770,15 @@ require_once __DIR__ . '/../../layouts/header.php';
                     <?php endforeach; ?>
                   <?php endif; ?>
                 </tbody>
+                <?php if (!empty($importList)): ?>
+                <tfoot>
+                  <tr style="background:#f8fafc;font-weight:800;border-top:2px solid #cbd5e1;">
+                    <td colspan="7" class="text-right"><?php echo htmlspecialchars(t('import_list.grand_total', 'ລວມທັງໝົດ:')); ?></td>
+                    <td class="text-right text-primary" style="font-size:1rem;" id="importGrandTotal"><?php echo number_format($grandTotalCost); ?> ₭</td>
+                    <td colspan="3"></td>
+                  </tr>
+                </tfoot>
+                <?php endif; ?>
               <?php endif; ?>
 
             </table>

@@ -18,6 +18,7 @@ return [
     'products.col_name' => 'ชื่อสินค้า',
     'products.col_bprice' => 'ราคาซื้อ',
     'products.col_price' => 'ราคาขาย',
+    'products.grand_total' => 'รวมทั้งหมด:',
     'products.col_qty' => 'จำนวน',
     'products.col_manage' => 'จัดการ',
     'products.empty_state' => 'ไม่มีข้อมูลสินค้า',

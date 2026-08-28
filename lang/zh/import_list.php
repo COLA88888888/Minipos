@@ -2,6 +2,7 @@
 // pages/import_stock/import_list.php
 // strings - Chinese (Simplified)
 return [
+    'import_list.grand_total' => '合计：',
     'import_list.page_title' => '入库记录',
     'import_list.import_stock_btn' => '商品入库',
     'import_list.err_has_movement' => '此单据无法删除/取消，因为该商品已有出入库变动或已售出！',

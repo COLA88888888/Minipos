@@ -1,4 +1,11 @@
 <script>
+// i18n words for the "N items (M qty)" cart count label
+var CART_WORD_ITEMS = <?php echo json_encode(t('pos.cart_count_items', 'ລາຍການ'), JSON_UNESCAPED_UNICODE); ?>;
+var CART_WORD_QTY   = <?php echo json_encode(t('pos.cart_count_qty', 'ຈຳນວນ'), JSON_UNESCAPED_UNICODE); ?>;
+function cartCountText(lineCount, qtyCount) {
+  return lineCount + ' ' + CART_WORD_ITEMS + ' (' + qtyCount + ' ' + CART_WORD_QTY + ')';
+}
+
 // --- DUAL-SCREEN POS CUSTOMER DISPLAY BROADCAST ---
 var customerDisplayChannel = null;
 try {
@@ -70,16 +77,16 @@ function updateCartUI() {
     container.html(`
       <div class="cart-empty-state d-flex flex-column align-items-center justify-content-center h-100 py-5">
         <i class="fas fa-shopping-basket text-muted mb-2" style="font-size: 2.2rem; opacity: 0.3;"></i>
-        <div class="text-muted font-weight-bold" style="font-size: 0.92rem;">ບໍ່ມີລາຍການສິນຄ້າໃນກະຕ່າ</div>
-        <small class="text-muted">ກະລຸນາເລືອກສິນຄ້າ ຫຼື ສະແກນບາໂຄ້ດ</small>
+        <div class="text-muted font-weight-bold" style="font-size: 0.92rem;"><?php echo htmlspecialchars(t('pos.cart_empty_title', 'ບໍ່ມີລາຍການສິນຄ້າໃນກະຕ່າ'), ENT_QUOTES); ?></div>
+        <small class="text-muted"><?php echo htmlspecialchars(t('pos.cart_empty_hint', 'ກະລຸນາເລືອກສິນຄ້າ ຫຼື ສະແກນບາໂຄ້ດ'), ENT_QUOTES); ?></small>
       </div>
     `);
-    $('#cartItemCountBadge').text('0 ລາຍການ (0 ຈຳນວນ)');
+    $('#cartItemCountBadge').text(cartCountText(0, 0));
     $('#cartSubtotal').text('0 ₭');
     $('#cartVat').text('0 ₭');
     $('#cartTotal').text('0 ₭');
     $('#mobileCartCountBadge').text('0').hide();
-    $('#floatingCartItemCount').text('0 ລາຍການ (0 ຈຳນວນ)');
+    $('#floatingCartItemCount').text(cartCountText(0, 0));
     $('#floatingCartTotal').html('0 ₭ <i class="fas fa-chevron-right ml-1"></i>');
     $('#mobileFloatingCartBar').hide();
     $('#btnCheckout').prop('disabled', true).addClass('disabled');
@@ -193,7 +200,7 @@ function updateCartUI() {
   }
 
   var lineCount = cart.length;
-  var countText = lineCount + ' ລາຍການ (' + totalItemsCount + ' ຈຳນວນ)';
+  var countText = cartCountText(lineCount, totalItemsCount);
 
   $('#cartItemCountBadge').text(countText);
   $('#cartSubtotal').text(subtotal.toLocaleString() + ' ₭');

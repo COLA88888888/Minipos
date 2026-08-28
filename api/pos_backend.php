@@ -299,15 +299,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             ];
         }
         
+        // ===== CUSTOMER LOYALTY POINTS: earn Y points for every X kip of net spend =====
+        $points_earned = 0;
+        $customer_points_balance = 0;
+        $loyalty_active = 0;
+        if (!empty($customer_id) && intval($customer_id) > 0) {
+            if (getSetting($pdo, 'loyalty_enabled', '0') === '1') {
+                $loyalty_active = 1;
+                $lpSpend = (int)getSetting($pdo, 'loyalty_spend_amount', '100000');
+                $lpPer   = (int)getSetting($pdo, 'loyalty_points_earned', '1');
+                if ($lpSpend > 0 && $lpPer > 0) {
+                    $points_earned = intdiv((int)round($net_total), $lpSpend) * $lpPer;
+                    if ($points_earned > 0) {
+                        try {
+                            $pdo->prepare("UPDATE customers SET points = points + ? WHERE customer_id = ?")
+                                ->execute([$points_earned, intval($customer_id)]);
+                            $pdo->prepare("UPDATE tbsale_save SET points_earned = ? WHERE sale_save_bill = ?")
+                                ->execute([$points_earned, $invoice_no]);
+                        } catch (Throwable $e) { $points_earned = 0; }
+                    }
+                }
+            }
+            try {
+                $cpStmt = $pdo->prepare("SELECT points FROM customers WHERE customer_id = ?");
+                $cpStmt->execute([intval($customer_id)]);
+                $customer_points_balance = (int)$cpStmt->fetchColumn();
+            } catch (Throwable $e) {}
+        }
+
         $pdo->commit();
-        
+
         if (ob_get_length()) ob_clean();
         echo json_encode([
             'success'        => true,
+            'points_earned'   => $points_earned,
+            'customer_points' => $customer_points_balance,
+            'loyalty_active'  => $loyalty_active,
             'invoice_number' => $invoice_no,
             'date'           => date('d/m/Y H:i'),
             'cashier'        => $user_receive_name,
             'customer_name'  => $customer_name,
+            'customer_phone' => trim($_POST['customer_phone'] ?? ''),
             'subtotal'       => $subtotal,
             'discount_amount'=> $discount_bill,
             'tax_type'       => $tax_type,
@@ -343,6 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     header('Content-Type: application/json');
     $c_name        = trim($_POST['customer_name'] ?? '');
     $c_phone       = trim($_POST['phone'] ?? '');
+    $c_address     = trim($_POST['address'] ?? '');
     $c_code        = trim($_POST['customer_code'] ?? '');
     $c_member_card = trim($_POST['member_card'] ?? '');
     $c_notes       = trim($_POST['notes'] ?? '');
@@ -361,11 +394,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     try {
-        $stmtIns = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, member_card, notes, store_id, created_at) VALUES (:code, :name, :phone, :card, :notes, :store_id, NOW())");
+        $stmtIns = $pdo->prepare("INSERT INTO customers (customer_code, customer_name, phone, address, member_card, notes, store_id, created_at) VALUES (:code, :name, :phone, :address, :card, :notes, :store_id, NOW())");
         $stmtIns->execute([
             ':code'     => $c_code,
             ':name'     => $c_name,
             ':phone'    => $c_phone,
+            ':address'  => $c_address,
             ':card'     => $c_member_card,
             ':notes'    => $c_notes,
             ':store_id' => $activePosStoreId
@@ -379,6 +413,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 'customer_code' => $c_code,
                 'customer_name' => $c_name,
                 'phone'         => $c_phone,
+                'address'       => $c_address,
                 'member_card'   => $c_member_card,
                 'notes'         => $c_notes
             ]
@@ -557,7 +592,7 @@ $productsStmt = $pdo->prepare("
 $productsStmt->execute([$activeStoreId]);
 $productsRaw = $productsStmt->fetchAll();
 
-$stmtPosCust = $pdo->prepare("SELECT customer_id, customer_code, customer_name, phone, member_card, notes, created_at FROM customers WHERE store_id = ? OR store_id = 0 ORDER BY customer_id DESC");
+$stmtPosCust = $pdo->prepare("SELECT customer_id, customer_code, customer_name, phone, address, member_card, notes, points, created_at FROM customers WHERE store_id = ? OR store_id = 0 ORDER BY customer_id DESC");
 $stmtPosCust->execute([$activeStoreId]);
 $customersList = $stmtPosCust->fetchAll();
 

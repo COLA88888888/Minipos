@@ -18,6 +18,7 @@ return [
     'products.col_name' => 'ຊື່ສິນຄ້າ',
     'products.col_bprice' => 'ລາຄາຊື້',
     'products.col_price' => 'ລາຄາຂາຍ',
+    'products.grand_total' => 'ລວມທັງໝົດ:',
     'products.col_qty' => 'ຈຳນວນ',
     'products.col_manage' => 'ຈັດການ',
     'products.empty_state' => 'ບໍ່ມີຂໍ້ມູນສິນຄ້າ',

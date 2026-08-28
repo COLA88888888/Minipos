@@ -1,27 +1,18 @@
 <!-- Right Side: POS Cart Panel -->
 <div class="pos-cart shadow-sm">
-  <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center">
-    <h5 class="mb-0 font-weight-bold" style="font-family: 'Noto Sans Lao', 'Souliyo', 'Boon', sans-serif;">
-      <i class="fas fa-shopping-basket mr-2"></i> <?php echo htmlspecialchars(t('pos.cart_title', 'ລາຍການຂາຍ')); ?>
-    </h5>
+  <!-- Active Bills Navigation Bar -->
+  <div class="pos-active-bills-bar bg-light border-bottom p-2 d-flex justify-content-between align-items-center">
     <div class="d-flex align-items-center" style="gap: 6px;">
+      <button type="button" class="btn btn-sm btn-outline-primary font-weight-bold px-3 py-1.5 shadow-sm" onclick="openCustomerDisplayWindow()" title="<?php echo htmlspecialchars(t('pos.customer_display_title', 'ເປີດໜ້າຈໍສະແດງຜົນລູກຄ້າ (Customer Display)')); ?>" style="border-radius: 8px; white-space: nowrap; font-size: 0.85rem; background: #ffffff;">
+        <i class="fas fa-desktop mr-1"></i> <?php echo htmlspecialchars(t('pos.customer_display_btn', 'ຈໍລູກຄ້າ')); ?>
+      </button>
       <!-- Network Status Badge (Shown ONLY when Offline or when Pending Sync exists) -->
-      <span class="badge px-2.5 py-1.5 shadow-2xs font-weight-bold" id="netStatusBadge" onclick="syncOfflineSalesToServer(true)" style="display: none; font-size: 0.86rem; border-radius: 6px; background-color: rgba(255,255,255,0.22); color: #fff; cursor: pointer;" title="<?php echo htmlspecialchars(t('pos.net_status_title', 'ສະຖານະການເຊື່ອມຕໍ່ (ກົດເພື່ອ Sync)')); ?>">
+      <span class="badge px-2.5 py-1.5 shadow-2xs font-weight-bold" id="netStatusBadge" onclick="syncOfflineSalesToServer(true)" style="display: none; font-size: 0.86rem; border-radius: 6px; background-color: #e2e8f0; color: #1e293b; cursor: pointer;" title="<?php echo htmlspecialchars(t('pos.net_status_title', 'ສະຖານະການເຊື່ອມຕໍ່ (ກົດເພື່ອ Sync)')); ?>">
         <i class="fas fa-circle text-success mr-1" id="netStatusIcon" style="font-size: 0.6rem;"></i>
         <span id="netStatusText"><?php echo htmlspecialchars(t('pos.net_status_online', 'ອອນໄລນ໌')); ?></span>
         <span id="offlineQueueBadge" class="badge badge-warning ml-1 text-dark" style="display: none; font-size: 0.8rem; border-radius: 4px;">0</span>
       </span>
-      <button type="button" class="btn btn-sm btn-light text-primary font-weight-bold shadow-sm" onclick="openCustomerDisplayWindow()" title="<?php echo htmlspecialchars(t('pos.customer_display_title', 'ເປີດໜ້າຈໍສະແດງຜົນລູກຄ້າ (Customer Display)')); ?>" style="border-radius: 8px; font-size: 0.82rem; padding: 4px 10px;">
-        <i class="fas fa-desktop mr-1"></i> <?php echo htmlspecialchars(t('pos.customer_display_btn', 'ຈໍລູກຄ້າ')); ?>
-      </button>
-      <button type="button" class="btn btn-light text-primary font-weight-bold d-lg-none shadow-sm" onclick="switchMobilePosTab('products')" style="border-radius: 8px; font-size: 0.95rem; padding: 6px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
-        <i class="fas fa-boxes mr-1.5"></i><?php echo htmlspecialchars(t('pos.mobile_tab_products', 'ເລືອກສິນຄ້າ')); ?>
-      </button>
     </div>
-  </div>
-
-  <!-- Active Bills Navigation Bar -->
-  <div class="pos-active-bills-bar bg-light border-bottom p-2 d-flex justify-content-end align-items-center">
     <div class="d-flex align-items-center" style="gap: 6px;">
       <button type="button" class="btn btn-sm btn-success font-weight-bold px-3 py-1.5 shadow-sm" onclick="createNewBillModal()" title="<?php echo htmlspecialchars(t('pos.new_bill', 'ເປີດບິນໃໝ່')); ?>" style="border-radius: 8px; white-space: nowrap; font-size: 0.85rem;">
         <i class="fas fa-plus-circle mr-1"></i> <?php echo htmlspecialchars(t('pos.new_bill', 'ເປີດບິນໃໝ່')); ?>

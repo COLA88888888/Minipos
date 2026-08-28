@@ -296,7 +296,7 @@
         <h6 class="modal-title font-weight-bold"><i class="fas fa-receipt mr-1"></i> <?php echo htmlspecialchars(t('pos.receipt_success_title', 'ໃບບິນຮັບເງິນສຳເລັດ')); ?></h6>
         <button type="button" class="close text-white" onclick="resetPOS()"><span>&times;</span></button>
       </div>
-      <div class="modal-body p-3" id="receiptPrintArea" style="font-family:'Noto Sans Lao', 'Souliyo', 'Boon', monospace, sans-serif;font-size:12px;color:#000;">
+      <div class="modal-body p-3" id="receiptPrintArea" style="font-family:'Noto Sans Lao', 'Souliyo', 'Boon', Arial, sans-serif;font-size:13px;font-weight:600;line-height:1.5;color:#000;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;">
         <div class="text-center mb-2">
           <?php
             $logoName = !empty($company['img_url']) ? basename($company['img_url']) : 'logo.png';
@@ -320,6 +320,7 @@
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span><?php echo htmlspecialchars(t('pos.receipt_date', 'ວັນທີ:')); ?></span><span id="rc_date">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span><?php echo htmlspecialchars(t('pos.receipt_cashier', 'ຜູ້ຂາຍ:')); ?></span><span id="rc_cashier">-</span></div>
         <div class="d-flex justify-content-between" style="color:#000;font-weight:600;"><span><?php echo htmlspecialchars(t('pos.receipt_customer', 'ລູກຄ້າ:')); ?></span><span id="rc_customer"><?php echo htmlspecialchars(t('pos.customer_default', 'ລູກຄ້າທົ່ວໄປ')); ?></span></div>
+        <div class="d-flex justify-content-between" id="rc_customer_phone_row" style="color:#000;font-weight:600;display:none;"><span><?php echo htmlspecialchars(t('pos.receipt_customer_phone', 'ເບີໂທ:')); ?></span><span id="rc_customer_phone">-</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <table style="width:100%;font-size:11.5px;color:#000;">
           <thead>
@@ -343,6 +344,7 @@
         <div class="d-flex justify-content-between font-weight-bold" style="font-size:13.5px;color:#000;font-weight:700;"><span><?php echo htmlspecialchars(t('pos.receipt_net_total', 'ຍອດສຸດທິ:')); ?></span><span id="rc_total">0 ₭</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <div class="d-flex justify-content-between font-weight-bold" style="color:#000;font-weight:700;"><span><?php echo htmlspecialchars(t('pos.change_label', 'ເງິນທອນ:')); ?></span><span id="rc_change">0 ₭</span></div>
+        <div class="d-flex justify-content-between" id="rc_points_row" style="color:#000;font-weight:600;display:none;"><span><?php echo htmlspecialchars(t('pos.receipt_points_earned', 'ຄະແນນທີ່ໄດ້ຮັບ:')); ?></span><span id="rc_points_earned" style="font-weight:700;">0</span></div>
         <div style="border-top:1px dashed #000;margin:6px 0;"></div>
         <?php 
           $storeQrName = !empty($company['qr_img']) ? $company['qr_img'] : '';
@@ -350,19 +352,69 @@
         ?>
         <div class="text-center my-2 receipt-qr-box" style="display:none;">
           <img id="rc_bank_qr_img" src="<?php echo htmlspecialchars($storeQrPath); ?>" alt="QR Code" class="receipt-qr-img"
-               style="max-width:90px;max-height:90px;width:90px;height:auto;object-fit:contain;margin:4px auto 2px auto;display:block;"
+               style="max-width:130px;max-height:130px;width:130px;height:auto;object-fit:contain;margin:4px auto 2px auto;display:block;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;image-rendering:pixelated;"
                onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/qr_placeholder.png';">
-          <div id="rc_bank_name_lbl" style="font-size:11px;font-weight:800;color:#000;margin-top:3px;"><?php echo htmlspecialchars(t('pos.scan_qr_to_pay', 'ສະແກນ QR Code ເພື່ອຊຳລະເງິນ')); ?></div>
-          <div id="rc_bank_acc_lbl" style="font-size:10.5px;font-weight:700;color:#000;display:none;margin-top:1px;"></div>
+          <div id="rc_bank_name_lbl" style="font-size:12.5px;font-weight:800;color:#000;margin-top:3px;"><?php echo htmlspecialchars(t('pos.scan_qr_to_pay', 'ສະແກນ QR Code ຊຳລະເງິນ')); ?></div>
         </div>
         <div class="text-center receipt-footer-msg" style="margin-top:10px !important; padding-top:8px; border-top:1px dashed #000; font-size:12.5px; font-weight:700; color:#000; text-align:center;"><?php echo htmlspecialchars(!empty($company['barcode']) ? $company['barcode'] : t('pos.receipt_thank_you', 'ຂອບໃຈທີ່ມາອຸດໜູນ, ໂອກາດໜ້າເຊີນໃໝ່!')); ?></div>
       </div>
       <div class="modal-footer border-0 p-3 bg-light">
         <button type="button" class="btn btn-secondary btn-sm font-weight-bold" onclick="resetPOS()"><?php echo htmlspecialchars(t('pos.close', 'ປິດ')); ?></button>
+        <button type="button" class="btn btn-outline-primary btn-sm font-weight-bold px-3" onclick="printDeliveryNote()"><i class="fas fa-truck mr-1"></i> <?php echo htmlspecialchars(t('pos.delivery_note', 'ບິນສົ່ງເຄື່ອງ')); ?></button>
         <button type="button" class="btn btn-primary btn-sm font-weight-bold px-3" onclick="printReceipt()"><i class="fas fa-print mr-1"></i> <?php echo htmlspecialchars(t('pos.print_receipt', 'ພິມໃບບິນ')); ?></button>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Delivery Note print template (ບິນສົ່ງເຄື່ອງ) — hidden; filled by JS from the completed sale, printed 80mm -->
+<?php
+  // Sender = the logged-in staff member (name + phone) on the branch letterhead logo
+  $dnSenderName = trim(($_SESSION['fname'] ?? '') . ' ' . ($_SESSION['lname'] ?? ''));
+  if ($dnSenderName === '') $dnSenderName = $_SESSION['username'] ?? 'Admin';
+  $dnSenderTel = '';
+  try {
+      $dnUStmt = $pdo->prepare("SELECT tel FROM tbuser WHERE Id = ? LIMIT 1");
+      $dnUStmt->execute([intval($_SESSION['user_id'] ?? 0)]);
+      $dnSenderTel = trim((string)$dnUStmt->fetchColumn());
+  } catch (Throwable $e) {}
+
+  $dnBranch = [];
+  try {
+      $dnStmt = $pdo->prepare("SELECT logo_path FROM tbstore WHERE store_id = ? LIMIT 1");
+      $dnStmt->execute([getActiveStoreId($pdo)]);
+      $dnBranch = $dnStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+  } catch (Throwable $e) {}
+  if (!empty($dnBranch['logo_path'])) {
+      $dnLogoPath = $base_path . ltrim(str_replace('\\', '/', $dnBranch['logo_path']), '/');
+  } else {
+      $dnLogoName = !empty($company['img_url']) ? basename($company['img_url']) : 'logo.png';
+      $dnLogoPath = $base_path . 'assets/img/logo/' . $dnLogoName;
+  }
+?>
+<div id="deliveryNoteArea" style="display:none;font-family:'Noto Sans Lao','Souliyo','Boon',Arial,sans-serif;font-size:13px;font-weight:600;line-height:1.5;color:#000;padding:8px 6px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;">
+  <img src="<?php echo htmlspecialchars($dnLogoPath); ?>" alt="Logo" style="max-width:70px;max-height:70px;object-fit:contain;display:block;margin:6px auto 4px auto;" onerror="this.onerror=null;this.src='<?php echo $base_path; ?>assets/img/logo/logo.png';">
+  <div style="text-align:center;font-size:14px;font-weight:800;letter-spacing:1px;margin-bottom:4px;"><i class="fas fa-truck mr-1"></i> <?php echo htmlspecialchars(t('pos.delivery_note', 'ບິນສົ່ງເຄື່ອງ')); ?></div>
+  <div style="display:flex;justify-content:space-between;"><span><?php echo htmlspecialchars(t('pos.receipt_bill_no', 'ເລກບິນ:')); ?></span><span id="dn_bill" style="font-weight:700;">-</span></div>
+  <div style="display:flex;justify-content:space-between;"><span><?php echo htmlspecialchars(t('pos.receipt_date', 'ວັນທີ:')); ?></span><span id="dn_date">-</span></div>
+  <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+  <!-- Sender = the logged-in staff member: name + phone right after the label -->
+  <div style="display:flex;justify-content:space-between;"><span style="font-weight:800;"><i class="fas fa-store mr-1"></i> <?php echo htmlspecialchars(t('pos.dn_sender', 'ຜູ້ສົ່ງ')); ?>:</span><span style="font-weight:700;"><?php echo htmlspecialchars($dnSenderName); ?></span></div>
+  <?php if ($dnSenderTel !== ''): ?>
+  <div style="display:flex;justify-content:space-between;"><span><?php echo htmlspecialchars(t('pos.receipt_customer_phone', 'ເບີໂທ:')); ?></span><span style="font-weight:700;"><?php echo htmlspecialchars($dnSenderTel); ?></span></div>
+  <?php endif; ?>
+  <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+  <div style="display:flex;justify-content:space-between;"><span style="font-weight:800;"><i class="fas fa-user mr-1"></i> <?php echo htmlspecialchars(t('pos.dn_recipient', 'ຜູ້ຮັບ')); ?>:</span><span id="dn_customer" style="font-weight:700;">-</span></div>
+  <div style="display:flex;justify-content:space-between;" id="dn_phone_row"><span><?php echo htmlspecialchars(t('pos.receipt_customer_phone', 'ເບີໂທ:')); ?></span><span id="dn_phone" style="font-weight:700;">-</span></div>
+  <div id="dn_address_row" style="margin-top:1px;"><?php echo htmlspecialchars(t('pos.dn_recipient_address', 'ທີ່ຢູ່:')); ?> <span id="dn_address" style="font-weight:700;">-</span></div>
+  <div style="border-top:1px dashed #000;margin:6px 0;"></div>
+  <table style="width:100%;font-size:12.5px;">
+    <thead><tr style="border-bottom:1px dashed #000;">
+      <th style="text-align:left;padding-bottom:3px;font-weight:800;"><?php echo htmlspecialchars(t('pos.receipt_col_item', 'ລາຍການ')); ?></th>
+      <th style="text-align:right;padding-bottom:3px;font-weight:800;width:70px;"><?php echo htmlspecialchars(t('pos.receipt_col_qty', 'ຈຳນວນ')); ?></th>
+    </tr></thead>
+    <tbody id="dn_items"></tbody>
+  </table>
 </div>
 
 <!-- Modal: QR Code Enlarge / Zoom HD -->

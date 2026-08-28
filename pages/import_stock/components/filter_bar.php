@@ -21,12 +21,13 @@
         <input type="date" name="to_date" value="<?php echo htmlspecialchars($to_date); ?>" class="form-control font-weight-bold" style="height: 42px; border-radius: 8px;">
       </div>
 
-      <!-- 3. Branch / Store Selector -->
+      <!-- 3. Branch / Store Selector — main branch / admin only -->
+      <?php if ($isAdmin || $isMain): ?>
       <div class="col-md-6 col-lg-3 mb-2 mb-lg-0">
         <label class="form-label font-weight-bold text-dark mb-1" style="font-size: 0.88rem;">
           <i class="fas fa-store text-info mr-1"></i> <?php echo htmlspecialchars(t('import_list.filter_select_branch', 'ເລືອກສາຂາ:')); ?>
         </label>
-        <select name="store_id" class="form-control font-weight-bold border-info" style="height: 42px; border-radius: 8px; background-color: #f0f9ff;" onchange="this.form.submit()" <?php echo (!$isAdmin && !$isMain) ? 'disabled' : ''; ?>>
+        <select name="store_id" class="form-control font-weight-bold border-info" style="height: 42px; border-radius: 8px; background-color: #f0f9ff;" onchange="this.form.submit()">
           <option value="0"><?php echo htmlspecialchars(t('import_list.filter_all_branches', '-- ທຸກສາຂາ --')); ?></option>
           <?php foreach ($stores as $st): ?>
             <option value="<?php echo $st['store_id']; ?>" <?php echo ($filter_store == $st['store_id']) ? 'selected' : ''; ?>>
@@ -34,10 +35,10 @@
             </option>
           <?php endforeach; ?>
         </select>
-        <?php if (!$isAdmin && !$isMain): ?>
-          <input type="hidden" name="store_id" value="<?php echo $filter_store; ?>">
-        <?php endif; ?>
       </div>
+      <?php else: ?>
+        <input type="hidden" name="store_id" value="<?php echo $filter_store; ?>">
+      <?php endif; ?>
 
       <!-- 4. Report View Type Selector -->
       <div class="col-md-6 col-lg-3 mb-2 mb-lg-0">

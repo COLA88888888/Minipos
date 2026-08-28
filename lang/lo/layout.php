@@ -9,6 +9,7 @@ return [
     'layout.pos_item_sales' => 'ລາຍການຂາຍສິນຄ້າ',
     'layout.customers' => 'ຈັດການລູກຄ້າ',
     'layout.products_group' => 'ຂໍ້ມູນສິນຄ້າ',
+    'layout.stock_intake_group' => 'ນຳສິນຄ້າເຂົ້າສາງ',
     'layout.categories' => 'ໝວດໝູ່ສິນຄ້າ',
     'layout.units' => 'ຈັດການຫົວໜ່ວຍ',
     'layout.products' => 'ລາຍການສິນຄ້າ',
@@ -37,6 +38,7 @@ return [
     'layout.promotions' => 'ໂປຣໂມຊັ່ນ',
     'layout.price_adjustment' => 'ປັບລາຄາສິນຄ້າ',
     'layout.printers' => 'ຕັ້ງຄ່າປິ່ນເຕີ',
+    'layout.loyalty' => 'ຄະແນນສະສົມລູກຄ້າ',
     'layout.database' => 'ຖານຂໍ້ມູນ',
     'layout.online_status' => 'ກຳລັງໃຊ້ງານ',
 

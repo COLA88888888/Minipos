@@ -114,6 +114,19 @@
 
     currentPage = 1;
     renderHistoryTable();
+    updateImportTotal();
+  }
+
+  // Sum ມູນຄ່າທຶນ over the current search result and show it in the table footer
+  function updateImportTotal() {
+    var el = document.getElementById('importGrandTotal');
+    if (!el) return;
+    var rows = (typeof filteredRows !== 'undefined' && filteredRows.length)
+      ? filteredRows
+      : document.querySelectorAll('#historyTableBody .import-row');
+    var sum = 0;
+    rows.forEach(function(r) { sum += parseFloat(r.getAttribute('data-cost')) || 0; });
+    el.textContent = Math.round(sum).toLocaleString('en-US') + ' ₭';
   }
 
   function changePageSize(val) {

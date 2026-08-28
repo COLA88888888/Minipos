@@ -9,6 +9,14 @@
         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
       </div>
       <div class="modal-body p-4" style="max-height: 420px; overflow-y: auto;">
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <span class="input-group-text bg-white border-right-0"><i class="fas fa-search text-muted"></i></span>
+          </div>
+          <input type="text" id="heldOrdersSearch" class="form-control border-left-0" autocomplete="off"
+                 placeholder="<?php echo htmlspecialchars(t('pos.held_search_placeholder', 'ຄົ້ນຫາ (ຊື່ລູກຄ້າ / ສິນຄ້າ / ເບີໂທ / ເວລາ)...')); ?>"
+                 oninput="renderHeldOrders()">
+        </div>
         <div id="heldOrdersContainer">
           <!-- Dynamically populated held cards -->
         </div>

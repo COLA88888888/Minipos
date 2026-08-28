@@ -489,7 +489,8 @@ require_once __DIR__ . '/../../layouts/header.php';
 
       <!-- Right Controls: Store Filter + Category Filter + Search (ຂວາ) -->
       <div class="d-flex align-items-center" style="gap: 10px; flex-wrap: wrap;">
-        <!-- Dropdown: ເລືອກສາຂາ (ເລືອກເບິ່ງສະຕັອກສາຂາ) -->
+        <!-- Dropdown: ເລືອກສາຂາ — main branch / admin only; a sub-branch user is locked to their own branch -->
+        <?php if ($isAdmin || $isMain): ?>
         <div class="prod-filter-wrap" style="width: 200px;">
           <select id="storeFilter" class="form-control font-weight-bold" onchange="switchStoreFilter(this.value)">
             <?php foreach ($stores as $st): ?>
@@ -499,6 +500,7 @@ require_once __DIR__ . '/../../layouts/header.php';
             <?php endforeach; ?>
           </select>
         </div>
+        <?php endif; ?>
 
         <!-- Dropdown: ເລືອກປະເພດ (ທາງໜ້າບັອກຄົ້ນຫາ) -->
         <div class="prod-filter-wrap" style="width: 200px;">
@@ -558,7 +560,8 @@ require_once __DIR__ . '/../../layouts/header.php';
                 }
                 $allBarcodes = array_filter(array_merge([$p['barcode'] ?? ''], $extraBarcodes));
               ?>
-              <tr class="product-row" data-category="<?php echo $p['category_id']; ?>" data-barcodes="<?php echo htmlspecialchars(strtolower(implode(',', $allBarcodes))); ?>">
+              <?php $rowQty = (float)($p['qty'] ?? 0); ?>
+              <tr class="product-row" data-category="<?php echo $p['category_id']; ?>" data-barcodes="<?php echo htmlspecialchars(strtolower(implode(',', $allBarcodes))); ?>" data-bval="<?php echo (float)($p['bprice'] ?? 0) * $rowQty; ?>" data-pval="<?php echo (float)($p['price'] ?? 0) * $rowQty; ?>">
 
                 <!-- ລຳດັບ -->
                 <td class="text-center">
@@ -665,6 +668,26 @@ require_once __DIR__ . '/../../layouts/header.php';
             <?php endforeach; ?>
           <?php endif; ?>
         </tbody>
+        <?php if (!empty($products)): ?>
+          <?php
+            // Totals = unit price x stock qty (total inventory value at cost / at retail)
+            $sumBprice = 0; $sumPrice = 0;
+            foreach ($products as $pp) {
+              $q = (float)($pp['qty'] ?? 0);
+              $sumBprice += (float)($pp['bprice'] ?? 0) * $q;
+              $sumPrice  += (float)($pp['price'] ?? 0) * $q;
+            }
+          ?>
+          <tfoot>
+            <tr style="background:#f8fafc; font-weight:800; border-top:2px solid #cbd5e1;">
+              <td colspan="5" class="text-right" style="color:#0f172a;"><?php echo htmlspecialchars(t('products.grand_total', 'ລວມທັງໝົດ:')); ?></td>
+              <td class="text-right" id="totalBprice" style="color:#64748b;"><?php echo number_format($sumBprice, 0); ?> ₭</td>
+              <td class="text-right" id="totalPrice" style="color:#16a34a;"><?php echo number_format($sumPrice, 0); ?> ₭</td>
+              <?php if ($isAdmin): ?><td></td><?php endif; ?>
+              <td></td>
+            </tr>
+          </tfoot>
+        <?php endif; ?>
       </table>
     </div>
 
@@ -1047,6 +1070,23 @@ require_once __DIR__ . '/../../layouts/header.php';
 
     currentPage = 1;
     applyPagination();
+    updateProductTotals();
+  }
+
+  // Footer totals = (buy price x stock qty) and (sell price x stock qty), over the current filter result
+  function updateProductTotals() {
+    var rows = (typeof filteredRows !== 'undefined' && filteredRows.length)
+      ? filteredRows
+      : document.querySelectorAll('.product-row');
+    var sumB = 0, sumP = 0;
+    rows.forEach(function(r) {
+      sumB += parseFloat(r.getAttribute('data-bval')) || 0;
+      sumP += parseFloat(r.getAttribute('data-pval')) || 0;
+    });
+    var elB = document.getElementById('totalBprice');
+    var elP = document.getElementById('totalPrice');
+    if (elB) elB.textContent = Math.round(sumB).toLocaleString('en-US') + ' ₭';
+    if (elP) elP.textContent = Math.round(sumP).toLocaleString('en-US') + ' ₭';
   }
 
   $(document).ready(function() {

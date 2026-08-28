@@ -9,6 +9,7 @@ return [
     'layout.pos_item_sales' => 'รายการขายสินค้า',
     'layout.customers' => 'จัดการลูกค้า',
     'layout.products_group' => 'ข้อมูลสินค้า',
+    'layout.stock_intake_group' => 'นำสินค้าเข้าคลัง',
     'layout.categories' => 'หมวดหมู่สินค้า',
     'layout.units' => 'จัดการหน่วยนับ',
     'layout.products' => 'รายการสินค้า',
@@ -37,6 +38,7 @@ return [
     'layout.promotions' => 'โปรโมชั่น',
     'layout.price_adjustment' => 'ปรับราคาสินค้า',
     'layout.printers' => 'ตั้งค่าเครื่องพิมพ์',
+    'layout.loyalty' => 'คะแนนสะสมลูกค้า',
     'layout.database' => 'ฐานข้อมูล',
     'layout.online_status' => 'กำลังใช้งาน',
 

@@ -307,6 +307,12 @@ try {
         if (!in_array('member_card', $custCols)) {
             $pdo->exec("ALTER TABLE `customers` ADD COLUMN `member_card` VARCHAR(50) NULL AFTER `phone`");
         }
+        if (!in_array('address', $custCols)) {
+            $pdo->exec("ALTER TABLE `customers` ADD COLUMN `address` TEXT NULL AFTER `phone`");
+        }
+        if (!in_array('points', $custCols)) {
+            $pdo->exec("ALTER TABLE `customers` ADD COLUMN `points` INT NOT NULL DEFAULT 0");
+        }
         if (!in_array('store_id', $custCols)) {
             $pdo->exec("ALTER TABLE `customers` ADD COLUMN `store_id` INT DEFAULT 1 AFTER `notes`");
             $pdo->exec("UPDATE `customers` SET `store_id` = 1 WHERE `store_id` IS NULL OR `store_id` = 0");
@@ -465,6 +471,9 @@ try {
         if (!in_array('bank_name', $saleCols)) {
             $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN `bank_name` VARCHAR(100) DEFAULT NULL");
         }
+        if (!in_array('points_earned', $saleCols)) {
+            $pdo->exec("ALTER TABLE tbsale_save ADD COLUMN `points_earned` INT NOT NULL DEFAULT 0");
+        }
 
         $salesCols = $pdo->query("SHOW COLUMNS FROM sales")->fetchAll(PDO::FETCH_COLUMN);
         if (!in_array('bank_account_id', $salesCols)) {
@@ -607,10 +616,15 @@ try {
 
         $setCount = (int)$pdo->query("SELECT COUNT(*) FROM system_settings")->fetchColumn();
         if ($setCount === 0) {
-            $pdo->exec("INSERT INTO system_settings (setting_key, setting_value) VALUES 
+            $pdo->exec("INSERT INTO system_settings (setting_key, setting_value) VALUES
                 ('vat_rate', '0'),
                 ('expiry_warning_days', '30')");
         }
+        // Customer loyalty points rule: earn Y points for every X kip of net spend
+        $pdo->exec("INSERT IGNORE INTO system_settings (setting_key, setting_value) VALUES
+            ('loyalty_enabled', '0'),
+            ('loyalty_spend_amount', '100000'),
+            ('loyalty_points_earned', '1')");
     } catch (Throwable $ex) {}
 
     // Auto Migration for tbsale_save, tbsale_save_detail & sales view
@@ -865,6 +879,7 @@ if (!function_exists('hasPermission')) {
             'promotions'       => 'setup',
             'price_adjustment' => 'setup',
             'printers'         => 'setup',
+            'loyalty'          => 'setup',
             'branches'         => 'branches',
             'database'         => 'database',
             'permissions'      => 'permissions',
@@ -886,6 +901,16 @@ if (!function_exists('hasPermission')) {
         $switchKey2 = 'perm_' . $targetModule . '_' . $actCode . '_' . $userId;
         if (isset($switchStates[$switchKey2])) {
             return (int)$switchStates[$switchKey2] === 1;
+        }
+
+        // Some permission-matrix toggles store the key without an action segment
+        // (e.g. "perm_category_sales_<uid>", "perm_delete_bills_<uid>"). Treat those as a "view" grant.
+        if ($actCode === 'view') {
+            foreach (['perm_' . $module . '_' . $userId, 'perm_' . $targetModule . '_' . $userId] as $shortKey) {
+                if (isset($switchStates[$shortKey])) {
+                    return (int)$switchStates[$shortKey] === 1;
+                }
+            }
         }
 
         // Check general edit/delete permission columns in tbuser

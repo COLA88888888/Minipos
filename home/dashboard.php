@@ -837,10 +837,54 @@ if (!hasPermission('dashboard')) {
     window.playNotificationSound = playNotificationSound;
     window.unlockAudioContext = unlockAudioContext;
 
+    // Low-stock / out-of-stock alerts (keys main_*, stk_*) are STICKY per branch: they cannot be
+    // dismissed and only clear once the product is restocked. Every other notification's
+    // "read" state expires after 1 day, so those alerts disappear on their own.
+    var NOTIF_STICKY_RE = /^(main_|stk_)/;
+    var NOTIF_READ_TTL = 86400000; // 1 day
+
+    function loadReadNotifKeys(badgeId) {
+      var raw = [], tsMap = {};
+      try { raw = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]'); } catch(e) { raw = []; }
+      try { tsMap = JSON.parse(localStorage.getItem('read_notif_ts_' + badgeId) || '{}'); } catch(e) { tsMap = {}; }
+      var now = Date.now(), kept = [], keptTs = {};
+      raw.forEach(function(k) {
+        if (NOTIF_STICKY_RE.test(k)) return;                 // sticky: never treated as read
+        var t = tsMap[k];
+        if (t && (now - t) > NOTIF_READ_TTL) return;         // expired after 1 day
+        kept.push(k);
+        keptTs[k] = t || now;
+      });
+      try {
+        localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(kept));
+        localStorage.setItem('read_notif_ts_' + badgeId, JSON.stringify(keptTs));
+      } catch(e) {}
+      return kept;
+    }
+
+    function persistReadNotifKey(badgeId, key) {
+      if (!key || NOTIF_STICKY_RE.test(key)) return false;   // can't dismiss sticky alerts
+      var keys = loadReadNotifKeys(badgeId);
+      if (keys.indexOf(key) !== -1) return false;
+      keys.push(key);
+      var tsMap = {};
+      try { tsMap = JSON.parse(localStorage.getItem('read_notif_ts_' + badgeId) || '{}'); } catch(e) {}
+      tsMap[key] = Date.now();
+      try {
+        localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(keys));
+        localStorage.setItem('read_notif_ts_' + badgeId, JSON.stringify(tsMap));
+      } catch(e) {}
+      return true;
+    }
+
+    // Bell click handler referenced inline in the markup — keep it harmless.
+    function markNotifAsRead(badgeId) { if (badgeId) loadReadNotifKeys(badgeId); }
+    window.markNotifAsRead = markNotifAsRead;
+
     function updateBadgeUI(badgeId) {
       var readKeys = [];
       try {
-        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+        readKeys = loadReadNotifKeys(badgeId);
       } catch(e) { readKeys = []; }
 
       var dropdownBodyId = badgeId === 'mainNotifBadge' ? 'mainNotifDropdownBody' : 'subNotifDropdownBody';
@@ -876,23 +920,10 @@ if (!hasPermission('dashboard')) {
 
     function markItemAsRead(itemKey, badgeId) {
       if (!itemKey || !badgeId) return;
-
-      var readKeys = [];
-      try {
-        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
-      } catch(e) { readKeys = []; }
-
-      if (!readKeys.includes(itemKey)) {
-        readKeys.push(itemKey);
-        try {
-          localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(readKeys));
-        } catch(e) {}
-
+      // Sticky low-stock alerts (main_*, stk_*) can't be dismissed — persistReadNotifKey returns false.
+      if (persistReadNotifKey(badgeId, itemKey)) {
         var el = document.getElementById('notif_item_' + itemKey);
-        if (el) {
-          el.style.opacity = '0.55';
-        }
-
+        if (el) el.style.opacity = '0.55';
         updateBadgeUI(badgeId);
       }
     }
@@ -904,61 +935,30 @@ if (!hasPermission('dashboard')) {
       var btnId = badgeId === 'mainNotifBadge' ? '#btnMarkAllMain' : '#btnMarkAllSub';
       $(btnId).hide();
 
-      try {
-        localStorage.setItem('notif_read_all_' + badgeId, '1');
-      } catch(e) {}
-
-      var readKeys = [];
-      try {
-        readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
-      } catch(e) { readKeys = []; }
-
-      // Collect all items from DOM dropdown
+      // Mark every currently visible notification as read — EXCEPT sticky low-stock alerts
+      // (persistReadNotifKey ignores main_*/stk_*), which keep showing until restocked.
       var dropdownBodyId = badgeId === 'mainNotifBadge' ? 'mainNotifDropdownBody' : 'subNotifDropdownBody';
       $('#' + dropdownBodyId + ' .dropdown-item').each(function() {
         var itemId = $(this).attr('id');
-        if (itemId) {
-          var key = itemId.replace('notif_item_', '');
-          if (!readKeys.includes(key)) {
-            readKeys.push(key);
-          }
-          $(this).css('opacity', '0.55');
-        }
+        if (!itemId) return;
+        var key = itemId.replace('notif_item_', '');
+        if (NOTIF_STICKY_RE.test(key)) return;   // leave sticky low-stock rows untouched
+        persistReadNotifKey(badgeId, key);
+        $(this).css('opacity', '0.55');
       });
 
-      // Collect all items from cached server polling response
       if (window.lastNotifResponse) {
         var res = window.lastNotifResponse;
         if (res.is_main) {
-          (res.sub_branch_imports || []).forEach(function(imp) {
-            var k = 'imp_' + imp.import_detail_id;
-            if (!readKeys.includes(k)) readKeys.push(k);
-          });
-          (res.grouped_low_stock || []).forEach(function(grp) {
-            (grp.items || []).forEach(function(item) {
-              var k = 'main_' + item.product_id;
-              if (!readKeys.includes(k)) readKeys.push(k);
-            });
-          });
+          (res.sub_branch_imports || []).forEach(function(imp) { persistReadNotifKey(badgeId, 'imp_' + imp.import_detail_id); });
         } else {
-          (res.incoming_transfers || []).forEach(function(t) {
-            var k = 'trf_' + t.transfer_id;
-            if (!readKeys.includes(k)) readKeys.push(k);
-          });
-          (res.sub_low_stock || []).forEach(function(s) {
-            var k = 'stk_' + s.product_id;
-            if (!readKeys.includes(k)) readKeys.push(k);
-          });
-          (res.sub_new_products || []).forEach(function(p) {
-            var k = 'np_' + p.product_id;
-            if (!readKeys.includes(k)) readKeys.push(k);
-          });
+          (res.incoming_transfers || []).forEach(function(t) { persistReadNotifKey(badgeId, 'trf_' + t.transfer_id); });
+          (res.sub_new_products || []).forEach(function(p) { persistReadNotifKey(badgeId, 'np_' + p.product_id); });
         }
       }
 
-      try {
-        localStorage.setItem('read_notif_keys_' + badgeId, JSON.stringify(readKeys));
-      } catch(e) {}
+      // A remaining sticky low-stock alert should keep the badge visible.
+      updateBadgeUI(badgeId);
     }
 
     $(document).ready(function() {
@@ -1133,7 +1133,7 @@ if (!hasPermission('dashboard')) {
 
           var readKeys = [];
           try {
-            readKeys = JSON.parse(localStorage.getItem('read_notif_keys_' + badgeId) || '[]');
+            readKeys = loadReadNotifKeys(badgeId);
           } catch(e) { readKeys = []; }
 
           var unreadCount = 0;
@@ -1522,7 +1522,7 @@ if (!hasPermission('dashboard')) {
   <!-- Main Footer -->
   <footer class="main-footer" style="background: #ffffff; border-top: 1px solid #cbd5e1; color: #475569; padding: 0 20px; font-size: 0.88rem; height: 42px; display: flex; align-items: center; justify-content: space-between; box-sizing: border-box;">
     <div style="font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-      <span>ລະບົບຂາຍ POS</span>
+      <span>Wlaodev Pos System</span>
     </div>
     <div style="font-weight: 700; color: #64748b;">
       <span>Version 3.8.26</span>

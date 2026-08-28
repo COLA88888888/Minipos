@@ -9,6 +9,7 @@ return [
     'layout.pos_item_sales' => 'Sales Items',
     'layout.customers' => 'Customer Management',
     'layout.products_group' => 'Product Information',
+    'layout.stock_intake_group' => 'Stock Intake',
     'layout.categories' => 'Categories',
     'layout.units' => 'Units Management',
     'layout.products' => 'Product List',
@@ -37,6 +38,7 @@ return [
     'layout.promotions' => 'Promotions',
     'layout.price_adjustment' => 'Price Adjustment',
     'layout.printers' => 'Printer Settings',
+    'layout.loyalty' => 'Loyalty Points',
     'layout.database' => 'Database',
     'layout.online_status' => 'Online',
 

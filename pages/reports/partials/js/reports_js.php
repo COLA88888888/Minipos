@@ -294,6 +294,95 @@ function doPrintReportReceipt() {
   }
 }
 
+// ===== DELIVERY NOTE (ບິນສົ່ງເຄື່ອງ) from a historical sale =====
+function printDeliveryNote(billNo) {
+  if (!billNo) return;
+  $.ajax({
+    url: 'reports.php',
+    type: 'GET',
+    data: { action: 'get_bill_details', bill_no: billNo },
+    dataType: 'json',
+    success: function(res) {
+      if (!res.success || !res.bill) { alert('<?php echo htmlspecialchars(t('reports.js_load_fail', 'ບໍ່ສາມາດໂຫຼດຂໍ້ມູນບິນໄດ້!'), ENT_QUOTES); ?>'); return; }
+      var b = res.bill;
+
+      var logo = (b.sender_logo || 'assets/img/logo/logo.png');
+      $('#dn_rep_logo').attr('src', '../../' + logo.replace(/^\/+/, ''));
+      $('#dn_rep_sender_name').text(b.sender_name || '-');
+      var sph = (b.sender_tel || '').toString().trim();
+      if (sph) { $('#dn_rep_sender_tel').text(sph); $('#dn_rep_sender_phone_row').css('display', 'flex'); }
+      else { $('#dn_rep_sender_phone_row').css('display', 'none'); }
+
+      $('#dn_rep_bill').text(b.sale_save_bill || billNo);
+      $('#dn_rep_date').text(((b.sale_date || '') + ' ' + (b.sale_time || '')).trim() || '-');
+      $('#dn_rep_customer').text(b.customer_name || '<?php echo htmlspecialchars(t('reports.default_customer', 'ລູກຄ້າທົ່ວໄປ'), ENT_QUOTES); ?>');
+
+      var ph = (b.customer_phone || '').toString().trim();
+      if (ph) { $('#dn_rep_phone').text(ph); $('#dn_rep_phone_row').css('display', 'flex'); }
+      else { $('#dn_rep_phone_row').css('display', 'none'); }
+      var ad = (b.customer_address || '').toString().trim();
+      if (ad) { $('#dn_rep_address').text(ad); $('#dn_rep_address_row').css('display', 'block'); }
+      else { $('#dn_rep_address_row').css('display', 'none'); }
+
+      var rows = '';
+      $.each(res.details || [], function(i, item) {
+        var name = item.save_proname || item.product_name || 'ສິນຄ້າ';
+        var q = floatval(item.save_qty);
+        var unit = item.unit_name ? (' ' + item.unit_name) : '';
+        rows += '<tr>'
+          + '<td style="padding:2px 0;vertical-align:top;">' + name + '</td>'
+          + '<td style="text-align:right;padding:2px 0;vertical-align:top;">' + q.toLocaleString() + unit + '</td>'
+          + '</tr>';
+      });
+      $('#dn_rep_items').html(rows || '<tr><td colspan="2" style="text-align:center;padding:6px 0;">-</td></tr>');
+
+      doPrintReportDeliveryNote();
+    },
+    error: function() { alert('<?php echo htmlspecialchars(t('reports.js_connect_error', 'ເກີດຂໍ້ຜິດພາດໃນການເຊື່ອມຕໍ່!'), ENT_QUOTES); ?>'); }
+  });
+}
+
+function doPrintReportDeliveryNote() {
+  var printContent = document.getElementById('deliveryNoteReportArea').innerHTML;
+  var iframe = document.getElementById('reportPrintIframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'reportPrintIframe';
+    iframe.style.cssText = 'position:absolute;width:0px;height:0px;left:-9999px;top:-9999px;border:none;';
+    document.body.appendChild(iframe);
+  }
+  var doc = iframe.contentWindow || iframe.contentDocument;
+  if (doc.document) doc = doc.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="utf-8">'
+    + '<title><?php echo htmlspecialchars(t('reports.delivery_note', 'ບິນສົ່ງເຄື່ອງ'), ENT_QUOTES); ?></title>'
+    + '<link rel="stylesheet" href="../../assets/css/local-font.css">'
+    + '<link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">'
+    + '<style>'
+    + '@page { size: 80mm auto; margin: 0mm; }'
+    + '* { box-sizing: border-box; font-family: \'Noto Sans Lao\', \'Souliyo\', \'Boon\', Arial, sans-serif !important; color: #000 !important; -webkit-font-smoothing: antialiased; }'
+    + 'html, body { width: 80mm; margin: 0 auto; padding: 8px 6px; background: #fff; font-size: 13px; font-weight: 600; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; }'
+    + 'table { width: 100%; border-collapse: collapse; }'
+    + 'td, th { color: #000 !important; }'
+    + 'img { max-width: 70px; max-height: 70px; object-fit: contain; display: block; margin: 6px auto 2px auto; }'
+    + '[style*="display: none"], [style*="display:none"] { display: none !important; }'
+    + '@media print { html, body { width: 100%; padding: 2mm; } }'
+    + '</style></head><body>' + printContent + '</body></html>');
+  doc.close();
+
+  var images = doc.getElementsByTagName('img');
+  var total = images.length, loaded = 0, fired = false;
+  function fire() { if (fired) return; fired = true; try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) { window.print(); } }
+  if (total === 0) { setTimeout(fire, 200); }
+  else {
+    for (var i = 0; i < total; i++) {
+      if (images[i].complete && images[i].naturalWidth !== 0) { loaded++; }
+      else { images[i].onload = images[i].onerror = function() { loaded++; if (loaded >= total) setTimeout(fire, 150); }; }
+    }
+    setTimeout(fire, loaded >= total ? 250 : 700);
+  }
+}
+
 function floatval(val) {
   var n = parseFloat(val);
   return isNaN(n) ? 0 : n;

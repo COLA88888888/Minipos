@@ -18,6 +18,7 @@ return [
     'products.col_name' => 'Product Name',
     'products.col_bprice' => 'Cost Price',
     'products.col_price' => 'Sale Price',
+    'products.grand_total' => 'Grand Total:',
     'products.col_qty' => 'Stock',
     'products.col_manage' => 'Manage',
     'products.empty_state' => 'No product data',

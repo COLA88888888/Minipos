@@ -178,7 +178,6 @@ var I18N_ADD_PRODUCT = <?php echo tjson([
     'products.validate_barcode_required' => 'ກະລຸນາປ້ອນ ຫຼື ສະແກນລະຫັດບາໂຄ້ດສິນຄ້າ!',
     'products.validate_barcode_numeric' => 'ລະຫັດບາໂຄ້ດຮອງຮັບສະເພາະຕົວເລກ (0-9) ເທົ່ານັ້ນ!',
     'products.validate_unit' => 'ກະລຸນາປ້ອນຫົວໜ່ວຍ!',
-    'products.validate_bprice' => 'ກະລຸນາປ້ອນລາຄາຊື້!',
     'products.validate_price' => 'ກະລຸນາປ້ອນລາຄາຂາຍ!',
     'products.validate_unit_name' => 'ກະລຸນາປ້ອນຊື່ຫົວໜ່ວຍເພີ່ມເຕີມ!',
     'products.validate_unit_qty' => 'ກະລຸນາປ້ອນຈຳນວນຫົວໜ່ວຍເພີ່ມເຕີມ!',

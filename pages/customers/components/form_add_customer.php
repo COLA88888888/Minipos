@@ -38,23 +38,24 @@
             </div>
           </div>
 
+          <?php if ($isAdmin || $isMain): ?>
           <div class="form-group mb-3">
             <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('customers.field_branch', 'ສາຂາ')); ?></label>
-            <select name="store_id" id="add_store_id" class="form-control" style="border-radius: 8px; height: 42px;" <?php echo (!$isAdmin && !$isMain) ? 'disabled' : ''; ?>>
+            <select name="store_id" id="add_store_id" class="form-control" style="border-radius: 8px; height: 42px;">
               <?php foreach ($stores as $st): ?>
                 <option value="<?php echo $st['store_id']; ?>" <?php echo (($filter_store > 0 ? $filter_store : $userStoreId) == $st['store_id']) ? 'selected' : ''; ?>>
                   <?php echo htmlspecialchars($st['store_name']); ?> <?php echo !empty($st['is_main']) ? htmlspecialchars(t('customers.main_branch_suffix', '(ສາງຫຼັກ)')) : ''; ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <?php if (!$isAdmin && !$isMain): ?>
-              <input type="hidden" name="store_id" value="<?php echo $userStoreId; ?>">
-            <?php endif; ?>
           </div>
+          <?php else: ?>
+            <input type="hidden" name="store_id" value="<?php echo $userStoreId; ?>">
+          <?php endif; ?>
 
           <div class="form-group mb-0">
-            <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('customers.field_notes', 'ໝາຍເຫດ')); ?></label>
-            <textarea name="notes" id="add_notes" class="form-control" rows="3" placeholder="<?php echo htmlspecialchars(t('customers.placeholder_notes', 'ປ້ອນໝາຍເຫດເພີ່ມເຕີມ (ຖ້າມີ)')); ?>" style="border-radius: 8px;"></textarea>
+            <label class="font-weight-bold text-dark mb-1"><?php echo htmlspecialchars(t('customers.field_address', 'ທີ່ຢູ່')); ?></label>
+            <textarea name="address" id="add_address" class="form-control" rows="3" placeholder="<?php echo htmlspecialchars(t('customers.placeholder_address', 'ປ້ອນທີ່ຢູ່ລູກຄ້າ (ບ້ານ, ເມືອງ, ແຂວງ)')); ?>" style="border-radius: 8px;"></textarea>
           </div>
         </div>
 

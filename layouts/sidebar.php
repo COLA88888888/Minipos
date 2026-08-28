@@ -117,6 +117,7 @@
           <!-- Header: Inventory & Products -->
           <!-- <li class="nav-header text-uppercase" style="color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; padding-top: 15px;">ການຈັດການສິນຄ້າ</li> -->
 
+          <?php if (hasPermission('categories') || hasPermission('units') || hasPermission('products') || hasPermission('stock')): ?>
           <!-- Dropdown Treeview: ຂໍ້ມູນສິນຄ້າ -->
           <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
@@ -157,7 +158,21 @@
                 </a>
               </li>
               <?php endif; ?>
+            </ul>
+          </li>
+          <?php endif; ?>
 
+          <?php if (hasPermission('import_stock') || hasPermission('import_list') || hasPermission('stock_transfer') || hasPermission('transfer_history')): ?>
+          <!-- Dropdown Treeview: ນຳສິນຄ້າເຂົ້າສາງ -->
+          <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-warehouse text-warning"></i>
+              <p>
+                <span data-i18n="layout.stock_intake_group"><?php echo htmlspecialchars(t('layout.stock_intake_group', 'ນຳສິນຄ້າເຂົ້າສາງ')); ?></span>
+                <i class="right fas fa-angle-right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
               <?php if (hasPermission('import_stock')): ?>
               <!-- Sub-menu: ນຳເຂົ້າສິນຄ້າ -->
               <li class="nav-item">
@@ -177,6 +192,7 @@
                 </a>
               </li>
               <?php endif; ?>
+
               <?php if (hasPermission('stock_transfer')): ?>
               <!-- Sub-menu: ໂອນສິນຄ້າລະຫວ່າງສາຂາ -->
               <li class="nav-item">
@@ -198,6 +214,7 @@
               <?php endif; ?>
             </ul>
           </li>
+          <?php endif; ?>
         <?php endif; ?>
 
         <?php if (hasPermission('accounting')): ?>
@@ -398,6 +415,16 @@
                   <a href="<?php echo $bp; ?>pages/settings/printers/index.php" target="frame" class="nav-link">
                     <i class="nav-icon fas fa-print text-teal"></i>
                     <p data-i18n="layout.printers"><?php echo htmlspecialchars(t('layout.printers', 'ຕັ້ງຄ່າປິ່ນເຕີ')); ?></p>
+                  </a>
+                </li>
+                <?php endif; ?>
+
+                <?php if (hasPermission('loyalty')): ?>
+                <!-- 7. ຄະແນນສະສົມລູກຄ້າ -->
+                <li class="nav-item">
+                  <a href="<?php echo $bp; ?>pages/settings/loyalty/index.php" target="frame" class="nav-link">
+                    <i class="nav-icon fas fa-star text-warning"></i>
+                    <p data-i18n="layout.loyalty"><?php echo htmlspecialchars(t('layout.loyalty', 'ຄະແນນສະສົມລູກຄ້າ')); ?></p>
                   </a>
                 </li>
                 <?php endif; ?>

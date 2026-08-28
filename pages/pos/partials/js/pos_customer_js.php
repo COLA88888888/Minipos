@@ -13,10 +13,12 @@ function selectCustomer(cus) {
     selectedCustomer = {
       customer_id: cus.customer_id,
       customer_name: cus.customer_name,
-      phone: cus.phone || ''
+      phone: cus.phone || '',
+      address: cus.address || '',
+      notes: cus.notes || ''
     };
   } else {
-    selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '' };
+    selectedCustomer = { customer_id: null, customer_name: 'ລູກຄ້າທົ່ວໄປ', phone: '', address: '', notes: '' };
   }
   updateSelectedCustomerUI();
   saveCurrentBillState();
@@ -68,7 +70,7 @@ function filterCustomersList() {
       <tr style="white-space: nowrap;">
         <td class="text-center text-muted font-weight-bold align-middle" style="white-space: nowrap;">${idx + 1}</td>
         <td class="text-center align-middle font-weight-bold" style="white-space: nowrap;"><span class="cust-code-badge" style="white-space: nowrap;">${c.customer_code || '-'}</span></td>
-        <td class="font-weight-bold text-dark align-middle" style="white-space: nowrap;">${c.customer_name}</td>
+        <td class="font-weight-bold text-dark align-middle" style="white-space: nowrap;">${c.customer_name}${(parseInt(c.points) > 0) ? ` <span class="badge badge-pill" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a;font-size:0.78rem;"><i class="fas fa-star mr-1"></i>${parseInt(c.points).toLocaleString()}</span>` : ''}</td>
         <td class="align-middle text-center text-dark" style="white-space: nowrap;">${c.phone ? `<a href="tel:${c.phone}" class="text-dark font-weight-bold">${c.phone}</a>` : '<span class="text-muted">-</span>'}</td>
         <td class="text-center align-middle font-weight-bold" style="white-space: nowrap;">${memberCardBadge}</td>
         <td class="text-center align-middle text-secondary" style="font-size: 0.88rem; white-space: nowrap;"><i class="far fa-clock text-info mr-1"></i>${createdAt}</td>
@@ -191,6 +193,7 @@ function submitQuickAddCustomer() {
       customer_code: $('#newCusCode').val().trim(),
       customer_name: name,
       phone: phone,
+      address: $('#newCusAddress').val().trim(),
       member_card: $('#newCusMemberCard').val().trim(),
       notes: $('#newCusNotes').val().trim()
     },

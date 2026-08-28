@@ -27,7 +27,8 @@
     $('#edit_customer_name').val(cust.customer_name);
     $('#edit_phone').val(cust.phone);
     $('#edit_member_card').val(cust.member_card || '');
-    $('#edit_notes').val(cust.notes);
+    $('#edit_address').val(cust.address || '');
+    $('#edit_notes').val(cust.notes || '');
     if (document.getElementById('edit_store_id') && cust.store_id) {
       $('#edit_store_id').val(cust.store_id);
     }
